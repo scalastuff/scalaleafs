@@ -1,32 +1,36 @@
 <dummy>
     <h1>Templates</h1>
-    <p>A template is an XML (or HTML) file that can be bound to some Scala class extending <scaladoc>Template</scaladoc>.
+    <p>A template is an XML (or HTML) file that can be bound to some Scala class.  extending <scaladoc>Template</scaladoc>.
     Generically, this binding can be any XML transformation, transforming the source XML to some output XML. A template is an
     XML transformation itself, so they compose nicely.
     </p>  
     <p>The usual way to bind an XML template to code is to use CSS selectors in the bind method.</p>
     Here's an example:
+
+    <code-sample>
+	    <source language="html">
+	        <html>
+	          <body>
+	            <h1 id="title">Title</h1>
+	            <div id="menu">
+	                <div class="item"><a>Item</a></div>
+	            </div>
+	          </body>
+	        </html>
+	    </source>  
+	    
+	    <source language="scala">
+	        class LoginScreen extends Template {
+	          val bind =
+	            "#title" #> "Welcome!" amp; 
+	            "#menu .item a" #> SetAttr("href", "/home")  
+	        }
+	    </source>  
+    </code-sample>    
     
-    <pre code="scala">
-        class LoginScreen extends Template {
-          val bind =
-            "#title" #> "Welcome!" & 
-            "#menu .item a" #> SetAttr("href", "/home")  
-        }
-    </pre>  
-    
-    <pre code="html">
-        <html>
-          <body>
-            <h1 id="title">Title</h1>
-            <div id="menu">
-                <div class="item"><a>Item</a></div>
-            </div>
-          </body>
-        </html>
-    </pre>  
-    
-    
+    <h2>Samples</h2>
+    <div id="sample1"/>
+    <div id="sample2"/>
     
     <h2>Internationalization</h2>
     Template resource files are localized.

@@ -55,6 +55,10 @@ object XmlHelpers {
     } 
   })
 
+  def hasId(elem : Elem, value : String) = hasAttrValue(elem, "id", value)
+
+  def setId(elem : Elem, value : String) = setAttr(elem, "id", value)
+  
   def hasClass(elem : Elem, value : String) = hasAttrValue(elem, "class", value)
 
   def setClass(elem : Elem, value : String) = setAttr(elem, "class", value)

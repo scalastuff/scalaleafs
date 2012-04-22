@@ -18,7 +18,7 @@ class Redrawable extends XmlTransformation {
   private var _input : NodeSeq = NodeSeq.Empty
   private var _transform : Redrawable => NodeSeq => NodeSeq = r => Ident
   def id : String = _id
-  def apply(xml: NodeSeq) = xml match {
+  override def apply(xml: NodeSeq) = xml match {
     case ElemWithId(elem, id) => 
       _id = id
       _input = xml

@@ -51,6 +51,7 @@ trait leafsFilter extends Filter {
 
   abstract override def doFilter(request : ServletRequest, response : ServletResponse, chain : FilterChain) {
     if (request.isInstanceOf[HttpServletRequest]) {
+      val startTime = System.currentTimeMillis
       val httpRequest = request.asInstanceOf[HttpServletRequest];
       val session = getSession(httpRequest)
       val servletPath = httpRequest.getServletPath()
@@ -68,6 +69,7 @@ trait leafsFilter extends Filter {
         val path = (httpRequest.getServletPath() + httpRequest.getPathInfo()).split("/").toList
         session.handleRequest(new Url(baseUri, Nil, path, parameters), () => super.doFilter(request, response, chain))
       }
+      println("Processed " + httpRequest.getRequestURI() + " (" + (System.currentTimeMillis- startTime) + " ms)")
     } else {
       super.doFilter(request, response, chain)
     }

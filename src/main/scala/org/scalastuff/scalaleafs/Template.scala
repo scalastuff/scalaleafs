@@ -34,7 +34,7 @@ trait Template extends XmlTransformation {
   def readInput : NodeSeq = Template.template(getClass)
   val input = readInput
   def render : NodeSeq = apply(input)
-  def apply(xml : NodeSeq) = bind(input)
+  abstract override def apply(xml : NodeSeq) = bind(super.apply(input))
 }
 
 /**

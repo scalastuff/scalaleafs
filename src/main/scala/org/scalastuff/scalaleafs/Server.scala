@@ -14,7 +14,6 @@ case class AjaxCallback(request : Request, f : Map[String, List[String]] => Unit
 object Server {
   val ajaxCallbackPath = "ajaxCallback"
   val resourcePath = "resource"
-  var debugMode = true
 }
 
 class Server(val configuration : Configuration = Configuration()) {
@@ -116,14 +115,12 @@ class TransientRequest(val request : Request) {
   
   def addPostRequestJs(jsCmd : JsCmd) {
     if (jsCmd != Noop) {
-      println("adding js:" + jsCmd)
       postRequestJs &= jsCmd
     }
   }
 
   def registerAjaxCallback(f : Map[String, List[String]] => Unit) : String = {
       val uid = session.callbackIDGenerator.generate
-      println("putting in cache: " + uid);
       request.session.ajaxCallbacks.put(uid, AjaxCallback(request, f))
       addHeadContribution(JQuery)
       addHeadContribution(Callback)

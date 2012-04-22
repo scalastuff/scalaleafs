@@ -10,15 +10,14 @@ import org.scalastuff.scalaleafs.Template
 import org.scalastuff.scalaleafs.Url
 import org.scalastuff.scalaleafs.UrlHandler
 import org.scalastuff.scalaleafs.Widgets
+import org.scalastuff.scalaleafs.CodeSample
+import org.scalastuff.scalaleafs.MkElem
 
-class Frame(var url : Url) extends Template with UrlHandler with HeadContributions {
+class Frame(var url : Url) extends Template with UrlHandler with HeadContributions with CodeSample {
   
-println("NEW PAGE WITH URL: " + url)
-  
-  def bind = "#main" #> main
+  def bind = "#main" #> MkElem("h1")(main)
   
   val main = Redrawable { r =>
-    println("Drawing page for url rmainder: " + url.remainingPath)
 //    "#main-menu" #> {
 //      "#getting-started a" #> Widgets.onclick(R.url = "getting-started") & 
 //      "#templates a" #> Widgets.onclick(R.url = "templates")
