@@ -8,7 +8,7 @@ trait CodeSample extends HasXmlTransformation {
 
   val transformation = "code-sample" #> ReplaceElem("table.code-sample tr") {
     "source[language=html]" #> ReplaceElem("td") {
-      MkElem("pre")
+      MkElem("preq")
     }
   }
   

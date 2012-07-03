@@ -2,8 +2,8 @@
 <classpath>
 	<classpathentry kind="con" path="org.scala-ide.sdt.launching.SCALA_CONTAINER"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="output" path="bin"/>
 	<classpathentry from="sbt" kind="lib" path="/Users/ruud/.esbt/jars/commons-codec-commons-codec-1.4.jar"/>
+	<classpathentry from="sbt" kind="lib" path="/Users/ruud/.esbt/jars/org.clapper-grizzled-slf4j_2.9.1-0.6.9.jar"/>
 	<classpathentry from="sbt" kind="lib" path="/Users/ruud/.esbt/jars/com.google.guava-guava-10.0.1.jar"/>
 	<classpathentry from="sbt" kind="lib" path="/Users/ruud/.esbt/jars/nu.validator.htmlparser-htmlparser-1.2.1.jar"/>
 	<classpathentry from="sbt" kind="lib" path="/Users/ruud/.esbt/jars/org.eclipse.jetty-jetty-continuation-7.6.0.v20120127.jar"/>
@@ -27,7 +27,8 @@
 	<classpathentry from="sbt" kind="lib" path="/Users/ruud/.esbt/jars/net.databinder-unfiltered-netty_2.9.1-0.6.1.jar"/>
 	<classpathentry from="sbt" kind="lib" path="/Users/ruud/.esbt/jars/net.databinder-unfiltered-util_2.9.1-0.6.1.jar"/>
 	<classpathentry from="sbt" kind="lib" path="/Users/ruud/.esbt/jars/net.databinder-unfiltered_2.9.1-0.6.1.jar" sourcepath="/Users/ruud/.esbt/jars/net.databinder-unfiltered_2.9.1-0.6.1-sources.jar"/>
-	<classpathentry from="sbt" kind="src" path="src/main/scala/"/>
-	<classpathentry from="sbt" kind="src" path="src/main/resources/"/>
-	<classpathentry from="sbt" kind="src" path="src/test/scala/"/>
+	<classpathentry from="sbt" kind="src" path="src/main/scala"/>
+	<classpathentry from="sbt" kind="src" path="src/main/resources"/>
+	<classpathentry from="sbt" kind="src" path="src/test/scala"/>
+	<classpathentry kind="output" path="target"/>
 </classpath>

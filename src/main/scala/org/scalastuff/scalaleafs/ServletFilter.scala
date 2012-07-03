@@ -19,9 +19,13 @@ import javax.servlet.ServletConfig
 import java.net.URI
 import scala.collection.JavaConversions._
 import org.eclipse.jetty.server.session.SessionHandler
+import java.net.URLClassLoader
+import grizzled.slf4j.Logging
 
 class WithLeafsUnfilteredHttp(val http : Http) {
-  def withleafs(contextPath : List[String] = Nil, configuration : Configuration = Configuration()) = {
+  def withleafs(configuration : Configuration) : Http = withleafs(Nil, configuration) 
+  def withleafs(contextPath : List[String]) : Http = withleafs(contextPath, new Configuration)
+  def withleafs(contextPath : List[String], configuration : Configuration) : Http = {
     if (http.current.getSessionHandler() == null) {
       http.current.setSessionHandler(new SessionHandler)
     }
@@ -32,18 +36,14 @@ class WithLeafsUnfilteredHttp(val http : Http) {
   }
 }
 
-trait leafsFilter extends Filter {
-  var server : Server = null
-  var ajaxCallbackPrefix = ""
-  var resourcePrefix = ""
+trait LeafsFilter extends Filter with Logging {
+  implicit var server : Server = null
 
-  val configuration = Configuration()  
+  val configuration = new Configuration  
     
   abstract override def init(config : FilterConfig) {
     super.init(config)
-    server = new Server(configuration)
-    ajaxCallbackPrefix = server.configuration.contextPath.mkString("/") + "/" + Server.ajaxCallbackPath + "/"
-    resourcePrefix = server.configuration.contextPath.mkString("/") + "/" + Server.resourcePath + "/"
+    server = new Server(config.getServletContext.getContextPath.split("/").filter(_ != "").toList, getClass.getPackage, configuration)
   }
   abstract override def destroy {
     super.destroy
@@ -51,25 +51,40 @@ trait leafsFilter extends Filter {
 
   abstract override def doFilter(request : ServletRequest, response : ServletResponse, chain : FilterChain) {
     if (request.isInstanceOf[HttpServletRequest]) {
-      val startTime = System.currentTimeMillis
-      val httpRequest = request.asInstanceOf[HttpServletRequest];
-      val session = getSession(httpRequest)
-      val servletPath = httpRequest.getServletPath()
-      val parameters : Map[String, List[String]] = httpRequest.getParameterMap().toMap.map(kv => kv._1.toString -> kv._2.asInstanceOf[Array[String]].toList)
-      if (servletPath.startsWith(ajaxCallbackPrefix)) {
-        val js = session.handleAjaxCallback(servletPath.substring(ajaxCallbackPrefix.length), parameters)
-        response.getWriter().write(js)
-        response.flushBuffer()
-      } else if (servletPath.startsWith(resourcePrefix)) {
-        val js = session.handleResource(servletPath.substring(resourcePrefix.length))
-        response.getOutputStream().write(js)
-        response.flushBuffer()
-      } else {
-        val baseUri = new URI(request.getScheme(), null, request.getServerName(), request.getLocalPort(), httpRequest.getContextPath() + "/", null, null)
-        val path = (httpRequest.getServletPath() + httpRequest.getPathInfo()).split("/").toList
-        session.handleRequest(new Url(baseUri, Nil, path, parameters), () => super.doFilter(request, response, chain))
+      try {
+        val startTime = System.currentTimeMillis
+        val httpRequest = request.asInstanceOf[HttpServletRequest];
+        val session = getSession(httpRequest)
+        val servletPath = httpRequest.getServletPath()
+        val parameters : Map[String, List[String]] = httpRequest.getParameterMap().toMap.map(kv => kv._1.toString -> kv._2.asInstanceOf[Array[String]].toList)
+        if (servletPath.startsWith(Server.ajaxCallbackPath)) {
+          val js = session.handleAjaxCallback(servletPath.substring(Server.ajaxCallbackPath.length), parameters)
+          response.getWriter().write(js)
+          response.flushBuffer()
+        }
+        else if (servletPath.startsWith(Server.ajaxFormPostPath)) {
+          val js = session.handleAjaxFormPost(parameters)
+              response.getWriter().write(js)
+              response.flushBuffer()
+        } 
+        else if (servletPath.startsWith(Server.resourcePath)) {
+          session.handleResource(servletPath.substring(Server.resourcePath.length)) match {
+            case Some((bytes, resourceType)) =>
+              response.setContentType(resourceType.contentType)
+              response.getOutputStream().write(bytes)
+              response.flushBuffer()
+            case None => 
+          }
+        } 
+        else {
+          val baseUri = new URI(request.getScheme(), null, request.getServerName(), request.getLocalPort(), httpRequest.getContextPath() + "/", null, null)
+          val path = (httpRequest.getServletPath() + httpRequest.getPathInfo()).split("/").toList
+          session.handleRequest(new Url(baseUri, Nil, path, parameters), () => super.doFilter(request, response, chain))
+        }
+        println("Processed " + httpRequest.getRequestURI() + " (" + (System.currentTimeMillis- startTime) + " ms)")
+      } catch {
+        case e : ExpiredException => warn(e.getMessage)
       }
-      println("Processed " + httpRequest.getRequestURI() + " (" + (System.currentTimeMillis- startTime) + " ms)")
     } else {
       super.doFilter(request, response, chain)
     }
@@ -77,10 +92,10 @@ trait leafsFilter extends Filter {
     
   private def getSession(req : HttpServletRequest) = {
     val servletSession = req.getSession()
-    var session = servletSession.getValue("leafs").asInstanceOf[Session]
+    var session = servletSession.getAttribute("leafs").asInstanceOf[Session]
     if (session == null) {
       session = new Session(server, server.configuration)
-      servletSession.putValue("leafs", session)
+      servletSession.setAttribute("leafs", session)
     }
     session 
   }
@@ -88,11 +103,12 @@ trait leafsFilter extends Filter {
 
 class DefaultServletFilter extends Filter {
     
-  def init(config : FilterConfig) {}
+  def init(config : FilterConfig) {
+  }
   def destroy {}
   def doFilter(request : ServletRequest, response : ServletResponse, chain : FilterChain) {
     chain.doFilter(request, response)
   }
 }
 
-class ServletFilter extends DefaultServletFilter with leafsFilter
+class ServletFilter extends DefaultServletFilter with LeafsFilter

@@ -3,7 +3,7 @@ import org.junit.Test
 
 import org.scalastuff.scalaleafs.implicits._
 
-object CssSelectorTest {
+class CssSelectorTest {
 
   @Test
   def test() {

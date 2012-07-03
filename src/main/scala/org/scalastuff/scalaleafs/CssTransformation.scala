@@ -13,6 +13,7 @@ class CssTransformation(selector : CssSelector, replaceWith : Elem => NodeSeq) e
 
   override def apply(xml : NodeSeq) : NodeSeq = apply(selector, replaceWith, xml)
 
+  // TODO replace by XmlTransformation.transform
   def apply(cssSel : CssSelector, replaceWith : Elem => NodeSeq, xml : NodeSeq) : NodeSeq = {
     var changed = false
     var builder = NodeSeq.newBuilder
@@ -51,7 +52,7 @@ class CssTransformation(selector : CssSelector, replaceWith : Elem => NodeSeq) e
   }
 }
 
-object UnparsedCssSelector {
+object CssSelector {
   private val cssSelCache = new ConcurrentHashMap[String, CssSelector]
   def getOrParse(s : String) : CssSelector = {
     var cssSel = cssSelCache.get(s)
@@ -71,20 +72,11 @@ object UnparsedCssSelector {
 }
 
 class UnparsedCssSelector(s : String) {
-  def #> (text : String) = new CssTransformation(UnparsedCssSelector.getOrParse(s), _ => Text(text)) 
-  def #> (xml : NodeSeq) = new CssTransformation(UnparsedCssSelector.getOrParse(s), _ => xml) 
-  def #> (f : Elem => NodeSeq) = new CssTransformation(UnparsedCssSelector.getOrParse(s), f) 
-  def #> (f : CssTransformation) = new CssTransformation(UnparsedCssSelector.getOrParse(s), f) 
-  def #> (f : XmlTransformation) = new CssTransformation(UnparsedCssSelector.getOrParse(s), f) 
-}
-
-trait AbstractCssParser extends RegexParsers {
-  override def skipWhitespace = false
-  val ID = """[a-zA-Z](-|[a-zA-Z0-9]|_[a-zA-Z0-9])*""".r
-  def value = quoted | dquoted | plain
-  def plain = """([a-zA-Z0-9]|_[a-zA-Z0-9])*""".r
-  def quoted = "'" ~> """(\"|-|[a-zA-Z0-9]|_[a-zA-Z0-9])*""".r <~ "'"
-  def dquoted = "\"" ~> """('|-|[a-zA-Z0-9]|_[a-zA-Z0-9])*""".r <~ "\""
+  def #> (text : String) = new CssTransformation(CssSelector.getOrParse(s), _ => Text(text)) 
+  def #> (xml : NodeSeq) = new CssTransformation(CssSelector.getOrParse(s), _ => xml) 
+  def #> (f : Elem => NodeSeq) = new CssTransformation(CssSelector.getOrParse(s), f) 
+  def #> (f : CssTransformation) = new CssTransformation(CssSelector.getOrParse(s), f) 
+  def #> (f : XmlTransformation) = new CssTransformation(CssSelector.getOrParse(s), f) 
 }
 
 class CssSelector(val matches : Elem => Boolean, val nested : Option[CssSelector] = None) 
@@ -100,6 +92,15 @@ case class AttrUntilHyphen(name : String, value : String) extends CssSelector(el
 case class AttrStartsWith(name : String, substring : String) extends CssSelector(elem => XmlHelpers.attr(elem, name).startsWith(substring))
 case class AttrEndsWith(name : String, substring : String) extends CssSelector(elem => XmlHelpers.attr(elem, name).endsWith(substring))
 case class AttrSubstring(name : String, substring : String) extends CssSelector(elem => XmlHelpers.attr(elem, name).indexOf(substring) != -1)
+
+trait AbstractCssParser extends RegexParsers {
+  override def skipWhitespace = false
+  val ID = """[a-zA-Z](-|[a-zA-Z0-9]|_[a-zA-Z0-9])*""".r
+  def value = quoted | dquoted | plain
+  def plain = """([a-zA-Z0-9]|-|_[a-zA-Z0-9])*""".r
+  def quoted = "'" ~> """(\"|-|[a-zA-Z0-9]|_[a-zA-Z0-9])*""".r <~ "'"
+  def dquoted = "\"" ~> """('|-|[a-zA-Z0-9]|_[a-zA-Z0-9])*""".r <~ "\""
+}
 
 object CssSelectorParser extends AbstractCssParser {
   def selectors = repsep(compoundSelector, " ") ^^ (nested(_))

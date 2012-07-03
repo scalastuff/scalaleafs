@@ -2,6 +2,7 @@ package org.scalastuff.scalaleafs
 
 import scala.xml.NodeSeq
 import scala.xml.Elem
+import scala.xml.Atom
 import scala.xml.parsing.NoBindingFactoryAdapter
 import org.xml.sax.InputSource
 import javax.xml.parsers.SAXParser
@@ -10,7 +11,12 @@ import scala.xml.Attribute
 import scala.xml.UnprefixedAttribute
 import scala.xml.MetaData
 import scala.annotation.tailrec
+import scala.io.Source
+import scala.xml.Text
 
+/**
+ * Generic XML utilities.
+ */
 object XmlHelpers {
   
   def attr(elem : Elem, key : String) : String = {
@@ -56,6 +62,13 @@ object XmlHelpers {
   })
 
   def hasId(elem : Elem, value : String) = hasAttrValue(elem, "id", value)
+  
+  def getId(elem : Elem) = attr(elem, "id")
+  
+  def getIdOrElse(elem : Elem, altId : String) = attr(elem, "id") match {
+    case "" => altId
+    case id => id
+  }
 
   def setId(elem : Elem, value : String) = setAttr(elem, "id", value)
   
@@ -90,6 +103,22 @@ object XmlHelpers {
             else cloneUntil(elem.attributes, attr, new UnprefixedAttribute(key, newValue, attr.next)))
       }
     }
+  }
+  
+  def setText(elem : Elem, text : String) : Elem = {
+    elem.copy(child = Text(text))
+  }
+  
+  def setContent(elem : Elem, content : NodeSeq) : Elem = {
+      elem.copy(child = content)
+  }
+  
+  def replaceContent(elem : Elem, content : NodeSeq => NodeSeq) : Elem = {
+    elem.copy(child = content(elem.child))
+  }
+  
+  def appendContent(elem : Elem, content : NodeSeq) : Elem = {
+    elem.copy(child = elem.child ++ content)
   }
   
   def escape(text : String) : String = {
@@ -128,6 +157,20 @@ object XmlHelpers {
   }
 }
 
+case class CommentedPCData(_data: String) extends Atom[String](_data) {
+  if (null == data)
+    throw new IllegalArgumentException("tried to construct LiteralText with null")
+
+  /** Returns text, with some characters escaped according to the XML
+   *  specification.
+   *
+   *  @param  sb ...
+   *  @return ...
+   */
+  override def buildString(sb: StringBuilder) =
+    sb append "\n//<![CDATA[\n  %s\n//]]>".format(data)
+}
+
 class RichElem(elem : Elem) {
   def attr(key : String) : String = XmlHelpers.attr(elem, key)
   def attrExists(key : String) : Boolean = XmlHelpers.attrExists(elem, key)
@@ -143,18 +186,16 @@ class RichElem(elem : Elem) {
   def removeClass(value : String) = XmlHelpers.removeClass(elem, value)
   def setAttr(key : String, f : String => String) : Elem = XmlHelpers.setAttr(elem, key, f)
 }
-
-object ElemWithId {
-  def unapply(xml : NodeSeq) : Option[(Elem, String)] = xml match {
-    case elem : Elem =>
-      val id = XmlHelpers.attr(elem, "id")
-      if (id.trim != "") Some(elem, id)
-      else None
-    case _ => None
-  }
-}
-
-
+//
+//object ElemWithId {
+//  def unapply(xml : NodeSeq) : Option[(Elem, String)] = xml match {
+//    case elem : Elem =>
+//      val id = XmlHelpers.attr(elem, "id")
+//      if (id.trim != "") Some(elem, id)
+//      else None
+//    case _ => None
+//  }
+//}
 
 class HTML5Parser extends NoBindingFactoryAdapter {
 

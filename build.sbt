@@ -16,6 +16,7 @@ libraryDependencies ++= Seq (
   "net.databinder" %% "unfiltered-netty" % "0.6.1",
   "javax.servlet" % "servlet-api" % "2.5" withSources(),
   "nu.validator.htmlparser" % "htmlparser" % "1.2.1",
+  "org.clapper" %% "grizzled-slf4j" % "0.6.9",
   "log4j" % "log4j" % "1.2.16",
   "junit" % "junit" % "4.8" % "test")
   

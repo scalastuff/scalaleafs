@@ -8,5 +8,5 @@ import scala.xml.NodeSeq
 
 class GettingStarted(val url : Url) extends Template {
   val path  = Nil
-  val bind = { (xml:NodeSeq) => println(xml); xml}
+  val bind = { (xml:NodeSeq) =>  xml}
 }

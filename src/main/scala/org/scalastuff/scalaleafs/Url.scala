@@ -4,7 +4,7 @@ import java.net.URI
 import scala.collection.mutable
 
 object Url {
-  def apply(path : List[String]) = R.url.copy(remainingPath = path)
+  def apply(path : List[String]) = R.url.copy(remainingPath = path.filter(_ != ""))
 }
 
 case class Url(context : URI, currentPath : List[String], remainingPath : List[String], parameters : Map[String, List[String]]) {
@@ -33,7 +33,7 @@ case class Url(context : URI, currentPath : List[String], remainingPath : List[S
   private def queryString = if (parameters.isEmpty) "" else "?" + (for ((k, v) <- parameters) yield k + "=" + v).mkString("&")
 
   private def fromUri(uri : URI) =
-    if (hasSameContext(uri)) new Url(context, Nil, uri.getPath.substring(context.getPath.length).split("/").toList, Map.empty)
+    if (hasSameContext(uri)) new Url(context, Nil, uri.getPath.substring(context.getPath.length).split("/").filter(_ != "").toList, Map.empty)
     else new Url(uri, Nil, Nil, Map.empty)
   
   private def parseQuery(query : String) {
@@ -42,10 +42,11 @@ case class Url(context : URI, currentPath : List[String], remainingPath : List[S
 }
 
 trait UrlHandler {
-  def url : Url
-  def handleUrl(url : Url)
+  def url : Var[Url]
+  def handleUrl(url : Url) {
+    this.url.set(url)
+  }
   R.addUrlHandler(this)
-  R.addHeadContribution(OnPopState)
 }
 
 trait UrlManager {
@@ -55,7 +56,7 @@ trait UrlManager {
     if (urlHandlers == null) {
       urlHandlers = new mutable.HashMap[(URI, List[String]), UrlHandler]()
     }
-    val url = handler.url
+    val url = handler.url.get
     urlHandlers.put((url.context, url.currentPath), handler)
   }
   
@@ -90,11 +91,11 @@ trait UrlManager {
       case Some(handler) => 
         val url = Url(context, currentPath, remainingPath, parameters)
         // Only need to handle if url is, in fact, different.
-        if (url != handler.url) {
+        if (url != handler.url.get) {
           // Try handle the url.
           handler.handleUrl(url)
           // Url was handled?
-          if (url == handler.url) {
+          if (url == handler.url.get) {
             Some(JsCmd("window.history.pushState(\"" + url + "\", '" + "title" + "', '" + url + "');"))
           }
           // Url not handled, try next handler.

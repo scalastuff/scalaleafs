@@ -8,6 +8,6 @@ case class Person(firstName : String, lastName : String)
 class Sample1 extends Template {
   val person = Person("Joe", "Henri")
   val bind = 
-  "#first-name" #> person.firstName &
-  "#last-name" #> person.lastName
+    "#first-name" #> person.firstName &
+    "#last-name" #> person.lastName
 }

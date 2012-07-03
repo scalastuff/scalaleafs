@@ -1,18 +1,34 @@
 package org.scalastuff.scalaleafs
-import scala.xml.NodeSeq
+
 import scala.xml.Elem
-import scala.xml.Attribute
-import scala.xml.Text
-import scala.xml.Null
+import scala.xml.NodeSeq
+import implicits._
 
 object Widgets {
-  def onclick_=(f : => JsCmd) : NodeSeq => NodeSeq = onclick(f)
- def onclick(f : => JsCmd) : NodeSeq => NodeSeq = _ match {
-    case elem : Elem => 
-      val uid = R.registerAjaxCallback { _ =>
-        R.addPostRequestJs(f)
-      }
-      elem % Attribute("onclick", Text("callback('" + uid.toString + "'); return false;"), Null)
-    case node => node
+  def onclick(elem : Elem, f : => JsCmd) : Elem = {
+    XmlHelpers.setAttr(elem, "onclick", R.callback(_ => R.addPostRequestJs(f)).toString + " return false;")
   }
+ def onclick(f : => JsCmd) : ElemModifier = {
+    SetAttr("onclick", R.callback(_ => R.addPostRequestJs(f)).toString + " return false;")
+  }
+ 
+ 
+ def searchBox(textVar : Var[String], defaultText : String = "", defaultClass : String = "default", iconClass : String = "icon", clearLinkClass : String = "clear") = {
+     textVar.bind { text =>
+       AddClass(defaultClass, text == "") & 
+       SetContent { _ =>
+         <span class={iconClass}/> ++
+         <a class={clearLinkClass} 
+           onclick={R.callback(_ => textVar.set("")) & JsReturnFalse}> </a> ++
+         <input 
+           value={if (text == "") defaultText else text} 
+           onfocus={"if (this.value == '" + defaultText + "') { this.value = ''; leafs.removeClass(this.parentNode, '" + defaultClass + "') }"} 
+           onBlur={
+             R.callback(s => textVar.set(s("value").mkString), "value" -> JsExp("this.value")) + " return false;" +
+             "if (this.value == '') { leafs.addClass(this.parentNode, '" + defaultClass + "'); this.value = '" + defaultText + "' } "
+             } 
+           />
+       }
+     }
+ }
 }

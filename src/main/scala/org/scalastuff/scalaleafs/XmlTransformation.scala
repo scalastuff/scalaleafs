@@ -6,6 +6,7 @@ import scala.xml.Elem$
 import scala.xml.TopScope
 import scala.xml.MetaData
 import scala.xml.Node
+import java.util.UUID
 
 trait XmlTransformation extends Function1[NodeSeq, NodeSeq] { t0 =>
   
@@ -28,6 +29,55 @@ trait XmlTransformation extends Function1[NodeSeq, NodeSeq] { t0 =>
     override def apply(xml : NodeSeq) : NodeSeq = t(t0(xml))
   }
 }
+
+case class XmlSelector(matches : Elem => Boolean, recursive : Boolean = false, nested : Option[XmlSelector] = None) 
+
+object XmlTransformation {
+  def apply(selector : XmlSelector, replace : Elem => NodeSeq) = new XmlTransformation {
+    override def apply(xml : NodeSeq) = 
+      transform(xml, selector, replace)
+  } 
+  def transform(xml : NodeSeq, matches : Elem => Boolean, replace : Elem => NodeSeq) : NodeSeq =
+    transform(xml, XmlSelector(matches), replace)
+    
+  def transform(xml : NodeSeq, selector : XmlSelector, replace : Elem => NodeSeq) : NodeSeq = {
+    var changed = false
+    var builder = NodeSeq.newBuilder
+    xml foreach {
+      case elem : Elem if selector.matches(elem) => 
+        selector.nested match {
+          case Some(nested) =>
+            val recursed = transform(elem.child, nested, replace)
+            // Optimization: Don't clone when child list is the same instance
+            if (!(recursed eq elem.child)) {
+              changed = true;
+              builder += elem.copy(child = recursed)
+            } else {
+              builder += elem
+            }
+          case None =>
+            val replacement = replace(elem)
+            builder ++= replacement
+            changed = true
+        }
+      case elem : Elem if selector.recursive => 
+        val recursed = transform(elem.child, selector, replace)
+        // Optimization: Don't clone when child list is the same instance
+        if (!(recursed eq elem.child)) {
+          changed = true;
+          builder += elem.copy(child = recursed)
+        } else {
+          builder += elem
+        }
+      case node => 
+        builder += node
+    }
+    // Optimization: Make sure the same node list is returned when nothing changed.
+    if (changed) builder.result
+    else xml
+  }
+}
+
 
 /**
  * XmlTransformation delegate. Useful for classes that express a transformation
@@ -59,6 +109,16 @@ trait ElemTransformation extends XmlTransformation with Function1[Elem, NodeSeq]
   def apply(elem : Elem) : NodeSeq
 }
 
+trait ElemWithIdTransformation extends ElemTransformation {
+  lazy val generatedId = UUID.randomUUID().toString()
+  def apply(elem : Elem) : NodeSeq = 
+    XmlHelpers.getId(elem).trim match {
+      case "" => apply(XmlHelpers.setId(elem, generatedId), generatedId)
+      case id => apply(elem, id)
+    }
+  def apply(elem : Elem, id : String) : NodeSeq
+}
+
 /**
  * Transformation that transforms an Elem into another Elem. A condition function can be specified that
  * when false, will turn the transformation into a no-op. This is useful for conditional element modification,
@@ -76,6 +136,10 @@ object Ident extends ElemModifier(e => e, false) with XmlTransformation {
   override def & (modifier : ElemModifier) : ElemModifier = modifier 
   override def & (t : XmlTransformation) : XmlTransformation = t
 }
+
+/**************************
+ * Utility transformations.
+ **************************/
 
 object MkElem {
   def apply(cssConstructor : String) : MkElem =  
@@ -157,4 +221,14 @@ object AddClass {
 object RemoveClass {
   def apply(value : String, condition : => Boolean = true) = 
     new ElemModifier(XmlHelpers.removeClass(_, value), condition) 
+}
+
+object SetText {
+  def apply(value : String, condition : => Boolean = true) = 
+    new ElemModifier(XmlHelpers.setText(_, value), condition) 
+}
+
+object SetContent {
+  def apply(content : NodeSeq => NodeSeq, condition : => Boolean = true) = 
+    new ElemModifier(xml => XmlHelpers.setContent(xml, content(xml.child)), condition) 
 }

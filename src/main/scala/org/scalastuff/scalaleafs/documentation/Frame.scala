@@ -1,45 +1,56 @@
 package org.scalastuff.scalaleafs.documentation
+
 import org.scalastuff.scalaleafs.JsCmd.toNoop
 import org.scalastuff.scalaleafs.implicits._
 import org.scalastuff.scalaleafs.AddClass
 import org.scalastuff.scalaleafs.HeadContributions
 import org.scalastuff.scalaleafs.Ident
 import org.scalastuff.scalaleafs.R
-import org.scalastuff.scalaleafs.Redrawable
 import org.scalastuff.scalaleafs.Template
 import org.scalastuff.scalaleafs.Url
 import org.scalastuff.scalaleafs.UrlHandler
 import org.scalastuff.scalaleafs.Widgets
 import org.scalastuff.scalaleafs.CodeSample
 import org.scalastuff.scalaleafs.MkElem
+import org.scalastuff.scalaleafs.CssSelector
+import org.scalastuff.scalaleafs.XmlTransformation
+import scala.xml.NodeSeq
+import scala.collection.mutable.ArrayBuffer
+import org.scalastuff.scalaleafs.contrib.UrlDispatcher
+import org.scalastuff.scalaleafs.SetText
+import org.scalastuff.scalaleafs.SetAttr
+import org.scalastuff.scalaleafs.Var
+import org.scalastuff.scalaleafs.Var
+import org.scalastuff.scalaleafs.SeqVar
+import org.scalastuff.scalaleafs.SetContent
+import org.scalastuff.scalaleafs.Children
 
-class Frame(var url : Url) extends Template with UrlHandler with HeadContributions with CodeSample {
-  
-  def bind = "#main" #> MkElem("h1")(main)
-  
-  val main = Redrawable { r =>
-//    "#main-menu" #> {
-//      "#getting-started a" #> Widgets.onclick(R.url = "getting-started") & 
-//      "#templates a" #> Widgets.onclick(R.url = "templates")
-//    } & {
-    url.remainingPath match {
-      case Nil => 
-        "#content" #> <h1>Home page</h1>
-      case "getting-started" :: Nil =>
-        "#getting-started" #> AddClass("selected") & 
-        "#content" #> new GettingStarted(url.child) 
-      case "templates" :: Nil =>
-        "#content" #> new Templates(url.child)
-      case "binding" :: rest =>
-        "#binding" #> AddClass("open") & 
-        "#content" #> new Binding(url.child)
-      case _ => Ident
-    }}
-//  }
+class Frame(val url : Var[Url]) extends Template with UrlHandler with HeadContributions with CodeSample {
+    
+  case class MenuItem(path : List[String], text : String, f : Url => XmlTransformation) 
+  val menu = Seq(
+    MenuItem("getting-started" :: Nil, "Getting Started", url => new GettingStarted(url.child)),
+    MenuItem("templates" :: Nil, "Templates", url => new Templates(url.child))
+  )
 
-  override def handleUrl(url : Url) {
-    println("Setting url from " + this.url + " to " + url)
-    this.url = url
-    main.redraw
-  }
+  val bindMenu = "#menu-item" #> 
+   url.zipWith(menu).bind(_ => NodeSeq.Empty) { 
+     case (url, item) =>
+        AddClass("selected", url.remainingPath.startsWith(item.path)) & 
+        "a" #> {
+          SetText(item.text) & 
+          SetAttr("href", item.path.mkString("/")) & 
+          Widgets.onclick(R.url = item.path.mkString("/"))
+      }
+    }  
+    
+  val bindContent = "#content" #> 
+    url.bind { url =>
+      menu.find(i => url.remainingPath.startsWith(i.path)) match {
+        case Some(item) => SetContent(item.f(url))
+        case None  => Ident
+      }
+    }
+
+   val bind = bindMenu & bindContent
 }
