@@ -9,7 +9,7 @@ import org.scalastuff.scalaleafs.R
 import org.scalastuff.scalaleafs.Template
 import org.scalastuff.scalaleafs.Url
 import org.scalastuff.scalaleafs.UrlHandler
-import org.scalastuff.scalaleafs.Widgets
+import org.scalastuff.scalaleafs.Html
 import org.scalastuff.scalaleafs.CodeSample
 import org.scalastuff.scalaleafs.MkElem
 import org.scalastuff.scalaleafs.CssSelector
@@ -29,8 +29,8 @@ class Frame(val url : Var[Url]) extends Template with UrlHandler with HeadContri
     
   case class MenuItem(path : List[String], text : String, f : Url => XmlTransformation) 
   val menu = Seq(
-    MenuItem("getting-started" :: Nil, "Getting Started", url => new GettingStarted(url.child)),
-    MenuItem("templates" :: Nil, "Templates", url => new Templates(url.child))
+    MenuItem("getting-started" :: Nil, "Getting Started", url => new GettingStarted(url.advance)),
+    MenuItem("templates" :: Nil, "Templates", url => new Templates(url.advance))
   )
 
   val bindMenu = "#menu-item" #> 
@@ -40,7 +40,7 @@ class Frame(val url : Var[Url]) extends Template with UrlHandler with HeadContri
         "a" #> {
           SetText(item.text) & 
           SetAttr("href", item.path.mkString("/")) & 
-          Widgets.onclick(R.url = item.path.mkString("/"))
+          Html.onclick(R.changeUrl(item.path.mkString("/")))
       }
     }  
     

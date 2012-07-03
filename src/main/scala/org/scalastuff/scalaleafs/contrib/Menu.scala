@@ -1,11 +1,20 @@
 package org.scalastuff.scalaleafs.contrib
 
 import scala.xml.NodeSeq
+
 import org.scalastuff.scalaleafs.JsCmd.toNoop
 import org.scalastuff.scalaleafs.R.toTransientRequest
 import org.scalastuff.scalaleafs.implicits.toUnparsedCssSelector
-import org.scalastuff.scalaleafs.{XmlTransformation, Widgets, Var, Url, SetText, SetAttr, R, Ident, AddClass, CssTransformation}
+import org.scalastuff.scalaleafs.AddClass
+import org.scalastuff.scalaleafs.CssTransformation
+import org.scalastuff.scalaleafs.Html
+import org.scalastuff.scalaleafs.R
+import org.scalastuff.scalaleafs.SetAttr
 import org.scalastuff.scalaleafs.SetContent
+import org.scalastuff.scalaleafs.SetText
+import org.scalastuff.scalaleafs.Url
+import org.scalastuff.scalaleafs.Var
+import org.scalastuff.scalaleafs.XmlTransformation
 
 case class MenuItem(path : List[String], text : String, content : Url => XmlTransformation) {
   val itemPathString = path.mkString("/")
@@ -34,7 +43,7 @@ case class Menu(items : MenuItem*) {
           "a" #> {
             SetText(item.text) & 
             SetAttr("href", item.path.mkString(url.context.toString, "/", "")) & 
-            Widgets.onclick(R.url = item.path.mkString("/"))
+            Html.onclick(R.changeUrl(item.path.mkString("/")))
           }
       }
   }

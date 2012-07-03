@@ -1,37 +1,17 @@
 package org.scalastuff.scalaleafs
 
-import scala.xml.NodeSeq
 import scala.xml.Elem
-import java.util.UUID
+import scala.xml.NodeSeq
 import implicits._
 
-object BindForm {
-    
-  def apply(f : Form => Elem => NodeSeq) = new ElemTransformation {
-    override def apply(elem : Elem) : NodeSeq = {
-      val form = new Form
-      f(form)(XmlHelpers.replaceContent(XmlHelpers.setAttr(elem, "id", form.id), _ ++ 
-          <script type="text/javascript">
-      var form_{form.id} = new Object();
-    </script>))
-    }
-  }
-}
+object Html {
 
-class Form {
-  
-  val id = UUID.randomUUID.toString.replace('-', '_')
-  
-  def editBox = new ElemTransformation {
-    def apply(elem : Elem) : NodeSeq = {
-      val inputId = R.callbackId(_=>Unit)
-      XmlHelpers.setAttr(elem, "type", "text")
-      XmlHelpers.setAttr(elem, "onchange", "form_" + id + "." + inputId + "=this.value;console.log(form_" + id + ");")
-    }
+  def onclick(elem : Elem, f : => JsCmd) : Elem = {
+    XmlHelpers.setAttr(elem, "onclick", R.callback(_ => R.addPostRequestJs(f)).toString + " return false;")
   }
-}
-
-object AjaxForm {
+ def onclick(f : => JsCmd) : ElemModifier = {
+    SetAttr("onclick", R.callback(_ => R.addPostRequestJs(f)).toString + " return false;")
+  }
  
   def editBox(label : Option[String], text : String)(setter : String => Unit) = new ElemTransformation {
     def apply(elem : Elem) : NodeSeq = {
@@ -40,7 +20,7 @@ object AjaxForm {
       val elem2 = elem.label match {
         case "input" => 
           R.addPostRequestJs(JsCmd("leafs.formInputInit('" + id + "', 0, '" + callbackId + "');"))
-          XmlHelpers.setId(XmlHelpers.setAttr(XmlHelpers.setAttr(elem, "value", text), "type", "text"), id)
+          XmlHelpers.setId(XmlHelpers.setAttr(elem, "value", text), id)
         case _ => elem
       }
       label match {
@@ -76,4 +56,23 @@ object AjaxForm {
       }
     }
   }
+  
+  def searchBox(textVar : Var[String], defaultText : String = "", defaultClass : String = "default", iconClass : String = "icon", clearLinkClass : String = "clear") = {
+     textVar.bind { text =>
+       AddClass(defaultClass, text == "") & 
+       SetContent { _ =>
+         <span class={iconClass}/> ++
+         <a class={clearLinkClass} 
+           onclick={R.callback(_ => textVar.set("")) & JsReturnFalse}> </a> ++
+         <input 
+           value={if (text == "") defaultText else text} 
+           onfocus={"if (this.value == '" + defaultText + "') { this.value = ''; leafs.removeClass(this.parentNode, '" + defaultClass + "') }"} 
+           onBlur={
+             R.callback(s => textVar.set(s("value").mkString), "value" -> JsExp("this.value")) + " return false;" +
+             "if (this.value == '') { leafs.addClass(this.parentNode, '" + defaultClass + "'); this.value = '" + defaultText + "' } "
+             } 
+           />
+       }
+     }
+ }
 }

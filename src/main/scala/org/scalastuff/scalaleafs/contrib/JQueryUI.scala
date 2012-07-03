@@ -9,7 +9,6 @@ import org.scalastuff.scalaleafs.ElemWithIdTransformation
 import org.scalastuff.scalaleafs.JsCmd
 import org.scalastuff.scalaleafs.JsRaw
 import org.scalastuff.scalaleafs.R
-import org.scalastuff.scalaleafs.Widgets
 import org.scalastuff.scalaleafs.JsReturn
 import org.scalastuff.scalaleafs.JsReturnFalse
 

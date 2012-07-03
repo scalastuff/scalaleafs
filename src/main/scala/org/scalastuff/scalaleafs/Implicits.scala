@@ -6,8 +6,6 @@ import scala.xml.Elem
 import scala.xml.NodeSeq
 
 package object implicits {
-  implicit def withleafs(http : Http) = 
-    new WithLeafsUnfilteredHttp(http)
   
   implicit def toUnfilteredResponse(template : Template) = 
     ResponseString(template.render.toString)

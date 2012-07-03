@@ -19,13 +19,13 @@ object HeadContributions {
             case "link" =>
               val href = XmlHelpers.attr(elem, "href")
               if (!href.startsWith("http:")) {
-                XmlHelpers.setAttr(elem, "href", request.server.resourceUrl(Resources.hashedResourcePathFor(c, href)))
+                XmlHelpers.setAttr(elem, "href", request.resourceBaseUrl.resolve(Resources.hashedResourcePathFor(c, href)).toLocalString)
               }
               else elem
             case "script" =>
               val src = XmlHelpers.attr(elem, "src")
               if (!src.startsWith("http:")) {
-                XmlHelpers.setAttr(elem, "src", request.server.resourceUrl(Resources.hashedResourcePathFor(c, src)))
+                XmlHelpers.setAttr(elem, "src", request.resourceBaseUrl.resolve(Resources.hashedResourcePathFor(c, src)).toLocalString)
               }
               else elem
             case _ => elem
@@ -113,7 +113,7 @@ class JavaScriptResource(c : Class[_], resource : String) extends HeadContributi
     if (request.session.debugMode) {
       name = Resources.hashedResourcePathFor(c, resource)
     }
-    <script type="text/javascript" src={request.session.server.resourceUrl(name)} />
+    <script type="text/javascript" src={request.resourceBaseUrl.resolve(name).toLocalString} />
   }
 }
 

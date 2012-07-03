@@ -29,15 +29,17 @@ object Site {
     case Path(Seg("no" :: rest)) => ResponseString("WRONG PAGE")
     case Path(Seg("favicon.ico" :: rest)) => ResponseString("ICON")
     case Path(css(s)) => ResponseString("CSS:" + s)
-    case Path(Seg(path)) => 
-      ResponseString(new Frame(Var(Url(path))).render.toString())
+//    case Path(Seg(path)) => 
+//      ResponseString(new Frame(Var(Url(path))).render.toString())
   }
   
   def main(args : Array[String]) {
-    unfiltered.jetty.Http.local(9001).withleafs(c).filter(Planify(intent)).run()
+//    unfiltered.jetty.Http.local(9001).withleafs(c).filter(Planify(intent)).run()
   }
 } 
 
-class Site extends Planify(Site.intent) with LeafsFilter {
-  override val configuration = Site.c
+class DocumentationFilter extends LeafsFilter {
+  val configuration = new Configuration()
+  def render(url :Url) = new Frame(url).render
+  
 }

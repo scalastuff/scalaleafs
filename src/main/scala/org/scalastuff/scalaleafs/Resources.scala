@@ -50,7 +50,7 @@ object Resources {
           stream.close()
         }
       } else {
-        // Do not cache negative results, users may cause memory overflows.
+        // Do not cache negative results, users may cause memory overflow.
         None
       }
     }
@@ -66,20 +66,26 @@ object Resources {
         // Text resource?
         val bytes = resourceType.encoding match {
           case Some(encoding) =>
-            val source = Source.fromInputStream(c.getResourceAsStream(name))
-            val linesSeq = source.getLines map { line =>
-              line.replace("$$CONTEXT", R.server.contextPath.mkString("/"))
-            } map { line =>
-              if (line.endsWith(debugPostfix1)) 
-                if (!R.debugMode) Seq[String]()
-                else Seq(line.dropRight(debugPostfix1.length()))
-              else if (line.endsWith(debugPostfix2)) 
-                if (!R.debugMode) Seq[String]()
-                else Seq(line.dropRight(debugPostfix2.length()))
-              else Seq(line.mkString)
-            } 
-            val lines = linesSeq.flatten
-            lines.mkString("\n").getBytes("UTF-8");
+            val is = c.getResourceAsStream(name)
+            try {
+              val source = Source.fromInputStream(is)
+              val linesSeq = source.getLines map { line =>
+                line.replace("$$CONTEXT", R.url.context.path.mkString("/"))
+              } map { line =>
+                if (line.endsWith(debugPostfix1)) 
+                  if (!R.debugMode) Seq[String]()
+                  else Seq(line.dropRight(debugPostfix1.length()))
+                else if (line.endsWith(debugPostfix2)) 
+                  if (!R.debugMode) Seq[String]()
+                  else Seq(line.dropRight(debugPostfix2.length()))
+                else Seq(line.mkString)
+              } 
+              val lines = linesSeq.flatten
+              lines.mkString("\n").getBytes("UTF-8");
+            } finally {
+              // Witnessed behavior: Source.fromInputStream(is) does not close is!
+              is.close()
+            }
           case None =>
             Array[Byte]()
         }

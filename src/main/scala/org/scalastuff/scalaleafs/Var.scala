@@ -94,6 +94,10 @@ trait IterableVarWithToSeq[A, B <: Iterable[A]] { thisVar : Var[B] =>
 }
 
 object Var {
+  implicit def fromInitialIterableValue[A, B <: Iterable[A]](initialValue : B) : IterableVarWithToSeq[A, B] = apply(initialValue)
+  implicit def fromInitialValue[A](initialValue : A) : Var[A] = apply(initialValue)
+  implicit def fromInitialOptionValue[A](initialValue : Option[A]) : OptionVarWithToSeq[A] = apply(initialValue)
+  
   def apply[A](initialValue : Option[A]) = new Var[Option[A]] with OptionVarWithToSeq[A] {
     var value = initialValue
   }

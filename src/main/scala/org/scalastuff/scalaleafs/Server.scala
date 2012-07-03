@@ -7,7 +7,7 @@ import scala.collection.mutable
 import java.util.concurrent.atomic.AtomicLong
 import scala.xml.NodeSeq
 import java.net.URI
-case class AjaxCallback(request : Request, f : Map[String, List[String]] => Unit)
+case class AjaxCallback(request : Request, f : Map[String, Seq[String]] => Unit)
 
 object ConfigVar {
   
@@ -32,21 +32,25 @@ class Configuration (assignments : ConfigVar.Assignment[_]*) {
 
 object DebugMode extends ConfigVar[Boolean](false)
 
-object Server {
-  val ajaxCallbackPath = "/leafs/ajaxCallback/"
-  val ajaxFormPostPath = "/leafs/ajaxFormPost"
-  val resourcePath = "/leafs/"
-}
+object AjaxCallbackPath extends ConfigVar[String]("leafs/ajaxCallback")
+object AjaxFormPostPath extends ConfigVar[String]("leafs/ajaxFormPost")
+object ResourcePath extends ConfigVar[String]("leafs/")
 
-class Server(val contextPath : List[String], val resourceRoot : Package, val configuration : Configuration = new Configuration) {
-  val contextPrefix = if (contextPath.isEmpty) "" else "/" + contextPath.mkString("/")  
-  def callbackUrl(uid : String) = contextPrefix + Server.ajaxCallbackPath + uid
-  def formPostUrl(uid : String) = contextPrefix + Server.ajaxFormPostPath + uid
-  def resourceUrl(name : String) = contextPrefix + Server.resourcePath + name
+class Server(val resourceRoot : Package, val configuration : Configuration = new Configuration) {
+
+  val ajaxCallbackPath = Url.parsePath(configuration(AjaxCallbackPath))
+  val ajaxFormPostPath = Url.parsePath(configuration(AjaxFormPostPath))
+  val resourcePath = Url.parsePath(configuration(ResourcePath))
+
+//  val contextPrefix = if (contextPath.isEmpty) "" else "/" + contextPath.mkString("/")  
+//  def callbackUrl(uid : String) = contextPrefix + Server.ajaxCallbackPath + uid
+  //def formPostUrl(uid : String) = contextPrefix + Server.ajaxFormPostPath + uid
+//  def resourceUrl(name : String) = contextPrefix + Server.resourcePath + name
   println("Starting leafs")
 }
 
 class ExpiredException(message : String) extends Exception(message)
+class InvalidUrlException(url : Url) extends Exception("Invalid url: " + url)
 
 /**
  * Contains session data.
@@ -61,11 +65,11 @@ class Session(val server : Server, val configuration : Configuration) {
   
   val debugMode = configuration(DebugMode)
   
-  def handleAjaxCallback(callbackId : String, parameters : Map[String, List[String]]) : String = {
+  def handleAjaxCallback(callbackId : String, parameters : Map[String, Seq[String]]) : String = {
     mkPostRequestJsString(processAjaxCallback(callbackId, parameters).toSeq)
   }
   
-  def processAjaxCallback(callbackId : String, parameters : Map[String, List[String]]) : JsCmd = {
+  def processAjaxCallback(callbackId : String, parameters : Map[String, Seq[String]]) : JsCmd = {
     ajaxCallbacks.get(callbackId) match {
       case null => 
         throw new ExpiredException("Callback expired: " + callbackId)
@@ -83,7 +87,7 @@ class Session(val server : Server, val configuration : Configuration) {
     }
   } 
 
-  def handleAjaxFormPost(parameters : Map[String, List[String]]) : String = {
+  def handleAjaxFormPost(parameters : Map[String, Seq[String]]) : String = {
     
     // Separate normal fields from actions.
     val (fields, actions) = parameters.toSeq.partition(_._1 != "action")
@@ -93,9 +97,9 @@ class Session(val server : Server, val configuration : Configuration) {
       // Fields go first that have a single, nameless parameter value.
       fields.map {
         case (callbackId, value :: rest) =>
-          processAjaxCallback(callbackId, Map("" -> List(value)))
+          processAjaxCallback(callbackId, Map("" -> Seq(value)))
         case (callbackId, Nil) =>
-          processAjaxCallback(callbackId, Map("" -> List("")))
+          processAjaxCallback(callbackId, Map("" -> Seq("")))
       } ++
       // Actions are executed next, they have no parameters.
       actions.map {
@@ -111,7 +115,7 @@ class Session(val server : Server, val configuration : Configuration) {
 
   def handleResource(resource : String) : Option[(Array[Byte], ResourceType)] = Resources.resourceContent(resource)
   
-  def handleRequest(url : Url, f : () => Unit)  {
+  def handleRequest(url : Url, f : () => Unit) {
     try {
       val request = new Request(this, configuration, url)
       val transientRequest = new TransientRequest(request)
@@ -140,6 +144,8 @@ class Request(val session : Session, val configuration : Configuration, private[
   private[scalaleafs] var _headContributions : mutable.Map[String, HeadContribution] = null
   
   val setUrlCallbackId = session.callbackIDGenerator.generate
+  
+  lazy val resourceBaseUrl = Url(_url.context, Nil, session.server.resourcePath, Map.empty)
 }
 
 /**
@@ -153,11 +159,22 @@ class TransientRequest(val request : Request) {
   def configuration = request.configuration
   def session = request.session
   def server = request.session.server
+  def resourceBaseUrl = request.resourceBaseUrl
 
+  /**
+   * The current request url.
+   */
   def url = request._url
-  def url_=(uri : String) : Unit = url_=(request._url.resolve(uri))
-  def url_=(uri : URI) : Unit = url_=(request._url.resolve(uri))
-  def url_=(url : Url) : Unit = {
+  
+  /**
+   * Changes the browser url without a page refresh.
+   */
+  def changeUrl(uri : String) : Unit = changeUrl(request._url.resolve(uri))
+
+  /**
+   * Changes the browser url without a page refresh.
+   */
+  def changeUrl(url : Url) : Unit = {
     if (request._url != url) {
       request._url = url
       addPostRequestJs(request.handleUrl(url))
@@ -198,7 +215,7 @@ class TransientRequest(val request : Request) {
     }
   }
   
-  def callbackId(f : Map[String, List[String]] => Unit) : String = {
+  def callbackId(f : Map[String, Seq[String]] => Unit) : String = {
       val uid = session.callbackIDGenerator.generate
       request.session.ajaxCallbacks.put(uid, AjaxCallback(request, f))
       addHeadContribution(JQuery)
@@ -206,7 +223,7 @@ class TransientRequest(val request : Request) {
       uid
   }
   
-  def callback(f : Map[String, List[String]] => Unit, parameters : (String, JsExp)*) : JsCmd = {
+  def callback(f : Map[String, Seq[String]] => Unit, parameters : (String, JsExp)*) : JsCmd = {
       if (parameters.isEmpty)
         JsCmd("leafs.callback('" + callbackId(f) + "');")
       else 
