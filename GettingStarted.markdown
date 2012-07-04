@@ -1,13 +1,13 @@
 ---
-title: Getting Started
+layout: default
+title: Something with codes
 ---
 
-# Getting started
+Happy fun highlighting. 
+[More details](https://github.com/mojombo/jekyll/wiki/liquid-extensions)
 
-[Clickable text]
-
-```
-code?
-```
-
-
+{% highlight ruby %}
+def foo
+  puts 'foo'
+end
+{% endhighlight %}
