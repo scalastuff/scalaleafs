@@ -3,31 +3,31 @@
 	<classpathentry kind="con" path="org.scala-ide.sdt.launching.SCALA_CONTAINER"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="output" path="target"/>
-	<classpathentry from="sbt" kind="lib" path="C:\Users\Ruud\.esbt\jars\commons-codec-commons-codec-1.4.jar"/>
-	<classpathentry from="sbt" kind="lib" path="C:\Users\Ruud\.esbt\jars\org.clapper-grizzled-slf4j_2.9.1-0.6.9.jar"/>
-	<classpathentry from="sbt" kind="lib" path="C:\Users\Ruud\.esbt\jars\com.google.guava-guava-10.0.1.jar"/>
-	<classpathentry from="sbt" kind="lib" path="C:\Users\Ruud\.esbt\jars\nu.validator.htmlparser-htmlparser-1.2.1.jar"/>
-	<classpathentry from="sbt" kind="lib" path="C:\Users\Ruud\.esbt\jars\org.eclipse.jetty-jetty-continuation-7.6.0.v20120127.jar"/>
-	<classpathentry from="sbt" kind="lib" path="C:\Users\Ruud\.esbt\jars\org.eclipse.jetty-jetty-http-7.6.0.v20120127.jar"/>
-	<classpathentry from="sbt" kind="lib" path="C:\Users\Ruud\.esbt\jars\org.eclipse.jetty-jetty-io-7.6.0.v20120127.jar"/>
-	<classpathentry from="sbt" kind="lib" path="C:\Users\Ruud\.esbt\jars\org.eclipse.jetty-jetty-security-7.6.0.v20120127.jar"/>
-	<classpathentry from="sbt" kind="lib" path="C:\Users\Ruud\.esbt\jars\org.eclipse.jetty-jetty-server-7.6.0.v20120127.jar"/>
-	<classpathentry from="sbt" kind="lib" path="C:\Users\Ruud\.esbt\jars\org.eclipse.jetty-jetty-servlet-7.6.0.v20120127.jar"/>
-	<classpathentry from="sbt" kind="lib" path="C:\Users\Ruud\.esbt\jars\org.eclipse.jetty-jetty-util-7.6.0.v20120127.jar"/>
-	<classpathentry from="sbt" kind="lib" path="C:\Users\Ruud\.esbt\jars\org.eclipse.jetty-jetty-webapp-7.6.0.v20120127.jar"/>
-	<classpathentry from="sbt" kind="lib" path="C:\Users\Ruud\.esbt\jars\org.eclipse.jetty-jetty-xml-7.6.0.v20120127.jar"/>
-	<classpathentry from="sbt" kind="lib" path="C:\Users\Ruud\.esbt\jars\com.google.code.findbugs-jsr305-1.3.9.jar"/>
-	<classpathentry from="sbt" kind="lib" path="C:\Users\Ruud\.esbt\jars\junit-junit-4.8.jar"/>
-	<classpathentry from="sbt" kind="lib" path="C:\Users\Ruud\.esbt\jars\log4j-log4j-1.2.16.jar"/>
-	<classpathentry from="sbt" kind="lib" path="C:\Users\Ruud\.esbt\jars\io.netty-netty-3.3.1.Final.jar"/>
-	<classpathentry from="sbt" kind="lib" path="C:\Users\Ruud\.esbt\jars\javax.servlet-servlet-api-2.5.jar" sourcepath="C:\Users\Ruud\.esbt\jars\javax.servlet-servlet-api-2.5-sources.jar"/>
-	<classpathentry from="sbt" kind="lib" path="C:\Users\Ruud\.esbt\jars\org.slf4j-slf4j-api-1.6.4.jar"/>
-	<classpathentry from="sbt" kind="lib" path="C:\Users\Ruud\.esbt\jars\org.slf4j-slf4j-log4j12-1.6.4.jar"/>
-	<classpathentry from="sbt" kind="lib" path="C:\Users\Ruud\.esbt\jars\net.databinder-unfiltered-filter_2.9.1-0.6.1.jar" sourcepath="C:\Users\Ruud\.esbt\jars\net.databinder-unfiltered-filter_2.9.1-0.6.1-sources.jar"/>
-	<classpathentry from="sbt" kind="lib" path="C:\Users\Ruud\.esbt\jars\net.databinder-unfiltered-jetty_2.9.1-0.6.1.jar" sourcepath="C:\Users\Ruud\.esbt\jars\net.databinder-unfiltered-jetty_2.9.1-0.6.1-sources.jar"/>
-	<classpathentry from="sbt" kind="lib" path="C:\Users\Ruud\.esbt\jars\net.databinder-unfiltered-netty_2.9.1-0.6.1.jar"/>
-	<classpathentry from="sbt" kind="lib" path="C:\Users\Ruud\.esbt\jars\net.databinder-unfiltered-util_2.9.1-0.6.1.jar"/>
-	<classpathentry from="sbt" kind="lib" path="C:\Users\Ruud\.esbt\jars\net.databinder-unfiltered_2.9.1-0.6.1.jar" sourcepath="C:\Users\Ruud\.esbt\jars\net.databinder-unfiltered_2.9.1-0.6.1-sources.jar"/>
+	<classpathentry from="sbt" kind="lib" path="/Users/ruud/.esbt/jars/commons-codec-commons-codec-1.4.jar"/>
+	<classpathentry from="sbt" kind="lib" path="/Users/ruud/.esbt/jars/org.clapper-grizzled-slf4j_2.9.1-0.6.9.jar"/>
+	<classpathentry from="sbt" kind="lib" path="/Users/ruud/.esbt/jars/com.google.guava-guava-10.0.1.jar"/>
+	<classpathentry from="sbt" kind="lib" path="/Users/ruud/.esbt/jars/nu.validator.htmlparser-htmlparser-1.2.1.jar"/>
+	<classpathentry from="sbt" kind="lib" path="/Users/ruud/.esbt/jars/org.eclipse.jetty-jetty-continuation-7.6.0.v20120127.jar"/>
+	<classpathentry from="sbt" kind="lib" path="/Users/ruud/.esbt/jars/org.eclipse.jetty-jetty-http-7.6.0.v20120127.jar"/>
+	<classpathentry from="sbt" kind="lib" path="/Users/ruud/.esbt/jars/org.eclipse.jetty-jetty-io-7.6.0.v20120127.jar"/>
+	<classpathentry from="sbt" kind="lib" path="/Users/ruud/.esbt/jars/org.eclipse.jetty-jetty-security-7.6.0.v20120127.jar"/>
+	<classpathentry from="sbt" kind="lib" path="/Users/ruud/.esbt/jars/org.eclipse.jetty-jetty-server-7.6.0.v20120127.jar"/>
+	<classpathentry from="sbt" kind="lib" path="/Users/ruud/.esbt/jars/org.eclipse.jetty-jetty-servlet-7.6.0.v20120127.jar"/>
+	<classpathentry from="sbt" kind="lib" path="/Users/ruud/.esbt/jars/org.eclipse.jetty-jetty-util-7.6.0.v20120127.jar"/>
+	<classpathentry from="sbt" kind="lib" path="/Users/ruud/.esbt/jars/org.eclipse.jetty-jetty-webapp-7.6.0.v20120127.jar"/>
+	<classpathentry from="sbt" kind="lib" path="/Users/ruud/.esbt/jars/org.eclipse.jetty-jetty-xml-7.6.0.v20120127.jar"/>
+	<classpathentry from="sbt" kind="lib" path="/Users/ruud/.esbt/jars/com.google.code.findbugs-jsr305-1.3.9.jar"/>
+	<classpathentry from="sbt" kind="lib" path="/Users/ruud/.esbt/jars/junit-junit-4.8.jar"/>
+	<classpathentry from="sbt" kind="lib" path="/Users/ruud/.esbt/jars/log4j-log4j-1.2.16.jar"/>
+	<classpathentry from="sbt" kind="lib" path="/Users/ruud/.esbt/jars/io.netty-netty-3.3.1.Final.jar"/>
+	<classpathentry from="sbt" kind="lib" path="/Users/ruud/.esbt/jars/javax.servlet-servlet-api-2.5.jar" sourcepath="/Users/ruud/.esbt/jars/javax.servlet-servlet-api-2.5-sources.jar"/>
+	<classpathentry from="sbt" kind="lib" path="/Users/ruud/.esbt/jars/org.slf4j-slf4j-api-1.6.4.jar"/>
+	<classpathentry from="sbt" kind="lib" path="/Users/ruud/.esbt/jars/org.slf4j-slf4j-log4j12-1.6.4.jar"/>
+	<classpathentry from="sbt" kind="lib" path="/Users/ruud/.esbt/jars/net.databinder-unfiltered-filter_2.9.1-0.6.1.jar" sourcepath="/Users/ruud/.esbt/jars/net.databinder-unfiltered-filter_2.9.1-0.6.1-sources.jar"/>
+	<classpathentry from="sbt" kind="lib" path="/Users/ruud/.esbt/jars/net.databinder-unfiltered-jetty_2.9.1-0.6.1.jar" sourcepath="/Users/ruud/.esbt/jars/net.databinder-unfiltered-jetty_2.9.1-0.6.1-sources.jar"/>
+	<classpathentry from="sbt" kind="lib" path="/Users/ruud/.esbt/jars/net.databinder-unfiltered-netty_2.9.1-0.6.1.jar"/>
+	<classpathentry from="sbt" kind="lib" path="/Users/ruud/.esbt/jars/net.databinder-unfiltered-util_2.9.1-0.6.1.jar"/>
+	<classpathentry from="sbt" kind="lib" path="/Users/ruud/.esbt/jars/net.databinder-unfiltered_2.9.1-0.6.1.jar" sourcepath="/Users/ruud/.esbt/jars/net.databinder-unfiltered_2.9.1-0.6.1-sources.jar"/>
 	<classpathentry from="sbt" kind="src" path="src/main/scala/"/>
 	<classpathentry from="sbt" kind="src" path="src/main/resources/"/>
 	<classpathentry from="sbt" kind="src" path="src/test/scala/"/>

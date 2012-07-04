@@ -43,7 +43,7 @@ case class Menu(items : MenuItem*) {
           "a" #> {
             SetText(item.text) & 
             SetAttr("href", item.path.mkString(url.context.toString, "/", "")) & 
-            Html.onclick(R.changeUrl(item.path.mkString("/")))
+            Html.onclick(R.changeUrl(Url(url.context, url.currentPath, item.path, Map.empty)))
           }
       }
   }
