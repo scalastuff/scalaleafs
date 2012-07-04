@@ -1,5 +1,5 @@
 ---
-Getting Started
+title: Getting Started
 ---
 
 # Getting started
