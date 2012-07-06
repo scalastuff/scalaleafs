@@ -4,11 +4,12 @@ import java.net.URI
 import scala.collection.mutable
 import scala.collection.generic.Growable
 import scala.collection.immutable.TreeMap
+import scala.xml.NodeSeq
 
 case class UrlContext(protocol : String, host : String, port : String, path : Seq[String]) {
   def resolve(path : String) : Url = 
     Url.parse(path) match {
-      case (path, parameters) => Url(this, Nil, path, parameters)
+      case (path, parameters) => Url(this, path, parameters)
     }
 }
 
@@ -43,8 +44,8 @@ object Url {
     }
   }
   
-  def parsePath(path : String) : Seq[String] =
-    parsePath(path, '/')
+//  def parsePath(path : String) : Seq[String] =
+//    parsePath(path, '/')
   
   def parsePath(path : String, sep : Char) : Seq[String] = {
     val builder = Seq.newBuilder[String]
@@ -63,31 +64,76 @@ object Url {
   }
 }
 
-case class Url(context : UrlContext, currentPath : Seq[String], remainingPath : Seq[String], parameters : Map[String, Seq[String]]) {
+object UrlTrail {
+  
+  /**
+   * Creates a trail to a url denoted by path and parameters, starting at the context. 
+   */
+  def apply(context : UrlContext, path : List[String], parameters : Map[String, Seq[String]]) : UrlTrail =
+    UrlTrail(Url(context, Nil, parameters), path)
+}
+
+/**
+ * A trail is a path to a url. Starting at a context, one can advance the trail to the end, where the
+ * trail reached is url. Typically, advancing a trail to its end corresponds with the way pages are rendered.
+ */
+case class UrlTrail(current : Url, remainder : List[String]) {
+
+  /**
+   * Trail's target url. Typically contains the full request url. 
+   */
+  lazy val url = 
+    Url(current.context, current.path ++ remainder, current.parameters)
+    
+  /**
+   * Is the trail at its start position?
+   */
+  def atStart = 
+    current == Nil
+    
+  /**
+   * Has the trail reached its destination?
+   */
+  def atEnd = 
+    remainder == Nil
+  
+  /**
+   * Move forward on the trail. Should only be called when not at end.
+   */
+  def advance = 
+    UrlTrail(current.child(remainder.head), remainder.tail)
+
+  /**
+   * Go back one step on the trail. Should only be called when not at start.
+   */
+  // TODO better name
+  def goback =
+    UrlTrail(current.parent, current.path.last :: remainder)
+}
+
+case class Url(context : UrlContext, path : Seq[String], parameters : Map[String, Seq[String]]) {
 
   // TODO add context path and querystring
 //  private lazy val localUri = new URI("/" + currentPath.mkString("/") + remainingPath.mkString("/"))
 //  
 //  lazy val uri = new URI(context + currentPath.mkString("/") + remainingPath.mkString("/") + queryString)
   
-  def advance = 
-    Url(context, currentPath ++ List(remainingPath.head), remainingPath.tail, parameters)
-
-  // TODO better name
-  def unadvance = 
-    Url(context, currentPath.dropRight(1), currentPath.last +: remainingPath, parameters)
+//  def unadvance = 
+//    Url(context, currentPath.dropRight(1), currentPath.last +: remainingPath, parameters)
     
-  def parent = 
-    if (remainingPath.isEmpty) Url(context, currentPath.dropRight(1), Nil, parameters)
-    else Url(context, currentPath, remainingPath.dropRight(1), parameters)
+  def parent =
+    Url(context, path.dropRight(1), parameters)
+    
+  def child(segment : String) = 
+    Url(context, path :+ segment, parameters)
     
   def resolve(path : String) : Url = 
     Url.parse(path) match {
-      case (path, parameters) => Url(context, Nil, remainingPath ++ path, parameters)
+      case (p, pars) => Url(context, this.path ++ p, pars)
     }
-
-  def resolve(path : Seq[String]) : Url = 
-    Url(context, currentPath, remainingPath ++ path, Map.empty)
+//
+//  def resolve(path : Seq[String]) : Url = 
+//    Url(context, currentPath, remainingPath ++ path, Map.empty)
   
 //  def resolve(uri : URI) : Url = fromUri(this.uri.resolve(uri))
 //  
@@ -135,11 +181,7 @@ case class Url(context : UrlContext, currentPath : Seq[String], remainingPath : 
       }
     }
     var sep = ""
-    for (p <- currentPath) {
-      builder.append(sep).append(p)
-      sep = "/"
-    }
-    for (p <- remainingPath) {
+    for (p <- path) {
       builder.append(sep).append(p)
       sep = "/"
     }
@@ -152,10 +194,14 @@ case class Url(context : UrlContext, currentPath : Seq[String], remainingPath : 
   }
 }
 
+/**
+ * Implement this trait to be able to react on url changes. Handlers are called when a url is changed in 
+ * an ajax callback. It allows for url changes without page switches. 
+ */
 trait UrlHandler {
-  def url : Var[Url]
-  def handleUrl(url : Url) {
-    this.url.set(url)
+  def trail : Var[UrlTrail]
+  def handleUrl(trail : UrlTrail) {
+    this.trail.set(trail)
   }
   R.addUrlHandler(this)
 }
@@ -167,19 +213,19 @@ trait UrlManager {
     if (urlHandlers == null) {
       urlHandlers = new mutable.HashMap[(UrlContext, Seq[String]), UrlHandler]()
     }
-    val url = handler.url.get
-    urlHandlers.put((url.context, url.currentPath), handler)
+    val trail = handler.trail.get
+    urlHandlers.put((trail.current.context, trail.current.path), handler)
   }
   
-  def handleUrl(url : Url) : JsCmd = {
+  def handleUrl(trail : UrlTrail) : JsCmd = {
     var result : Option[JsCmd] = None 
     if (urlHandlers != null) {
-      var currentPath = url.remainingPath
+      var currentPath = trail.remainder
       var remainingPath : Seq[String] = Nil
       var stop = false;
       do {
         if (currentPath.isEmpty) stop = true;
-        handleUrl(url.context, currentPath, remainingPath, url.parameters) match {
+        handleUrl(trail.url, trail.remainder, trail.url.parameters) match {
           case Some(cmd) => 
             result = Some(cmd)
           case None => 
@@ -197,12 +243,12 @@ trait UrlManager {
     }
   }
   
-  private def handleUrl(context : UrlContext, currentPath : Seq[String], remainingPath : Seq[String], parameters : Map[String, Seq[String]]) : Option[JsCmd] = {
-    urlHandlers.get((context, currentPath)) match {
+  private def handleUrl(currentUrl : Url, remainingPath : Seq[String], parameters : Map[String, Seq[String]]) : Option[JsCmd] = {
+    urlHandlers.get((currentUrl.context, currentUrl.path)) match {
       case Some(handler) => 
-        val url = Url(context, currentPath, remainingPath, parameters)
+        val url = currentUrl.copy(path = currentUrl.path ++ remainingPath)
         // Only need to handle if url is, in fact, different.
-        if (url != handler.url.get) {
+        if (url != handler.trail.get.url) {
           // Try handle the url.
           handler.handleUrl(url)
           // Url was handled?
@@ -220,3 +266,16 @@ trait UrlManager {
   }
 }
 
+trait Handler {
+  def trail : UrlTrail
+  
+  lazy val remainingPath = Var(trail.remainder)
+  def renderParameters(pf : PartialFunction[(String, List[String]), NodeSeq => NodeSeq]) = null
+}
+
+class MyPage extends Handler {
+  
+  def render = renderParameters {
+    case ("page", rest) => SetAttr("asfd", "df")
+  }
+}

@@ -61,7 +61,6 @@ trait LeafsServletProcessor extends Logging {
       } 
       else if (request.getMethod == "GET") {
         val urlContext = UrlContext(request.getScheme(), request.getServerName(), Integer.toString(request.getLocalPort), Url.parsePath(request.getContextPath))
-//        val path = (request.getServletPath().split("/") ++ (if (request.getPathInfo != null) request.getPathInfo().split("/") else Array[String]())).filter(_ != "").toList
         val path = 
           if (request.getPathInfo == null) Url.parsePath(request.getServletPath())
           else Url.parsePath(request.getServletPath()) ++ Url.parsePath(request.getPathInfo)

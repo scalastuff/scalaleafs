@@ -11,45 +11,50 @@ import scala.xml.TopScope
 
 class CssTransformation(selector : CssSelector, replaceWith : Elem => NodeSeq) extends XmlTransformation {
 
-  override def apply(xml : NodeSeq) : NodeSeq = apply(selector, replaceWith, xml)
-
+  override def apply(xml : NodeSeq) : NodeSeq = 
+    XmlTransformation.transform(xml, selector, replaceWith)
+    
+//  def apply(cssSel : CssSelector, replaceWith : Elem => NodeSeq, xml : NodeSeq) : NodeSeq = {
+//    XmlTransformation.transform(xml, cssSel, replaceWith)
+//  }
+  
   // TODO replace by XmlTransformation.transform
-  def apply(cssSel : CssSelector, replaceWith : Elem => NodeSeq, xml : NodeSeq) : NodeSeq = {
-    var changed = false
-    var builder = NodeSeq.newBuilder
-    xml foreach {
-      case elem : Elem if cssSel.matches(elem) => 
-        cssSel.nested match {
-          case Some(nested) =>
-            val recursed = apply(nested, replaceWith, elem.child)
-            // Optimization: Don't clone when child list is the same instance
-            if (!(recursed eq elem.child)) {
-              changed = true;
-              builder += elem.copy(child = recursed)
-            } else {
-              builder += elem
-            }
-          case None =>
-            val replacement = replaceWith(elem)
-            builder ++= replacement
-            changed = true
-        }
-      case elem : Elem => 
-        val recursed = apply(cssSel, replaceWith, elem.child)
-        // Optimization: Don't clone when child list is the same instance
-        if (!(recursed eq elem.child)) {
-          changed = true;
-          builder += elem.copy(child = recursed)
-        } else {
-          builder += elem
-        }
-      case node => 
-        builder += node
-    }
-    // Optimization: Make sure the same node list is returned when nothing changed.
-    if (changed) builder.result
-    else xml
-  }
+//  def apply(cssSel : CssSelector, replaceWith : Elem => NodeSeq, xml : NodeSeq) : NodeSeq = {
+//    var changed = false
+//    var builder = NodeSeq.newBuilder
+//    xml foreach {
+//      case elem : Elem if cssSel.matches(elem) => 
+//        cssSel.nested match {
+//          case Some(nested) =>
+//            val recursed = apply(nested, replaceWith, elem.child)
+//            // Optimization: Don't clone when child list is the same instance
+//            if (!(recursed eq elem.child)) {
+//              changed = true;
+//              builder += elem.copy(child = recursed)
+//            } else {
+//              builder += elem
+//            }
+//          case None =>
+//            val replacement = replaceWith(elem)
+//            builder ++= replacement
+//            changed = true
+//        }
+//      case elem : Elem => 
+//        val recursed = apply(cssSel, replaceWith, elem.child)
+//        // Optimization: Don't clone when child list is the same instance
+//        if (!(recursed eq elem.child)) {
+//          changed = true;
+//          builder += elem.copy(child = recursed)
+//        } else {
+//          builder += elem
+//        }
+//      case node => 
+//        builder += node
+//    }
+//    // Optimization: Make sure the same node list is returned when nothing changed.
+//    if (changed) builder.result
+//    else xml
+//  }
 }
 
 object CssSelector {
@@ -79,7 +84,7 @@ class UnparsedCssSelector(s : String) {
   def #> (f : XmlTransformation) = new CssTransformation(CssSelector.getOrParse(s), f) 
 }
 
-class CssSelector(val matches : Elem => Boolean, val nested : Option[CssSelector] = None) 
+class CssSelector(matches : Elem => Boolean, nested : Option[CssSelector] = None) extends XmlSelector(matches, true, nested)
 case class TypeSelector(prefix : Option[String], label : String) extends CssSelector(elem => Option(elem.prefix) == prefix && elem.label == label)
 case class IdSelector(id : String) extends CssSelector(elem => XmlHelpers.attr(elem, "id") == id)
 case class ClassSelector(cl : String) extends CssSelector(elem => XmlHelpers.hasClass(elem, cl))
@@ -126,9 +131,15 @@ object CssSelectorParser extends AbstractCssParser {
   }
 }
 
+/**
+ * Transformation that wraps some input xml with a new Element using a css-like syntax.
+ * For example, the following statement wraps some input xml in an input element with the name attribute set, 
+ * which in turn is wrapped in a div element that has the 'wrapper' class.
+ * <pre>CssConstructor("div.wrapper input[name='descr']")</pre>
+ */
 object CssConstructor {
   private val constructorCache = new ConcurrentHashMap[String, CssConstructor]
-  def getOrParse(s : String) : CssConstructor = {
+  def apply(s : String) : CssConstructor = {
     var constructor = constructorCache.get(s)
     if (constructor == null) {
       CssConstructorParser.parseAll(CssConstructorParser.constructors, s) match {

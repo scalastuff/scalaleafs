@@ -96,14 +96,12 @@ class Session(val server : Server, val configuration : Configuration) {
     val jsCmds : Seq[JsCmd] =
       // Fields go first that have a single, nameless parameter value.
       fields.map {
-        case (callbackId, value :: rest) =>
-          processAjaxCallback(callbackId, Map("" -> Seq(value)))
-        case (callbackId, Nil) =>
-          processAjaxCallback(callbackId, Map("" -> Seq("")))
+        case (callbackId, values) =>
+          processAjaxCallback(callbackId, Map("" -> values))
       } ++
       // Actions are executed next, they have no parameters.
       actions.map {
-        case (_, callbackId :: rest) =>
+        case (_, Seq(callbackId)) =>
           processAjaxCallback(callbackId, Map.empty)
         case (_, Nil) =>
           Noop

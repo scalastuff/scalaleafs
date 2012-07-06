@@ -6,19 +6,46 @@ import java.util.UUID
 import java.lang.ref.WeakReference
 
 /**
- * Base for Var and SeqVar. It implements change-listening and concatenation.
+ * Base trait for Var and SeqVar. It implements change-listening and concatenation.
  */
 trait Changeable[A] {
   private[this] var listeners = Seq[A => Unit]()
   protected[this] var value : A 
   
+  /**
+   * Registers a change listener for this var.
+   */
   def onChange(f : A => Unit) = listeners = listeners :+ f
+  
+  /**
+   * Get the current value of the var.
+   */
+  def get = value
+
+  /**
+   * Sets the current value of the var. Listeners and dependent vars are notified
+   * when the value is changed.
+   */
+  def set(value : A) {
+    if (this.value != value) {
+      this.value = value
+      listeners.foreach(_(value))
+    }
+  }
+    
+  /**
+   * Modify the current value. It's a combined get and set. Listeners and dependent vars are notified
+   * when the value is changed.
+   */
+  def modify(f : A => A) {
+    set(f(value))
+  }
   
   protected def dependsOn[B](b : Changeable[B])(f : B => A) : A = {
     b.onChange(bvalue => set(f(bvalue)))
     f(b.get)
   }
-
+  
   protected def dependsOn[B, C](b : Changeable[B], c : Changeable[C])(f : (B, C) => A) : A = {
       b.onChange(bvalue => set(f(bvalue, c.get)))
       c.onChange(cvalue => set(f(b.get, cvalue)))
@@ -38,19 +65,6 @@ trait Changeable[A] {
       d.onChange(dvalue => set(f(b.get, c.get, dvalue, e.get)))
       e.onChange(evalue => set(f(b.get, c.get, d.get, evalue)))
       f(b.get, c.get, d.get, e.get)
-  }
-  
-  def get = value
-
-  def set(value : A) {
-    if (this.value != value) {
-      this.value = value
-      listeners.foreach(_(value))
-    }
-  }
-    
-  def modify(f : A => A) {
-    set(f(value))
   }
 }
 
@@ -109,10 +123,24 @@ object Var {
   } 
 }
 
+/**
+ * A Var is a wrapper for a mutable value. One can listen for changes, or map a Var to other Vars that become
+ * dependent on it. Vars can also be rendered, transforming XML based on the current value of the Var. When
+ * the Var changes (or one of the Vars it depends on), the transformation is performed again. The piece of 
+ * XML that was created by the transformation is sent to the browser using a ReplaceHtml JavaScript command.
+ */
 trait Var[A] extends Changeable[A] { thisVar =>
+  
+  /**
+   * Maps this var to another one.
+   */
   def map[B](f : A => B) = new Var[B] {
     var value = dependsOn(thisVar)(f(_))
   }
+  
+  /**
+   * Maps this var to a seq-var.
+   */
   def mapSeq[B](f : A => Iterable[B]) = new SeqVar[B] {
     var value = dependsOn(thisVar)(f(_).toSeq)
   }
@@ -132,7 +160,7 @@ trait Var[A] extends Changeable[A] { thisVar =>
    * 
    * @param f Transformation that renders the value of the var.
    */
-  def bind(f : A => NodeSeq => NodeSeq) = new ElemWithIdTransformation {
+  def render(f : A => NodeSeq => NodeSeq) = new ElemWithIdTransformation {
     override def apply(elem : Elem, id : String) = {
       onChange(value => {
         R.addEagerPostRequestJs(ReplaceHtml(id, f(value)(elem)))
@@ -175,7 +203,7 @@ trait SeqVar[A] extends Changeable[Seq[A]] { thisVar =>
    * @param empty Transformation to render the 'no elements available' case.
    * @param f Transformation that renders a single sequence element.
    */
-  def bind(empty : NodeSeq => NodeSeq)(f : A => NodeSeq => NodeSeq) = new ElemWithIdTransformation {
+  def render(empty : NodeSeq => NodeSeq)(f : A => NodeSeq => NodeSeq) = new ElemWithIdTransformation {
     override def apply(elem : Elem, id : String) = {
       def gen(values : Seq[A]) = 
         if (values.isEmpty) {

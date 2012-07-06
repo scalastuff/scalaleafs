@@ -5,11 +5,8 @@ import scala.xml.NodeSeq
 import implicits._
 
 object Html {
-
-  def onclick(elem : Elem, f : => JsCmd) : Elem = {
-    XmlHelpers.setAttr(elem, "onclick", R.callback(_ => R.addPostRequestJs(f)).toString + " return false;")
-  }
- def onclick(f : => JsCmd) : ElemModifier = {
+ 
+  def onclick(f : => JsCmd) : ElemModifier = {
     SetAttr("onclick", R.callback(_ => R.addPostRequestJs(f)).toString + " return false;")
   }
  
@@ -57,8 +54,10 @@ object Html {
     }
   }
   
+  // TODO replace var with set method
+  // TODO implement based on form textbox
   def searchBox(textVar : Var[String], defaultText : String = "", defaultClass : String = "default", iconClass : String = "icon", clearLinkClass : String = "clear") = {
-     textVar.bind { text =>
+     textVar.render { text =>
        AddClass(defaultClass, text == "") & 
        SetContent { _ =>
          <span class={iconClass}/> ++
