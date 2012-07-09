@@ -15,6 +15,7 @@ import unfiltered.filter.Intent
 import org.scalastuff.scalaleafs.Configuration
 import org.scalastuff.scalaleafs.DebugMode
 import org.scalastuff.scalaleafs.Var
+import org.scalastuff.scalaleafs.UrlTrail
 
 object Site {
 
@@ -40,6 +41,6 @@ object Site {
 
 class DocumentationFilter extends LeafsFilter {
   val configuration = new Configuration()
-  def render(url :Url) = new Frame(url).render
+  def render(trail : UrlTrail) = new Frame(trail).render
   
 }

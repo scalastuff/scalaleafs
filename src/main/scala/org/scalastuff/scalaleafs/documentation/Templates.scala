@@ -5,8 +5,9 @@ import org.scalastuff.scalaleafs.Url
 import org.scalastuff.scalaleafs.Template
 import org.scalastuff.scalaleafs.implicits._
 import scala.xml.NodeSeq
+import org.scalastuff.scalaleafs.UrlTrail
 
-class Templates(val url : Url) extends Template {
+class Templates(val url : UrlTrail) extends Template {
   val path  = Nil
   val bind = 
     "#sample1" #> new Sample1 & 

@@ -9,7 +9,7 @@ import scala.xml.PCData
 
 object HeadContributions {
   
-  def render(request : TransientRequest, c : Class[_], xml : NodeSeq) : NodeSeq = {
+  def render(request : Request, c : Class[_], xml : NodeSeq) : NodeSeq = {
 
     def processHead(html : Elem) : Elem = {
   
@@ -98,18 +98,18 @@ trait HeadContributions extends XmlTransformation {
 
 abstract class HeadContribution(val key : String) {
   def dependsOn : List[HeadContribution] = Nil
-  def render(request : TransientRequest) : NodeSeq
+  def render(request : Request) : NodeSeq
 }
 
 class JavaScript(key : String, uri : String) extends HeadContribution(key) {
-  def render(request : TransientRequest) = {
+  def render(request : Request) = {
     <script type="text/javascript" src={uri} />
   }
 }
 
 class JavaScriptResource(c : Class[_], resource : String) extends HeadContribution(c.getName + "/" + resource) {
   var name = Resources.hashedResourcePathFor(c, resource)
-  def render(request : TransientRequest) = {
+  def render(request : Request) = {
     if (request.session.debugMode) {
       name = Resources.hashedResourcePathFor(c, resource)
     }
@@ -126,7 +126,7 @@ object LeafsJavaScriptResource extends JavaScriptResource(classOf[JavaScript], "
 object JQueryUrl extends ConfigVar[String]("http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js")
 
 object JQuery extends HeadContribution("jquery") {
-  def render(request : TransientRequest) = {
+  def render(request : Request) = {
     <script type="text/javascript" src={request.configuration(JQueryUrl)} />
   }
 }

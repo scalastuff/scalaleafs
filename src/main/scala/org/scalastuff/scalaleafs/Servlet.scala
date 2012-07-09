@@ -16,7 +16,6 @@ import javax.servlet.ServletConfig
 import javax.servlet.ServletRequest
 import javax.servlet.ServletResponse
 
-
 trait LeafsServletProcessor extends Logging {
   
   private var server : Server = null;
@@ -24,7 +23,7 @@ trait LeafsServletProcessor extends Logging {
   private var ajaxFormPostPrefix = "";
   private var resourcePrefix = "";
   protected val configuration : Configuration
-  protected def render(url : Url) : NodeSeq
+  protected def render(trail : UrlTrail) : NodeSeq
 
   def initialize() {
     server = new Server(getClass.getPackage, configuration)
@@ -64,9 +63,9 @@ trait LeafsServletProcessor extends Logging {
         val path = 
           if (request.getPathInfo == null) Url.parsePath(request.getServletPath())
           else Url.parsePath(request.getServletPath()) ++ Url.parsePath(request.getPathInfo)
-        val url = new Url(urlContext, Nil, path, parameters)
+        val url = new Url(urlContext, path, parameters)
         session.handleRequest(url, { () =>
-          val xml = render(url)
+          val xml = render(UrlTrail(url, path))
           val outputString = xml.toString
           response.setContentType("text/html")
           response.getWriter.append(outputString);

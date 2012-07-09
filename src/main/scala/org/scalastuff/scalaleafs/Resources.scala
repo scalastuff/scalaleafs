@@ -2,6 +2,7 @@ package org.scalastuff.scalaleafs
 import java.util.concurrent.ConcurrentHashMap
 import scala.io.Source
 import javax.xml.bind.DatatypeConverter
+import java.io.InputStream
 
 object ResourceType {
   private val map = Map(
@@ -27,6 +28,10 @@ object ResourceType {
 }
 
 case class ResourceType(extention: String, contentType : String, encoding : Option[String])
+
+trait ResourceFactory {
+  def getResource(path : String, name : String, resourceType : ResourceType) : Option[InputStream]
+}
 
 object Resources {
   private val debugPostfix1 = "// DEBUG MODE";

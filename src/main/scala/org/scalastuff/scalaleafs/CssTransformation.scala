@@ -9,52 +9,14 @@ import scala.xml.NodeSeq
 import scala.xml.Text
 import scala.xml.TopScope
 
+/**
+ * A css transformation is a transformation based on a css selector. An instance is typically obtained
+ * through the #> operator, e.g. <pre>"#mydiv" #> SetClass("selected")</pre> 
+ */
 class CssTransformation(selector : CssSelector, replaceWith : Elem => NodeSeq) extends XmlTransformation {
 
   override def apply(xml : NodeSeq) : NodeSeq = 
     XmlTransformation.transform(xml, selector, replaceWith)
-    
-//  def apply(cssSel : CssSelector, replaceWith : Elem => NodeSeq, xml : NodeSeq) : NodeSeq = {
-//    XmlTransformation.transform(xml, cssSel, replaceWith)
-//  }
-  
-  // TODO replace by XmlTransformation.transform
-//  def apply(cssSel : CssSelector, replaceWith : Elem => NodeSeq, xml : NodeSeq) : NodeSeq = {
-//    var changed = false
-//    var builder = NodeSeq.newBuilder
-//    xml foreach {
-//      case elem : Elem if cssSel.matches(elem) => 
-//        cssSel.nested match {
-//          case Some(nested) =>
-//            val recursed = apply(nested, replaceWith, elem.child)
-//            // Optimization: Don't clone when child list is the same instance
-//            if (!(recursed eq elem.child)) {
-//              changed = true;
-//              builder += elem.copy(child = recursed)
-//            } else {
-//              builder += elem
-//            }
-//          case None =>
-//            val replacement = replaceWith(elem)
-//            builder ++= replacement
-//            changed = true
-//        }
-//      case elem : Elem => 
-//        val recursed = apply(cssSel, replaceWith, elem.child)
-//        // Optimization: Don't clone when child list is the same instance
-//        if (!(recursed eq elem.child)) {
-//          changed = true;
-//          builder += elem.copy(child = recursed)
-//        } else {
-//          builder += elem
-//        }
-//      case node => 
-//        builder += node
-//    }
-//    // Optimization: Make sure the same node list is returned when nothing changed.
-//    if (changed) builder.result
-//    else xml
-//  }
 }
 
 object CssSelector {
@@ -84,6 +46,9 @@ class UnparsedCssSelector(s : String) {
   def #> (f : XmlTransformation) = new CssTransformation(CssSelector.getOrParse(s), f) 
 }
 
+/**
+ * A selector that uses a css syntax. 
+ */
 class CssSelector(matches : Elem => Boolean, nested : Option[CssSelector] = None) extends XmlSelector(matches, true, nested)
 case class TypeSelector(prefix : Option[String], label : String) extends CssSelector(elem => Option(elem.prefix) == prefix && elem.label == label)
 case class IdSelector(id : String) extends CssSelector(elem => XmlHelpers.attr(elem, "id") == id)

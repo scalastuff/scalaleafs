@@ -7,7 +7,7 @@ import scala.collection.mutable
 import java.util.concurrent.atomic.AtomicLong
 import scala.xml.NodeSeq
 import java.net.URI
-case class AjaxCallback(request : Request, f : Map[String, Seq[String]] => Unit)
+case class AjaxCallback(request : InitialRequest, f : Map[String, Seq[String]] => Unit)
 
 object ConfigVar {
   
@@ -41,12 +41,6 @@ class Server(val resourceRoot : Package, val configuration : Configuration = new
   val ajaxCallbackPath = Url.parsePath(configuration(AjaxCallbackPath))
   val ajaxFormPostPath = Url.parsePath(configuration(AjaxFormPostPath))
   val resourcePath = Url.parsePath(configuration(ResourcePath))
-
-//  val contextPrefix = if (contextPath.isEmpty) "" else "/" + contextPath.mkString("/")  
-//  def callbackUrl(uid : String) = contextPrefix + Server.ajaxCallbackPath + uid
-  //def formPostUrl(uid : String) = contextPrefix + Server.ajaxFormPostPath + uid
-//  def resourceUrl(name : String) = contextPrefix + Server.resourcePath + name
-  println("Starting leafs")
 }
 
 class ExpiredException(message : String) extends Exception(message)
@@ -63,7 +57,7 @@ class Session(val server : Server, val configuration : Configuration) {
     def generate : String = "cb" + getAndIncrement()
   }
   
-  val debugMode = configuration(DebugMode)
+  val debugMode = configuration(DebugMode) || System.getProperty("leafsDebugMode") != null
   
   def handleAjaxCallback(callbackId : String, parameters : Map[String, Seq[String]]) : String = {
     mkPostRequestJsString(processAjaxCallback(callbackId, parameters).toSeq)
@@ -75,7 +69,7 @@ class Session(val server : Server, val configuration : Configuration) {
         throw new ExpiredException("Callback expired: " + callbackId)
       case ajaxCallback => 
         try {
-          val request = new TransientRequest(ajaxCallback.request)
+          val request = new Request(ajaxCallback.request)
           R.set(request)
           ajaxCallback.request.synchronized {
             ajaxCallback.f(parameters)
@@ -115,8 +109,8 @@ class Session(val server : Server, val configuration : Configuration) {
   
   def handleRequest(url : Url, f : () => Unit) {
     try {
-      val request = new Request(this, configuration, url)
-      val transientRequest = new TransientRequest(request)
+      val request = new InitialRequest(this, configuration, url)
+      val transientRequest = new Request(request)
       R.set(transientRequest)
       request.synchronized {
         f()
@@ -138,51 +132,54 @@ class Session(val server : Server, val configuration : Configuration) {
     }
 }
 
-class Request(val session : Session, val configuration : Configuration, private[scalaleafs] var _url : Url) extends UrlManager {
+/**
+ * An initial request is created for each http request but shared for each subsequent callback.
+ */
+class InitialRequest(val session : Session, val configuration : Configuration, private[scalaleafs] var _url : Url) {
   private[scalaleafs] var _headContributions : mutable.Map[String, HeadContribution] = null
+  private[scalaleafs] val urlManager = new UrlManager
   
-  val setUrlCallbackId = session.callbackIDGenerator.generate
-  
-  lazy val resourceBaseUrl = Url(_url.context, Nil, session.server.resourcePath, Map.empty)
+  lazy val resourceBaseUrl = Url(_url.context, session.server.resourcePath, Map.empty)
 }
 
 /**
- * A transient request is created for each http request, including both the initial page request and the subsequent callback calls.
+ * A request is created for each http request, including both the initial page request and the subsequent callback calls.
  */
-class TransientRequest(val request : Request) {
+class Request(val initialRequest : InitialRequest) {
   var eagerPostRequestJs : JsCmd = Noop
   var postRequestJs : JsCmd = Noop
   private[scalaleafs] var _headContributions : mutable.Map[String, HeadContribution] = null
 
-  def configuration = request.configuration
-  def session = request.session
-  def server = request.session.server
-  def resourceBaseUrl = request.resourceBaseUrl
-
+  def configuration = initialRequest.configuration
+  def session = initialRequest.session
+  def server = initialRequest.session.server
+  def resourceBaseUrl = initialRequest.resourceBaseUrl
+  def debugMode = session.debugMode
+  
   /**
    * The current request url.
    */
-  def url = request._url
+  def url = initialRequest._url
   
   /**
    * Changes the browser url without a page refresh.
    */
-  def changeUrl(uri : String) : Unit = changeUrl(request._url.resolve(uri))
+  def changeUrl(uri : String) : Unit = changeUrl(initialRequest._url.resolve(uri))
 
   /**
    * Changes the browser url without a page refresh.
    */
   def changeUrl(url : Url) : Unit = {
-    if (request._url != url) {
-      request._url = url
-      addPostRequestJs(request.handleUrl(url))
+    if (initialRequest._url != url) {
+      initialRequest._url = url
+      addPostRequestJs(initialRequest.urlManager.handleUrl(url))
     }
   }
   private[scalaleafs] def popUrl(uri : String) = {
-    val url = request._url.resolve(uri)
-    if (request._url != url) {
-      request._url = url
-      request.handleUrl(url)
+    val url = initialRequest._url.resolve(uri)
+    if (initialRequest._url != url) {
+      initialRequest._url = url
+      initialRequest.urlManager.handleUrl(url)
     }
   }
 
@@ -215,7 +212,7 @@ class TransientRequest(val request : Request) {
   
   def callbackId(f : Map[String, Seq[String]] => Unit) : String = {
       val uid = session.callbackIDGenerator.generate
-      request.session.ajaxCallbacks.put(uid, AjaxCallback(request, f))
+      initialRequest.session.ajaxCallbacks.put(uid, AjaxCallback(initialRequest, f))
       addHeadContribution(JQuery)
       addHeadContribution(LeafsJavaScriptResource)
       uid
@@ -229,29 +226,8 @@ class TransientRequest(val request : Request) {
   }
 }
 
-object R extends ThreadLocal[TransientRequest] {
-  implicit def toTransientRequest(r : ThreadLocal[TransientRequest]) = r.get
-  implicit def toRequest(r : ThreadLocal[TransientRequest]) = r.get.request
-  
-  /**
-   * Need to define here to avoid ambiguous implicit conversion. 
-   */
-  def configuration = get.configuration
-
-  /**
-   * Need to define here to avoid ambiguous implicit conversion. 
-   */
-  def session = get.session
-  
-  /**
-   * Need to define here to avoid ambiguous implicit conversion. 
-   */
-  def server = get.session.server
-  
-  /**
-   * Need to define here to avoid ambiguous implicit conversion. 
-   */
-  def debugMode = get.session.debugMode
+object R extends ThreadLocal[Request] {
+  implicit def toRequest(r : ThreadLocal[Request]) : Request = r.get
   
   /**
    * Throws an exception if thread local hasn't been set.
