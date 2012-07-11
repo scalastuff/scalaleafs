@@ -1,4 +1,14 @@
-package org.scalastuff.scalaleafs
+/**
+ * Copyright (c) 2012 Ruud Diterwich.
+ * All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ */
+package net.scalaleafs
 
 import java.util.concurrent.ConcurrentHashMap
 import java.util.UUID
@@ -7,28 +17,8 @@ import scala.collection.mutable
 import java.util.concurrent.atomic.AtomicLong
 import scala.xml.NodeSeq
 import java.net.URI
+
 case class AjaxCallback(request : InitialRequest, f : Map[String, Seq[String]] => Unit)
-
-object ConfigVar {
-  
-  // Type def to make sure each individual tuple has matching types for var and value.
-  type Assignment[A] = Tuple2[ConfigVar[A], A]
-
-  // Implicitly convert a configVar value to its value. 
-  implicit def toValue[A](configVar : ConfigVar[A]) = R.configuration(configVar) 
-}
-
-abstract class ConfigVar[A](val defaultValue : A) 
-
-class Configuration (assignments : ConfigVar.Assignment[_]*) {
-  
-  private val values : Map[ConfigVar[_], Any] = assignments.toMap
-  
-  // Get the configuration value for given configVar. 
-  def apply[A](configVar : ConfigVar[A]) = 
-    values.get(configVar).map(_.asInstanceOf[A]).getOrElse(configVar.defaultValue)
-}
-
 
 object DebugMode extends ConfigVar[Boolean](false)
 
@@ -38,6 +28,8 @@ object ResourcePath extends ConfigVar[String]("leafs/")
 
 class Server(val resourceRoot : Package, val configuration : Configuration = new Configuration) {
 
+  val resources = new Resources
+  
   val ajaxCallbackPath = Url.parsePath(configuration(AjaxCallbackPath))
   val ajaxFormPostPath = Url.parsePath(configuration(AjaxFormPostPath))
   val resourcePath = Url.parsePath(configuration(ResourcePath))
@@ -105,7 +97,7 @@ class Session(val server : Server, val configuration : Configuration) {
     mkPostRequestJsString(jsCmds)
   } 
 
-  def handleResource(resource : String) : Option[(Array[Byte], ResourceType)] = Resources.resourceContent(resource)
+  def handleResource(resource : String) : Option[(Array[Byte], ResourceType)] = server.resources.resourceContent(resource)
   
   def handleRequest(url : Url, f : () => Unit) {
     try {
@@ -226,11 +218,15 @@ class Request(val initialRequest : InitialRequest) {
   }
 }
 
+/**
+ * Global entry point to ScalaLeafs context. R returns the current request, from which the current InitialRequest,
+ * the Session and the Server can be reached.
+ */
 object R extends ThreadLocal[Request] {
   implicit def toRequest(r : ThreadLocal[Request]) : Request = r.get
   
   /**
-   * Throws an exception if thread local hasn't been set.
+   * Overriddden to throws an exception if thread local hasn't been set.
    */
   override def get = super.get match {
     case null => throw new Exception("No request context")

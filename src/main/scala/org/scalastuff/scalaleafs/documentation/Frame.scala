@@ -1,32 +1,35 @@
-package org.scalastuff.scalaleafs.documentation
+package net.scalaleafs.documentation
 
-import org.scalastuff.scalaleafs.JsCmd.toNoop
-import org.scalastuff.scalaleafs.implicits._
-import org.scalastuff.scalaleafs.AddClass
-import org.scalastuff.scalaleafs.HeadContributions
-import org.scalastuff.scalaleafs.Ident
-import org.scalastuff.scalaleafs.R
-import org.scalastuff.scalaleafs.Template
-import org.scalastuff.scalaleafs.Url
-import org.scalastuff.scalaleafs.UrlHandler
-import org.scalastuff.scalaleafs.Html
-import org.scalastuff.scalaleafs.CodeSample
-import org.scalastuff.scalaleafs.MkElem
-import org.scalastuff.scalaleafs.CssSelector
-import org.scalastuff.scalaleafs.XmlTransformation
+import net.scalaleafs.UrlTrail
+import net.scalaleafs.JsCmd.toNoop
+import net.scalaleafs.implicits._
+import net.scalaleafs.AddClass
+import net.scalaleafs.HeadContributions
+import net.scalaleafs.Ident
+import net.scalaleafs.R
+import net.scalaleafs.Template
+import net.scalaleafs.Url
+import net.scalaleafs.UrlHandler
+import net.scalaleafs.Html
+import net.scalaleafs.MkElem
+import net.scalaleafs.CssSelector
+import net.scalaleafs.XmlTransformation
 import scala.xml.NodeSeq
 import scala.collection.mutable.ArrayBuffer
-import org.scalastuff.scalaleafs.contrib.UrlDispatcher
-import org.scalastuff.scalaleafs.SetText
-import org.scalastuff.scalaleafs.SetAttr
-import org.scalastuff.scalaleafs.Var
-import org.scalastuff.scalaleafs.Var
-import org.scalastuff.scalaleafs.SeqVar
-import org.scalastuff.scalaleafs.SetContent
-import org.scalastuff.scalaleafs.Children
-import org.scalastuff.scalaleafs.UrlTrail
+import net.scalaleafs.SetText
+import net.scalaleafs.SetAttr
+import net.scalaleafs.Var
+import net.scalaleafs.Var
+import net.scalaleafs.SeqVar
+import net.scalaleafs.SetContent
+import net.scalaleafs.Children
+import net.scalaleafs.UrlTrail
+import net.scalaleafs.Var
+import net.scalaleafs.XmlTransformation
+import net.scalaleafs.UrlHandler
+import net.scalaleafs.Template
 
-class Frame(val trail : Var[UrlTrail]) extends Template with UrlHandler with HeadContributions with CodeSample {
+class Frame(val trail : Var[UrlTrail]) extends Template with UrlHandler with HeadContributions {
     
   case class MenuItem(path : List[String], text : String, f : UrlTrail => XmlTransformation) 
   val menu = Seq(

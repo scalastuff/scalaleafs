@@ -1,9 +1,20 @@
-package org.scalastuff.scalaleafs
+/**
+ * Copyright (c) 2012 Ruud Diterwich.
+ * All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ */
+package net.scalaleafs
 
 import scala.xml.NodeSeq
 import scala.xml.Elem
 import scala.xml.Atom
 import scala.xml.parsing.NoBindingFactoryAdapter
+
 import org.xml.sax.InputSource
 import javax.xml.parsers.SAXParser
 import scala.xml.Null
@@ -171,12 +182,18 @@ case class CommentedPCData(_data: String) extends Atom[String](_data) {
     sb append "\n//<![CDATA[\n  %s\n//]]>".format(data)
 }
 
+/**
+ * Augment an Elem with attr and class methods.
+ */
 class RichElem(elem : Elem) {
+  def id = XmlHelpers.getId(elem)
+  def setId(id : String) = XmlHelpers.setId(elem, id)
   def attr(key : String) : String = XmlHelpers.attr(elem, key)
   def attrExists(key : String) : Boolean = XmlHelpers.attrExists(elem, key)
   def hasAttrValue(key : String, value : String) : Boolean = XmlHelpers.hasAttrValue(elem, key, value)
   def attrEqualsUntilHyphen(key : String, value : String) : Boolean = XmlHelpers.attrEqualsUntilHyphen(elem, key, value)
   def setAttr(key : String, value : String) : Elem = XmlHelpers.setAttr(elem, key, value)
+  def setAttr(key : String, f : String => String) : Elem = XmlHelpers.setAttr(elem, key, f)
   def removeAttr(key : String) : Elem = XmlHelpers.removeAttr(elem, key)
   def addAttrValue(key : String, value : String) : Elem = XmlHelpers.addAttrValue(elem, key, value)
   def removeAttrValue(key : String, value : String) : Elem = XmlHelpers.removeAttrValue(elem, key, value)
@@ -184,18 +201,7 @@ class RichElem(elem : Elem) {
   def setClass(value : String) = XmlHelpers.setClass(elem, value)
   def addClass(value : String) = XmlHelpers.addClass(elem, value)
   def removeClass(value : String) = XmlHelpers.removeClass(elem, value)
-  def setAttr(key : String, f : String => String) : Elem = XmlHelpers.setAttr(elem, key, f)
 }
-//
-//object ElemWithId {
-//  def unapply(xml : NodeSeq) : Option[(Elem, String)] = xml match {
-//    case elem : Elem =>
-//      val id = XmlHelpers.attr(elem, "id")
-//      if (id.trim != "") Some(elem, id)
-//      else None
-//    case _ => None
-//  }
-//}
 
 class HTML5Parser extends NoBindingFactoryAdapter {
 
@@ -206,7 +212,7 @@ class HTML5Parser extends NoBindingFactoryAdapter {
   def loadXML(source : InputSource) = {
     import nu.validator.htmlparser.{sax,common}
     import sax.HtmlParser
-    import common.XmlViolationPolicy
+import common.XmlViolationPolicy
 
     val reader = new HtmlParser
     reader.setXmlPolicy(XmlViolationPolicy.ALLOW)

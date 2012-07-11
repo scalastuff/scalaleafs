@@ -1,2 +1,2 @@
-package org.scalastuff.scalaleafs.documentation
+package net.scalaleafs.documentation
 

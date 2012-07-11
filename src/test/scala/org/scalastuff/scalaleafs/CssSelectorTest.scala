@@ -1,7 +1,7 @@
-package org.scalastuff.scalaleafs
+package net.scalaleafs
 import org.junit.Test
 
-import org.scalastuff.scalaleafs.implicits._
+import net.scalaleafs.implicits._
 
 class CssSelectorTest {
 

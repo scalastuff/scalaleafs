@@ -8,7 +8,7 @@
     <filter>
         <filter-name>leafs</filter-name>
         <display-name>Scala Pages</display-name>
-        <filter-class>org.scalastuff.scalaleafs.documentation.Site</filter-class>
+        <filter-class>net.scalaleafs.documentation.Site</filter-class>
     </filter>
 
     <filter-mapping>

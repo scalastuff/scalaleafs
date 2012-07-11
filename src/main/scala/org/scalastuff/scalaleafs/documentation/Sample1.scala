@@ -1,7 +1,7 @@
-package org.scalastuff.scalaleafs.documentation
+package net.scalaleafs.documentation
 
-import org.scalastuff.scalaleafs.Template
-import org.scalastuff.scalaleafs.implicits._
+import net.scalaleafs.Template
+import net.scalaleafs.implicits._
 
 case class Person(firstName : String, lastName : String)
 

@@ -1,8 +1,6 @@
-package org.scalastuff.scalaleafs.contrib
+package net.scalaleafs.contrib
 
-import org.scalastuff.scalaleafs.R
-import org.scalastuff.scalaleafs.JsCmd
-import org.scalastuff.scalaleafs.Alert
+import net.scalaleafs.JsCmd;
 
 object Dialogs {
 

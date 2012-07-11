@@ -1,10 +1,34 @@
-package org.scalastuff.scalaleafs
-import scala.xml.NodeSeq
+/**
+ * Copyright (c) 2012 Ruud Diterwich.
+ * All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ */
+package net.scalaleafs
+
 import java.util.concurrent.ConcurrentHashMap
-import scala.xml.XML
-import scala.xml.Elem
-import java.net.URI
+
+import scala.xml.NodeSeq.seqToNodeSeq
+import scala.xml.{XML, NodeSeq, Elem}
+
 import org.xml.sax.SAXParseException
+
+/**
+ * A template is an XmlTransformation that reads its input, by default, from a class-path resource, and provides
+ * a bind hook to transform this input to some output.
+ * Class-path resources are cached (when not in debug mode) in a JVM-global cache.
+ */
+trait Template extends XmlTransformation {
+  def bind : NodeSeq => NodeSeq
+  def readInput : NodeSeq = Template.template(getClass)
+  val input = readInput
+  def render : NodeSeq = apply(input)
+  abstract override def apply(xml : NodeSeq) = bind(super.apply(input))
+}
 
 object Template {
   val templateCache = new ConcurrentHashMap[Class[_], NodeSeq]
@@ -33,16 +57,4 @@ object Template {
   }
 }
 
-/**
- * A template is an XmlTransformation that reads its input, by default, from a class-path resource, and provides
- * a bind hook to transform this input to some output.
- * Class-path resources are cached (when not in debug mode) in a JVM-global cache.
- */
-trait Template extends XmlTransformation {
-  def bind : NodeSeq => NodeSeq
-  def readInput : NodeSeq = Template.template(getClass)
-  val input = readInput
-  def render : NodeSeq = apply(input)
-  abstract override def apply(xml : NodeSeq) = bind(super.apply(input))
-}
 

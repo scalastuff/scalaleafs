@@ -1,11 +1,33 @@
-package org.scalastuff.scalaleafs
+/**
+ * Copyright (c) 2012 Ruud Diterwich.
+ * All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ */
+package net.scalaleafs
 
 import scala.collection.mutable
-import org.scalastuff.scalaleafs.implicits._
+import net.scalaleafs.implicits._
 import scala.xml.NodeSeq
 import scala.xml.Elem
 import scala.xml.Node
 import scala.xml.PCData
+
+/**
+ * Transformation that processes the <head> section of an HTML page. Resource links are resolved, contributions needed by the 
+ * 
+ * HeadContributions expects the whole page (HTML tag) as input.
+ * Usually, an application's main frame class extends this trait.  
+ */
+trait HeadContributions extends XmlTransformation {
+  abstract override def apply(xml : NodeSeq) : NodeSeq = {
+   HeadContributions.render(R, getClass, super.apply(xml)) 
+  }
+}
 
 object HeadContributions {
   
@@ -19,13 +41,13 @@ object HeadContributions {
             case "link" =>
               val href = XmlHelpers.attr(elem, "href")
               if (!href.startsWith("http:")) {
-                XmlHelpers.setAttr(elem, "href", request.resourceBaseUrl.resolve(Resources.hashedResourcePathFor(c, href)).toLocalString)
+                XmlHelpers.setAttr(elem, "href", request.resourceBaseUrl.resolve(request.server.resources.hashedResourcePathFor(c, href)).toLocalString)
               }
               else elem
             case "script" =>
               val src = XmlHelpers.attr(elem, "src")
               if (!src.startsWith("http:")) {
-                XmlHelpers.setAttr(elem, "src", request.resourceBaseUrl.resolve(Resources.hashedResourcePathFor(c, src)).toLocalString)
+                XmlHelpers.setAttr(elem, "src", request.resourceBaseUrl.resolve(request.server.resources.hashedResourcePathFor(c, src)).toLocalString)
               }
               else elem
             case _ => elem
@@ -90,12 +112,6 @@ object HeadContributions {
   }
 }
 
-trait HeadContributions extends XmlTransformation {
-  abstract override def apply(xml : NodeSeq) : NodeSeq = {
-   HeadContributions.render(R, getClass, super.apply(xml)) 
-  }
-}
-
 abstract class HeadContribution(val key : String) {
   def dependsOn : List[HeadContribution] = Nil
   def render(request : Request) : NodeSeq
@@ -108,11 +124,8 @@ class JavaScript(key : String, uri : String) extends HeadContribution(key) {
 }
 
 class JavaScriptResource(c : Class[_], resource : String) extends HeadContribution(c.getName + "/" + resource) {
-  var name = Resources.hashedResourcePathFor(c, resource)
   def render(request : Request) = {
-    if (request.session.debugMode) {
-      name = Resources.hashedResourcePathFor(c, resource)
-    }
+    var name = request.server.resources.hashedResourcePathFor(c, resource)
     <script type="text/javascript" src={request.resourceBaseUrl.resolve(name).toLocalString} />
   }
 }

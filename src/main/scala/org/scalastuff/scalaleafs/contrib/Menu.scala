@@ -1,18 +1,9 @@
-package org.scalastuff.scalaleafs.contrib
+package net.scalaleafs.contrib
 
 import scala.xml.NodeSeq
-import org.scalastuff.scalaleafs.implicits._
-import org.scalastuff.scalaleafs.AddClass
-import org.scalastuff.scalaleafs.CssTransformation
-import org.scalastuff.scalaleafs.Html
-import org.scalastuff.scalaleafs.R
-import org.scalastuff.scalaleafs.SetAttr
-import org.scalastuff.scalaleafs.SetContent
-import org.scalastuff.scalaleafs.SetText
-import org.scalastuff.scalaleafs.Url
-import org.scalastuff.scalaleafs.Var
-import org.scalastuff.scalaleafs.XmlTransformation
-import org.scalastuff.scalaleafs.UrlTrail
+
+import net.scalaleafs.implicits._
+import net.scalaleafs.{XmlTransformation, Var, UrlTrail, Url, SetText, SetContent, SetAttr, R, Html, AddClass}
 
 case class MenuItem(path : List[String], text : String, content : UrlTrail => XmlTransformation) {
   val itemPathString = path.mkString("/")

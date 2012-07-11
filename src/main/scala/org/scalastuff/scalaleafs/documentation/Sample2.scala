@@ -1,7 +1,7 @@
-package org.scalastuff.scalaleafs.documentation
+package net.scalaleafs.documentation
 
-import org.scalastuff.scalaleafs._
-import org.scalastuff.scalaleafs.implicits._
+import net.scalaleafs._
+import net.scalaleafs.implicits._
 
 class Sample2 extends Template {
   val persons = Person("Joe", "Henri") :: Person("Michael", "Jackson") :: Nil

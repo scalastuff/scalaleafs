@@ -1,5 +1,15 @@
-package org.scalastuff.scalaleafs
-import scala.collection.mutable.WeakHashMap
+/**
+ * Copyright (c) 2012 Ruud Diterwich.
+ * All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ */
+package net.scalaleafs
+
 import scala.xml.NodeSeq
 import scala.xml.Elem
 import java.util.UUID
@@ -216,7 +226,6 @@ trait SeqVar[A] extends Changeable[Seq[A]] { thisVar =>
         }
         
       thisVar.onChange(avalue => R.addEagerPostRequestJs(RemoveNextSiblings(id, id) & ReplaceHtml(id, gen(avalue))))
-      // TODO remove id-* siblings first
       gen(value)
     }
   }

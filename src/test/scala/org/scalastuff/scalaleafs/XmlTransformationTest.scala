@@ -1,6 +1,10 @@
-package org.scalastuff.scalaleafs
+package net.scalaleafs
+import net.scalaleafs.Ident;
+import net.scalaleafs.SetClass;
+import net.scalaleafs.SetId;
+
 import org.junit.Test
-import org.scalastuff.scalaleafs.implicits._
+import net.scalaleafs.implicits._
 import org.junit.Assert
 
 class XmlTransformationTest {

@@ -1,10 +1,11 @@
-package org.scalastuff.scalaleafs.documentation
-import org.scalastuff.scalaleafs.Ident
-import org.scalastuff.scalaleafs.UrlHandler
-import org.scalastuff.scalaleafs.Url
-import org.scalastuff.scalaleafs.Template
+package net.scalaleafs.documentation
+
+import net.scalaleafs.Ident
+import net.scalaleafs.UrlHandler
+import net.scalaleafs.Url
+import net.scalaleafs.Template
 import scala.xml.NodeSeq
-import org.scalastuff.scalaleafs.UrlTrail
+import net.scalaleafs.UrlTrail
 
 class GettingStarted(val url : UrlTrail) extends Template {
   val path  = Nil

@@ -1,4 +1,14 @@
-package org.scalastuff.scalaleafs
+/**
+ * Copyright (c) 2012 Ruud Diterwich.
+ * All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ */
+package net.scalaleafs
 
 import java.util.concurrent.ConcurrentHashMap
 import scala.collection.mutable.Builder
@@ -97,11 +107,13 @@ object CssSelectorParser extends AbstractCssParser {
 }
 
 /**
- * Transformation that wraps some input xml with a new Element using a css-like syntax.
+ * A CSS constructor creates XML elements with an CSS-like syntax. 
  * For example, the following statement wraps some input xml in an input element with the name attribute set, 
  * which in turn is wrapped in a div element that has the 'wrapper' class.
  * <pre>CssConstructor("div.wrapper input[name='descr']")</pre>
  */
+trait CssConstructor extends Function1[NodeSeq, Elem]
+
 object CssConstructor {
   private val constructorCache = new ConcurrentHashMap[String, CssConstructor]
   def apply(s : String) : CssConstructor = {
@@ -120,8 +132,6 @@ object CssConstructor {
     constructor
   }
 }
-
-trait CssConstructor extends Function1[NodeSeq, Elem]
 
 class ElemConstructor(prefix : Option[String], label : String, modifier : ElemModifier) extends CssConstructor {
   override def apply(xml : NodeSeq) : Elem = {

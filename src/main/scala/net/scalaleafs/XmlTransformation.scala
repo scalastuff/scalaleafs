@@ -1,4 +1,14 @@
-package org.scalastuff.scalaleafs
+/**
+ * Copyright (c) 2012 Ruud Diterwich.
+ * All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ */
+package net.scalaleafs
 
 import scala.xml.NodeSeq
 import scala.xml.Elem
@@ -36,13 +46,6 @@ trait XmlTransformation extends Function1[NodeSeq, NodeSeq] { t0 =>
     override def apply(xml : NodeSeq) : NodeSeq = t(t0(xml))
   }
 }
-
-/**
- * An XmlSelector is used to match elements in an XML structure. When recursive is set, the xml is searched recursively. 
- * Otherwise (the default) only the top-level nodes are searched. When a nested selector is specified, child nodes of
- * a matched element are searched using the nested selector.
- */
-case class XmlSelector(matches : Elem => Boolean, recursive : Boolean = false, nested : Option[XmlSelector] = None) 
 
 object XmlTransformation {
   
@@ -165,6 +168,14 @@ object Ident extends ElemModifier(e => e, false) with XmlTransformation {
   override def & (t : XmlTransformation) : XmlTransformation = t
 }
 
+/**
+ * An XmlSelector is used to match elements in an XML structure. When recursive is set, the xml is searched recursively. 
+ * Otherwise (the default) only the top-level nodes are searched. When a nested selector is specified, child nodes of
+ * a matched element are searched using the nested selector.
+ */
+case class XmlSelector(matches : Elem => Boolean, recursive : Boolean = false, nested : Option[XmlSelector] = None) 
+
+
 /**************************
  * Utility transformations.
  **************************/
@@ -174,6 +185,11 @@ object Ident extends ElemModifier(e => e, false) with XmlTransformation {
  * The element is created using a css-like syntax (e.g. "div.wrapper input[name='desc']").
  * @see CssConstructor
  */
+class MkElem(cssConstructor : String, condition : => Boolean, modifier : ElemModifier) extends XmlTransformation {
+  override def apply(xml : NodeSeq) : NodeSeq = {
+    if (condition) modifier(CssConstructor(cssConstructor)(xml)) else xml
+  }
+}
 object MkElem {
   def apply(cssConstructor : String) : MkElem =  
     new MkElem(cssConstructor, true, Ident) 
@@ -186,12 +202,6 @@ object MkElem {
 
   def apply(cssConstructor : String, condition : => Boolean, modifier : ElemModifier) : MkElem = 
     new MkElem(cssConstructor, condition, modifier) 
-}
-
-class MkElem(cssConstructor : String, condition : => Boolean, modifier : ElemModifier) extends XmlTransformation {
-  override def apply(xml : NodeSeq) : NodeSeq = {
-    if (condition) modifier(CssConstructor(cssConstructor)(xml)) else xml
-  }
 }
 
 /**
@@ -225,67 +235,19 @@ object Children {
 }
 
 /**
+ * Transformation that transforms child nodes of some input element.
+ */
+object SetContent {
+  def apply(content : NodeSeq => NodeSeq, condition : => Boolean = true) = 
+    new ElemModifier(xml => XmlHelpers.setContent(xml, content(xml.child)), condition) 
+}
+
+/**
  * Transformation that sets an attribute of some input element.
  */
 object SetAttr {
-  def apply(key : String, value : String, condition : => Boolean = true) = 
-    new ElemModifier(XmlHelpers.setAttr(_, key, value), condition) 
-}
-
-/**
- * Transformation that removes an attribute from some input element.
- */
-object RemoveAttr {
-  def apply(key : String, value : String, condition : => Boolean = true) = 
-    new ElemModifier(XmlHelpers.removeAttr(_, key), condition) 
-}
-
-/**
- * Transformation that adds a value to an attribute of some input element.
- */
-object AddAttrValue {
-  def apply(key : String, value : String, condition : => Boolean = true) = 
-    new ElemModifier(XmlHelpers.addAttrValue(_, key, value), condition) 
-}
-
-/**
- * Transformation that removes a value from an attribute of some input element.
- */
-object RemoveAttrValue {
-  def apply(key : String, value : String, condition : => Boolean = true) = 
-    new ElemModifier(XmlHelpers.removeAttrValue(_, key, value), condition) 
-}
-
-/**
- * Transformation that adds a value to an attribute of some input element.
- */
-object SetId {
-  def apply(value : String, condition : => Boolean = true) = 
-    new ElemModifier(XmlHelpers.setId(_, value), condition) 
-}
-
-/**
- * Transformation that sets the class attribute of some input element.
- */
-object SetClass {
-  def apply(value : String, condition : => Boolean = true) = 
-    new ElemModifier(XmlHelpers.setClass(_, value), condition) 
-}
-
-/**
- * Transformation that adds a class to some input element.
- */
-object AddClass {
-  def apply(value : String, condition : => Boolean = true) = 
-    new ElemModifier(XmlHelpers.addClass(_, value), condition) 
-}
-
-/**
- * Transformation that removes a class from some input element.
- */
-object RemoveClass {
-  def apply(value : String, condition : => Boolean = true) = 
-    new ElemModifier(XmlHelpers.removeClass(_, value), condition) 
+  def apply(attr : String, value : String, condition : => Boolean = true) = 
+    new ElemModifier(XmlHelpers.setAttr(_, attr, value), condition) 
 }
 
 /**
@@ -297,9 +259,57 @@ object SetText {
 }
 
 /**
- * Transformation that transforms child nodes of some input element.
+ * Transformation that removes an attribute from some input element.
  */
-object SetContent {
-  def apply(content : NodeSeq => NodeSeq, condition : => Boolean = true) = 
-    new ElemModifier(xml => XmlHelpers.setContent(xml, content(xml.child)), condition) 
+object RemoveAttr {
+  def apply(attr : String, value : String, condition : => Boolean = true) = 
+    new ElemModifier(XmlHelpers.removeAttr(_, attr), condition) 
+}
+
+/**
+ * Transformation that adds a value to an attribute of some input element.
+ */
+object AddAttrValue {
+  def apply(attr : String, value : String, condition : => Boolean = true) = 
+    new ElemModifier(XmlHelpers.addAttrValue(_, attr, value), condition) 
+}
+
+/**
+ * Transformation that removes a value from an attribute of some input element.
+ */
+object RemoveAttrValue {
+  def apply(attr : String, value : String, condition : => Boolean = true) = 
+    new ElemModifier(XmlHelpers.removeAttrValue(_, attr, value), condition) 
+}
+
+/**
+ * Transformation that adds a value to an attribute of some input element.
+ */
+object SetId {
+  def apply(id : String, condition : => Boolean = true) = 
+    new ElemModifier(XmlHelpers.setId(_, id), condition) 
+}
+
+/**
+ * Transformation that sets the class attribute of some input element.
+ */
+object SetClass {
+  def apply(className : String, condition : => Boolean = true) = 
+    new ElemModifier(XmlHelpers.setClass(_, className), condition) 
+}
+
+/**
+ * Transformation that adds a class to some input element.
+ */
+object AddClass {
+  def apply(className : String, condition : => Boolean = true) = 
+    new ElemModifier(XmlHelpers.addClass(_, className), condition) 
+}
+
+/**
+ * Transformation that removes a class from some input element.
+ */
+object RemoveClass {
+  def apply(className : String, condition : => Boolean = true) = 
+    new ElemModifier(XmlHelpers.removeClass(_, className), condition) 
 }

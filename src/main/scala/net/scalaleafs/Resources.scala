@@ -1,8 +1,24 @@
-package org.scalastuff.scalaleafs
+/**
+ * Copyright (c) 2012 Ruud Diterwich.
+ * All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ */
+package net.scalaleafs
+
 import java.util.concurrent.ConcurrentHashMap
 import scala.io.Source
 import javax.xml.bind.DatatypeConverter
 import java.io.InputStream
+
+/**
+ * Resource meta data.
+ */
+case class ResourceType(extention: String, contentType : String, encoding : Option[String])
 
 object ResourceType {
   private val map = Map(
@@ -27,13 +43,18 @@ object ResourceType {
   }
 }
 
-case class ResourceType(extention: String, contentType : String, encoding : Option[String])
-
+/**
+ * Trait through which resources can be loaded. Sepearates resource handling from the environment the application is deployed in.
+ */
 trait ResourceFactory {
   def getResource(path : String, name : String, resourceType : ResourceType) : Option[InputStream]
 }
 
-object Resources {
+/**
+ * Entry point for resources. It processes (e.g. string replacements) and caches resource data.
+ * There is typically one instance per server.
+ */
+class Resources {
   private val debugPostfix1 = "// DEBUG MODE";
   private val debugPostfix2 = "/* DEBUG MODE */";
   private val resourcePaths = new ConcurrentHashMap[(Class[_], String), String]
@@ -114,6 +135,4 @@ object Resources {
     if (index < 0) name + "-" + hash 
     else name.substring(0, index) + "-" + hash + name.substring(index)  
   }
-  
-  
 }

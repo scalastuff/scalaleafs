@@ -1,14 +1,20 @@
-package org.scalastuff.scalaleafs
+/**
+ * Copyright (c) 2012 Ruud Diterwich.
+ * All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ */
+package net.scalaleafs
 
-import unfiltered.jetty.Http
-import unfiltered.response.ResponseString
 import scala.xml.Elem
 import scala.xml.NodeSeq
+import net.scalaleafs._
 
 package object implicits {
-  
-  implicit def toUnfilteredResponse(template : Template) = 
-    ResponseString(template.render.toString)
   
   implicit def toUnparsedCssSelector(s : String) = 
     new UnparsedCssSelector(s)

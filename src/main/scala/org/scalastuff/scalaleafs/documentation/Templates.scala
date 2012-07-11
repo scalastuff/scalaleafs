@@ -1,11 +1,11 @@
-package org.scalastuff.scalaleafs.documentation
+package net.scalaleafs.documentation
 
-import org.scalastuff.scalaleafs.UrlHandler
-import org.scalastuff.scalaleafs.Url
-import org.scalastuff.scalaleafs.Template
-import org.scalastuff.scalaleafs.implicits._
+import net.scalaleafs.UrlHandler
+import net.scalaleafs.Url
+import net.scalaleafs.Template
+import net.scalaleafs.implicits._
 import scala.xml.NodeSeq
-import org.scalastuff.scalaleafs.UrlTrail
+import net.scalaleafs.UrlTrail
 
 class Templates(val url : UrlTrail) extends Template {
   val path  = Nil

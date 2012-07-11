@@ -1,8 +1,8 @@
-package org.scalastuff.scalaleafs.documentation
+package net.scalaleafs.documentation
 import scala.xml.NodeSeq
 
-import org.scalastuff.scalaleafs.Template
-import org.scalastuff.scalaleafs.Url
+import net.scalaleafs.Template
+import net.scalaleafs.Url
 
 class Binding(url : Url) extends Template {
   val bind = (xml : NodeSeq) => <bla/>

@@ -1,11 +1,16 @@
-package org.scalastuff.scalaleafs
+/**
+ * Copyright (c) 2012 Ruud Diterwich.
+ * All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ */
+package net.scalaleafs
 
-import scala.xml.NodeSeq
-import scala.xml.Text
-import java.net.URI
-import scala.xml.Utility
-import java.util.concurrent.ConcurrentHashMap
-import scala.io.Source
+import scala.xml.{Text, NodeSeq}
 
 /**
  ** Generic java-script functionality. 

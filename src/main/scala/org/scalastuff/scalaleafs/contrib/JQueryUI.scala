@@ -1,16 +1,8 @@
-package org.scalastuff.scalaleafs.contrib
-import org.scalastuff.scalaleafs.Var
-import org.scalastuff.scalaleafs.ElemTransformation
+package net.scalaleafs.contrib
+import net.scalaleafs._
 import scala.xml.Elem
 import scala.xml.NodeSeq
 import java.util.UUID
-import org.scalastuff.scalaleafs.XmlHelpers
-import org.scalastuff.scalaleafs.ElemWithIdTransformation
-import org.scalastuff.scalaleafs.JsCmd
-import org.scalastuff.scalaleafs.JsRaw
-import org.scalastuff.scalaleafs.R
-import org.scalastuff.scalaleafs.JsReturn
-import org.scalastuff.scalaleafs.JsReturnFalse
 
 object JQueryUI {
 
