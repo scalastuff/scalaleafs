@@ -55,6 +55,7 @@ The example shows the 3 things that can be on the right side of a CSS selector: 
   {% endfor %}
   {% for page in site.pages %}
   {% if page.sitemap != null and page.sitemap != empty %}
+  {{ site.baseurl }}{{ page.url }} {{ page.title }}
   <url>
     <loc>{{ site.baseurl }}{{ page.url }}</loc>
     <lastmod>{{ page.sitemap.lastmod | date_to_xmlschema }}</lastmod>
