@@ -5,12 +5,15 @@ title: First Example
 # First example
 
 FirstExample.html:
+
     <div>
       <span id="elt1"/>
       <span id="elt2"/>
       <span id="elt3"/>
     </div>
+
 FirstExample.scala:
+
     class FirstExample extends Template {
       def bind = 
         "#elt1" #> Hi there
