@@ -4,7 +4,7 @@ title: First Example
 ---
 # First example
 
-The first example shows how to use **CSS Selectors** to bind a template to scala code. The template file should be placed on the classpath.
+The first example shows how to use **CSS Selectors** to bind a template to scala code. 
 
 FirstExample.html:
 
@@ -19,7 +19,6 @@ FirstExample.html:
 FirstExample.scala:
 
 {% highlight scala %}
-import net.scalaleafs._
 class FirstExample extends Template {
   val bind = 
     "#elt1" #> "Hi there" &
@@ -28,7 +27,8 @@ class FirstExample extends Template {
 }
 {% endhighlight %}
 
-Now, when the template is rendered (new Template.render), the following output is produced:
+The template file should be placed on the classpath.
+When the template is rendered (Template.render), the following output is produced:
 
 {% highlight html %}
 <div>
@@ -38,4 +38,4 @@ Now, when the template is rendered (new Template.render), the following output i
 </div>
 {% endhighlight %}
 
-The example shows that the 3 things that can be on the right side of a CSS selector: a string, an XML literal, or an XML transformation. An XML transformation is basically a NodeSeq => NodeSeq function.
+The example shows the 3 things that can be on the right side of a CSS selector: a string, an XML literal, or an XML transformation. An XML transformation is basically a NodeSeq => NodeSeq function.
