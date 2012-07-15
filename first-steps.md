@@ -27,3 +27,13 @@ class FirstExample extends Template {
     "#elt3" #> AddClass("selected")
 }
 {% endhighlight %}
+
+Now, when the temlate is rendered (new FirstExample.render), the following output is produced:
+
+{% highlight html %}
+<div>
+  Hi there
+  <h3>Hi There!</h3>
+  <span id="elt3" class="selected">some text</span>
+</div>
+{% endhighlight %}
