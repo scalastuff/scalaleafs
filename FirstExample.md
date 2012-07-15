@@ -1,6 +1,7 @@
---
-layout: __default
---
+---
+layout: default
+title: First Example
+---
 # First example
 
     <div>
