@@ -1,6 +1,7 @@
 ---
 layout: default
 title: First Example
+weight: 100
 ---
 # First example
 
