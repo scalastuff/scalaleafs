@@ -13,7 +13,7 @@ FirstExample.html:
     </div>
 
 FirstExample.scala:
-   
+   {% highlight scala %}
     import net.scalaleafs._
     class FirstExample extends Template {
       def bind = 
@@ -21,3 +21,4 @@ FirstExample.scala:
         "#elt2" #> <h3>Hi There!</h3>
         "#elt3" #> AddClass("selected")
     }
+    {% endhighlight %}
