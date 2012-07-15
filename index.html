@@ -29,7 +29,9 @@
       </header>
       <section>
         <h3>Welcome to ScalaLeafs</h3>
-
+{% for page in site.pages %}
+[{{ page.title }}]({{page.url}})
+{% endfor %}
 <h2>Getting started</h2>
 
 <pre><code>$ cd your_repo_root/repo_name
