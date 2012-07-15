@@ -1,6 +1,10 @@
---
-layout:nil
---
+---
+layout: site
+---
+{% for post in site.posts limit:3 %}
+  {% include post_preview.html %}
+{% endfor %}
+
 # How does it work?
 
 {% for page in site.pages %}
