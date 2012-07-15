@@ -22,8 +22,8 @@ FirstExample.scala:
 import net.scalaleafs._
 class FirstExample extends Template {
   val bind = 
-    "#elt1" #> Hi there
-    "#elt2" #> <h3>Hi There!</h3>
+    "#elt1" #> Hi there &
+    "#elt2" #> <h3>Hi There!</h3> &
     "#elt3" #> AddClass("selected")
 }
 {% endhighlight %}
