@@ -13,7 +13,8 @@ FirstExample.html:
     </div>
 
 FirstExample.scala:
-
+   
+    import net.scalaleafs._
     class FirstExample extends Template {
       def bind = 
         "#elt1" #> Hi there
