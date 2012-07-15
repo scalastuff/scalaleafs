@@ -1,3 +1,6 @@
+--
+layout:nil
+--
 # How does it work?
 
 {% for page in site.pages %}
