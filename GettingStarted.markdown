@@ -1,6 +1,7 @@
 ---
 layout: default
 title: Something with codes
+weight: 2
 ---
 
 Happy fun highlighting. 
