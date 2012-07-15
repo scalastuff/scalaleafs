@@ -4,7 +4,7 @@ title: First Example
 ---
 # First example
 
-The first example shows how HTML is bound to scala code. Scala code references HTML using CSS selectors. The template file should be placed on the classpath.
+The first example shows how to use *CSS Selectors* to bind a template to scala code. The template file should be placed on the classpath.
 
 FirstExample.html:
 
