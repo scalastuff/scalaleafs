@@ -1,3 +1,6 @@
+--
+layout: __default
+--
 # First example
 
     <div>
