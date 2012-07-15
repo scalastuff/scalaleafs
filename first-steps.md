@@ -16,9 +16,8 @@ FirstExample.scala:
 {% highlight scala %}
 import net.scalaleafs._
 class FirstExample extends Template {
-{{ "#>" | cgi_escape }}
   def bind = 
-    "#elt1" {{"#>"}} Hi there
+    "#elt1" #> Hi there
     "#elt2" #> <h3>Hi There!</h3>
     "#elt3" #> AddClass("selected")
 }
