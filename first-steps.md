@@ -22,7 +22,7 @@ FirstExample.scala:
 import net.scalaleafs._
 class FirstExample extends Template {
   val bind = 
-    "#elt1" #> Hi there &
+    "#elt1" #> "Hi there" &
     "#elt2" #> <h3>Hi There!</h3> &
     "#elt3" #> AddClass("selected")
 }
@@ -37,3 +37,5 @@ Now, when the template is rendered (new Template.render), the following output i
   <span id="elt3" class="selected">some text</span>
 </div>
 {% endhighlight %}
+
+The example shows that the 3 things that can be on the right side of a CSS selector: a string, an XML literal, or an XML transformation. An XML transformation is basically a NodeSeq => NodeSeq function.
