@@ -17,7 +17,9 @@
       <header>
         <h1>Scalaleafs</h1>
         <p>ScalaLeafs Web Framework</p>
-
+{% for page in site.pages %}
+[{{ page.title }}]({{page.url}})
+{% endfor %}
         <p class="view"><a href="https://github.com/scalastuff/scalaleafs">View the Project on GitHub <small>scalastuff/scalaleafs</small></a></p>
 
 
