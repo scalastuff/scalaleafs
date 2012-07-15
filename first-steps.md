@@ -16,7 +16,7 @@ FirstExample.scala:
 {% highlight scala %}
 import net.scalaleafs._
 class FirstExample extends Template {
-{{ blog_post.body|markdown}}
+{{ "foo,bar;baz?" | cgi_escape }}
   def bind = 
     "#elt1" {"#>"} Hi there
     "#elt2" #> <h3>Hi There!</h3>
