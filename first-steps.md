@@ -40,7 +40,7 @@ When the template is rendered (Template.render), the following output is produce
 
 The example shows the 3 things that can be on the right side of a CSS selector: a string, an XML literal, or an XML transformation. An XML transformation is basically a NodeSeq => NodeSeq function. Since nearly everything is an XML transformation (like the expression `"#elt1" #> "Hi there"`, `bind` and the `FirstExample` class), everthing composes nicely. See [Fun With Tranformations](fun-with-transformations.html).
 
-<urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<div xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   {% for post in site.posts %}
   <url>
     <loc>{{ site.baseurl }}{{ post.url }}</loc>
@@ -63,4 +63,4 @@ The example shows the 3 things that can be on the right side of a CSS selector: 
   </url>
   {% endif %}
   {% endfor %}
-</urlset>
+</div>
