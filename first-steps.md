@@ -3,7 +3,7 @@ layout: default
 title: First Example
 weight: 8
 ---
-# First example
+# First Example
 
 This first example shows how to use **CSS Selectors** to bind a template to scala code. 
 
