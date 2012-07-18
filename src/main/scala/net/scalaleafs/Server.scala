@@ -26,9 +26,17 @@ object AjaxCallbackPath extends ConfigVar[String]("leafs/ajaxCallback")
 object AjaxFormPostPath extends ConfigVar[String]("leafs/ajaxFormPost")
 object ResourcePath extends ConfigVar[String]("leafs/")
 
-class Server(val resourceRoot : Package, val configuration : Configuration = new Configuration) {
+class Server(val contextPath : List[String], val configuration : Configuration) {
 
-  val resources = new Resources
+  val substitutions = Map[String, String] (
+      "CONTEXT_PATH" -> contextPath.mkString("/"),
+      "AJAX_CALLBACK_PATH" -> contextPath.mkString("", "/", "/" + configuration(AjaxCallbackPath)),
+      "AJAX_FORMPOST_PATH" -> contextPath.mkString("", "/", "/" + configuration(AjaxFormPostPath)),
+      "RESOURCE_PATH" -> contextPath.mkString("", "/", "/" + configuration(ResourcePath)))
+
+  val debugMode = configuration(DebugMode) || System.getProperty("leafsDebugMode") != null
+
+  val resources = new Resources(configuration(ResourceFactory), substitutions, debugMode)
   
   val ajaxCallbackPath = Url.parsePath(configuration(AjaxCallbackPath))
   val ajaxFormPostPath = Url.parsePath(configuration(AjaxFormPostPath))
@@ -48,8 +56,6 @@ class Session(val server : Server, val configuration : Configuration) {
   private[scalaleafs] val callbackIDGenerator = new AtomicLong {
     def generate : String = "cb" + getAndIncrement()
   }
-  
-  val debugMode = configuration(DebugMode) || System.getProperty("leafsDebugMode") != null
   
   def handleAjaxCallback(callbackId : String, parameters : Map[String, Seq[String]]) : String = {
     mkPostRequestJsString(processAjaxCallback(callbackId, parameters).toSeq)
@@ -118,7 +124,7 @@ class Session(val server : Server, val configuration : Configuration) {
     jsCmds match {
       case Seq() => ""
       case cmds => cmds.map { cmd => 
-        val logCmd = if (debugMode) "console.log(\"Callback result: " + cmd.toString.replace("\"", "'") + "\");\n" else ""
+        val logCmd = if (server.debugMode) "console.log(\"Callback result: " + cmd.toString.replace("\"", "'") + "\");\n" else ""
         logCmd + " try { " + cmd + "} catch (e) { console.log(e); };\n"
       }.mkString
     }
@@ -146,7 +152,7 @@ class Request(val initialRequest : InitialRequest) {
   def session = initialRequest.session
   def server = initialRequest.session.server
   def resourceBaseUrl = initialRequest.resourceBaseUrl
-  def debugMode = session.debugMode
+  def debugMode = session.server.debugMode
   
   /**
    * The current request url.
@@ -226,7 +232,7 @@ object R extends ThreadLocal[Request] {
   implicit def toRequest(r : ThreadLocal[Request]) : Request = r.get
   
   /**
-   * Overriddden to throws an exception if thread local hasn't been set.
+   * Overridden to throw an exception if thread local hasn't been set.
    */
   override def get = super.get match {
     case null => throw new Exception("No request context")

@@ -25,13 +25,13 @@ import scala.xml.PCData
  */
 trait HeadContributions extends XmlTransformation {
   abstract override def apply(xml : NodeSeq) : NodeSeq = {
-   HeadContributions.render(R, getClass, super.apply(xml)) 
+   HeadContributions.render(R, super.apply(xml)) 
   }
 }
 
 object HeadContributions {
   
-  def render(request : Request, c : Class[_], xml : NodeSeq) : NodeSeq = {
+  def render(request : Request, xml : NodeSeq) : NodeSeq = {
 
     def processHead(html : Elem) : Elem = {
   
@@ -41,13 +41,13 @@ object HeadContributions {
             case "link" =>
               val href = XmlHelpers.attr(elem, "href")
               if (!href.startsWith("http:")) {
-                XmlHelpers.setAttr(elem, "href", request.resourceBaseUrl.resolve(request.server.resources.hashedResourcePathFor(c, href)).toLocalString)
+                XmlHelpers.setAttr(elem, "href", request.resourceBaseUrl.resolve(request.server.resources.hashedResourcePathFor(href)).toLocalString)
               }
               else elem
             case "script" =>
               val src = XmlHelpers.attr(elem, "src")
               if (!src.startsWith("http:")) {
-                XmlHelpers.setAttr(elem, "src", request.resourceBaseUrl.resolve(request.server.resources.hashedResourcePathFor(c, src)).toLocalString)
+                XmlHelpers.setAttr(elem, "src", request.resourceBaseUrl.resolve(request.server.resources.hashedResourcePathFor(src)).toLocalString)
               }
               else elem
             case _ => elem
@@ -74,7 +74,7 @@ object HeadContributions {
     }
     
     def additionalBodyContent : NodeSeq = { 
-      val debugDiv = if (!request.session.debugMode) NodeSeq.Empty 
+      val debugDiv = if (!request.debugMode) NodeSeq.Empty 
       else <div style="position: absolute; right: 10px; bottom: 10px; border: 1px solid red; color: red; padding: 4px">DEBUG MODE</div>
       request.session.mkPostRequestJsString(request.postRequestJs.toSeq) match {
         case "" => 
@@ -106,7 +106,7 @@ object HeadContributions {
         if (elem.label == "html") {
           processBody(processHead(elem))
         } else elem
-      case Seq(elem : Elem) => render(request, c, elem)
+      case Seq(elem : Elem) => render(request, elem)
       case _ => xml
     }
   }

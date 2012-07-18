@@ -11,10 +11,8 @@
 package net.scalaleafs
 
 import java.net.URI
-
 import scala.collection.JavaConversions._
 import scala.xml.NodeSeq
-
 import grizzled.slf4j.Logging
 import javax.servlet.http.HttpServlet
 import javax.servlet.http.HttpServletRequest
@@ -25,6 +23,8 @@ import javax.servlet.FilterConfig
 import javax.servlet.ServletConfig
 import javax.servlet.ServletRequest
 import javax.servlet.ServletResponse
+import java.io.InputStream
+import javax.servlet.ServletContext
 
 trait LeafsServletProcessor extends Logging {
   
@@ -35,8 +35,14 @@ trait LeafsServletProcessor extends Logging {
   protected val configuration : Configuration
   protected def render(trail : UrlTrail) : NodeSeq
 
-  def initialize() {
-    server = new Server(getClass.getPackage, configuration)
+  def initialize(context : ServletContext) {
+    val webAppResourceFactory = new ResourceFactory {
+        def getResource(name : String) : Option[InputStream] = {
+          Option(context.getResourceAsStream(if (name.startsWith("/")) name else "/" + name))
+        }
+    }
+    val contextPath = Url.parsePath(context.getContextPath)
+    server = new Server(contextPath, configuration.withDefaults(ResourceFactory -> webAppResourceFactory))
     ajaxCallbackPrefix = server.ajaxCallbackPath.mkString("/", "/", "/")
     ajaxFormPostPrefix = server.ajaxFormPostPath.mkString("/", "/", "")
     resourcePrefix = server.resourcePath.mkString("/", "/", "/")
@@ -109,7 +115,7 @@ trait LeafsServletProcessor extends Logging {
 
 trait LeafsServlet extends HttpServlet with LeafsServletProcessor with Logging with FilterChain {
   override def init(config : ServletConfig) {
-    initialize
+    initialize(config.getServletContext())
   }
   
   override def doGet(request : HttpServletRequest, response : HttpServletResponse) {
@@ -129,7 +135,7 @@ trait LeafsServlet extends HttpServlet with LeafsServletProcessor with Logging w
 
 trait LeafsFilter extends Filter with LeafsServletProcessor {
   override def init(config : FilterConfig) {
-    initialize
+    initialize(config.getServletContext())
   }
 
   override def doFilter(request : ServletRequest, response : ServletResponse, chain : FilterChain) {

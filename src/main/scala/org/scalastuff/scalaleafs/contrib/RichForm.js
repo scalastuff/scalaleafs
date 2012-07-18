@@ -79,7 +79,7 @@ var leafs = new function() {
     // Is it a form?         DEBUG MODE
     var form = $(input).closest('form');
     if (form.size() > 0) {
-      form.addClass("leafs-form");
+      form.addClass("rich-form");
       var label = form.find("label[for='" + input.attr('id') + "']");
       var inputAndLabel = input.add(label);
       
@@ -179,3 +179,33 @@ var leafs = new function() {
     };
   };
 };
+
+// Override buggy IE implementation of getElementById
+if (/msie/i.test (navigator.userAgent)) //only override IE
+{
+  document.nativeGetElementById = document.getElementById;
+  document.getElementById = function(id)
+  {
+    var elem = document.nativeGetElementById(id);
+    if(elem)
+    {
+      //make sure that it is a valid match on id
+      if(elem.attributes['id'].value == id)
+      {
+        return elem;
+      }
+      else
+      {
+        //otherwise find the correct element
+        for(var i=1;i<document.all[id].length;i++)
+        {
+          if(document.all[id][i].attributes['id'].value == id)
+          {
+            return document.all[id][i];
+          }
+        }
+      }
+    }
+    return null;
+  };
+}

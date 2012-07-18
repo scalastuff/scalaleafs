@@ -101,9 +101,12 @@ case class Url(context : UrlContext, path : Seq[String], parameters : Map[String
   def child(segment : String) = 
     Url(context, path :+ segment, parameters)
     
-  def resolve(path : String) : Url = 
+  def resolve(path : String) : Url =
     Url.parse(path) match {
-      case (p, pars) => Url(context, this.path ++ p, pars)
+      case (p, pars) if p.startsWith("/") => 
+        Url(context, p, pars)
+      case (p, pars) =>
+        Url(context, this.path ++ p, pars)
     }
   
   override def toString = 

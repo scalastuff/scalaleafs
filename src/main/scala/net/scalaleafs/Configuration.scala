@@ -17,6 +17,14 @@ class Configuration (assignments : ConfigVar.Assignment[_]*) {
   // Get the configuration value for given configVar. 
   def apply[A](configVar : ConfigVar[A]) = 
     values.get(configVar).map(_.asInstanceOf[A]).getOrElse(configVar.defaultValue)
+    
+  def withDefaults(defaults : ConfigVar.Assignment[_]*) = {
+    new Configuration(assignments ++ defaults.filterNot(a => values.contains(a._1)):_*)
+  }
+  
+  def &(assignments : ConfigVar.Assignment[_]*) = {
+    new Configuration(this.assignments ++ assignments:_*)
+  }
 }
 
 abstract class ConfigVar[A](val defaultValue : A) 
@@ -29,4 +37,3 @@ object ConfigVar {
   // Implicitly convert a configVar value to its value. 
   implicit def toValue[A](configVar : ConfigVar[A]) = R.configuration(configVar) 
 }
-

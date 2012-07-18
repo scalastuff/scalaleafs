@@ -14,40 +14,63 @@ import scala.xml.Elem
 import scala.xml.NodeSeq
 import implicits._
 
+trait Validator {
+  val clientSide : Option[(JsExp, FormExecutionTime.Value)]
+  val serverSide : Option[(String => Boolean, FormExecutionTime.Value)]
+}
+object NilValidator extends Validator {
+  val serverSide = None
+  val clientSide = None
+}
+
+object EmailValidator extends Validator {
+  val clientSide = Some(JsExp("value.contains('@')"), FormExecutionTime.OnKey)
+  val serverSide = None
+}
+
+object FormExecutionTime extends Enumeration {
+  val OnSubmit = Value
+  val OnChange = Value
+  val OnKey = Value
+}
+
+abstract class RichFormElement extends ElemTransformation { t0 =>
+  def apply(elem : Elem) : Elem
+  def withLabel(label : String) = new RichFormElement {
+    def apply(elem : Elem) : Elem = {
+      val elem2 = t0.apply(elem)
+      val id = XmlHelpers.getIdOrElse(elem2, "")
+      <span class="labeled-input">
+        <label for={id}>{label}</label>
+        {elem2}
+      </span>
+    }      
+  }
+}
+
 object Html {
  
   def onclick(f : => JsCmd) : ElemModifier = {
     SetAttr("onclick", R.callback(_ => R.addPostRequestJs(f)).toString + " return false;")
   }
  
-  def editBox(label : Option[String], text : String)(setter : String => Unit) = new ElemTransformation {
-    def apply(elem : Elem) : NodeSeq = {
+  def textbox(text : String, validator : Validator = NilValidator)(setter : String => Unit) = new RichFormElement {
+    def apply(elem : Elem) : Elem = {
       val callbackId = R.callbackId(map => setter(map.get("").getOrElse(Nil).headOption.getOrElse("")))
       val id = XmlHelpers.getIdOrElse(elem, callbackId)
-      val elem2 = elem.label match {
+      elem.label match {
         case "input" => 
-          R.addPostRequestJs(JsCmd("leafs.formInputInit('" + id + "', 0, '" + callbackId + "');"))
+          val enableWhenChanged = false;// TODO make an option
+            val options = if (enableWhenChanged) "leafs.FormOptions.EnableWhenChanged" else "leafs.FormOptions.None" 
+          R.addPostRequestJs(JsCmd("leafs.formInputInit('" + id + "', " + options + ", '" + callbackId + "');"))
           XmlHelpers.setId(XmlHelpers.setAttr(elem, "value", text), id)
         case _ => elem
-      }
-      label match {
-        case Some(label) =>
-          <span class="labeled-input">
-            <label for={id}>{label}</label>
-            {elem2}
-          </span>
-        case None => elem2
       }
     }
   }
 
-  def editBox(text : String)(setter : String => Unit) : ElemTransformation = 
-    editBox(None, text)(setter)
 
-  def editBox(label : String, text : String)(setter : String => Unit) : ElemTransformation = 
-    editBox(Some(label), text)(setter)
-
-    def button(setter : => Unit) : ElemTransformation = button(false)(setter)
+  def button(setter : => Unit) : ElemTransformation = button(false)(setter)
     
   def button(enableWhenChanged : Boolean = false)(setter : => Unit) = new ElemTransformation {
     def apply(elem : Elem) : NodeSeq = {

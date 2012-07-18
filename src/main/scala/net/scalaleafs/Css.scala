@@ -11,7 +11,6 @@
 package net.scalaleafs
 
 import java.util.concurrent.ConcurrentHashMap
-import scala.collection.mutable.Builder
 import scala.util.parsing.combinator.RegexParsers
 import scala.xml.Elem
 import scala.xml.Node

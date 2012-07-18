@@ -44,87 +44,120 @@ object ResourceType {
 }
 
 /**
- * Trait through which resources can be loaded. Sepearates resource handling from the environment the application is deployed in.
+ * Trait through which resources can be loaded. Separates resource handling from the environment the application is deployed in.
  */
 trait ResourceFactory {
-  def getResource(path : String, name : String, resourceType : ResourceType) : Option[InputStream]
+  def getResource(name : String) : Option[InputStream]
+}
+
+object ResourceFactory extends ConfigVar[ResourceFactory](NullResourceFactory)
+
+object NullResourceFactory extends ResourceFactory {
+  def getResource(name : String) : Option[InputStream] = None
+}
+
+object ClasspathResourceFactory {
+  def apply(cls : Class[_], path : String) : ClasspathResourceFactory =
+    new ClasspathResourceFactory(cls.getClassLoader, cls.getPackage.getName().replace('.', '/') + '/' + path)
+}
+
+class ClasspathResourceFactory(loader : ClassLoader, path : String) extends ResourceFactory {
+    def getResource(name : String) : Option[InputStream] = 
+      Option(loader.getResourceAsStream(path + "/" + name))
 }
 
 /**
  * Entry point for resources. It processes (e.g. string replacements) and caches resource data.
  * There is typically one instance per server.
  */
-class Resources {
+class Resources(factory : ResourceFactory, substitutions : Map[String, String], debugMode : Boolean = false) {
   private val debugPostfix1 = "// DEBUG MODE";
   private val debugPostfix2 = "/* DEBUG MODE */";
   private val resourcePaths = new ConcurrentHashMap[(Class[_], String), String]
   private val resourceData = new ConcurrentHashMap[String, (Array[Byte], ResourceType)]
+  private val resourceFactoryClass = classOf[ResourceFactory]
 
   def resourceContent(resourcePath : String) : Option[(Array[Byte], ResourceType)] = {
-    val result = resourceData.get(resourcePath)
-    if (result != null) Some(result)
-    else {
-      val resourceType = ResourceType.of(resourcePath)
-      val stream = classOf[Server].getClassLoader.getResourceAsStream(resourcePath)
-      if (stream != null) {
-        try {
-          val bytes = Stream.continually(stream.read).takeWhile(-1 !=).map(_.toByte).toArray
-          val result = (bytes, resourceType)
-          resourceData.put(resourcePath, result)
-          Some(result)
-        } finally {
-          stream.close()
+    resourceData.get(resourcePath) match {
+      case null =>
+        factory.getResource(resourcePath) match {
+          case Some(is) => 
+            val (_, resourceType, bytes) = readHashedResource(resourcePath, is, substitutions)
+            val result = (bytes, resourceType)
+            resourceData.put(resourcePath, result)
+            Some(result)
+          case None =>
+            // Do not cache negative results, users may cause memory overflow.
+            None
         }
-      } else {
-        // Do not cache negative results, users may cause memory overflow.
-        None
-      }
+      case result =>
+        Some(result)
     }
   }
   
   def hashedResourcePathFor(c : Class[_], name : String) : String = {
-    var resourcePath = resourcePaths.get((c, name))
-    if (resourcePath == null) {
-      val rootPackage = if (name.startsWith("/")) R.session.server.resourceRoot else c.getPackage
-      val fullName = rootPackage.getName.replace('.', '/') + (if (name.startsWith("/")) "" else "/") + name
-      try {
-        val resourceType = ResourceType.of(name)
-        // Text resource?
-        val bytes = resourceType.encoding match {
-          case Some(encoding) =>
-            val is = c.getResourceAsStream(name)
-            try {
-              val source = Source.fromInputStream(is)
-              val linesSeq = source.getLines map { line =>
-                line.replace("$$CONTEXT", R.url.context.path.mkString("/"))
-              } map { line =>
-                if (line.endsWith(debugPostfix1)) 
-                  if (!R.debugMode) Seq[String]()
-                  else Seq(line.dropRight(debugPostfix1.length()))
-                else if (line.endsWith(debugPostfix2)) 
-                  if (!R.debugMode) Seq[String]()
-                  else Seq(line.dropRight(debugPostfix2.length()))
-                else Seq(line.mkString)
-              } 
-              val lines = linesSeq.flatten
-              lines.mkString("\n").getBytes("UTF-8");
-            } finally {
-              // Witnessed behavior: Source.fromInputStream(is) does not close is!
-              is.close()
-            }
-          case None =>
-            Array[Byte]()
-        }
-        resourcePath = hashedName(fullName, bytes)
+    resourcePaths.get((c, name)) match {
+      case null =>
+        val (resourcePath, resourceType, bytes) = readHashedResource(name, c.getResourceAsStream("/" + c.getPackage().getName().replace('.', '/') + "/" + name), substitutions)
         resourceData.put(resourcePath, (bytes, resourceType));
-        if (!R.debugMode) {
+        if (!debugMode) {
           resourcePaths.put((c, name), resourcePath)
         }
-      } catch {
-        case _ => throw new Exception("Resource not found on class-path: " + fullName)
-      }
+        resourcePath
+      case path => path
     }
-    resourcePath
+  }
+
+  def hashedResourcePathFor(name : String) : String = {
+    resourcePaths.get((resourceFactoryClass, name)) match {
+      case null =>
+        val (resourcePath, resourceType, bytes) = readHashedResource(name, factory.getResource(name).getOrElse(null), substitutions)
+        resourceData.put(resourcePath, (bytes, resourceType));
+        if (!debugMode) {
+          resourcePaths.put((resourceFactoryClass, name), resourcePath)
+        }
+        resourcePath
+      case path => path
+    }
+  }
+  
+  def readHashedResource(name : String, is : InputStream, substitutions : Map[String, String]) : (String, ResourceType, Array[Byte]) = {
+    if (is == null) {
+      throw new Exception("Resource not found: " + name)
+    }
+    try {
+      val resourceType = ResourceType.of(name)
+      // Text resource?
+      val bytes = resourceType.encoding match {
+        case Some(encoding) =>
+          try {
+            val source = Source.fromInputStream(is)
+            val linesSeq = source.getLines map { line =>
+              substitutions.foldLeft(line)((line, subst) => line.replace("$$" + subst._1, subst._2))
+            } map { line =>
+              if (line.endsWith(debugPostfix1)) 
+                if (!R.debugMode) Seq[String]()
+                else Seq(line.dropRight(debugPostfix1.length()))
+              else if (line.endsWith(debugPostfix2)) 
+                if (!R.debugMode) Seq[String]()
+                else Seq(line.dropRight(debugPostfix2.length()))
+              else Seq(line.mkString)
+            } 
+            val lines = linesSeq.flatten
+            lines.mkString("\n").getBytes("UTF-8");
+          } finally {
+            // Witnessed behavior: Source.fromInputStream(is) does not close is!
+            is.close()
+          }
+        case None =>
+          Array[Byte]()
+      }
+      (hashedName(name, bytes), resourceType, bytes)
+    } catch {
+      case _ => throw new Exception("Resource could not be read: " + name)
+    } finally {
+      is.close()
+    }
   }
 
   private val md = java.security.MessageDigest.getInstance("SHA-1")

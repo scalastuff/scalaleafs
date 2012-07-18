@@ -246,7 +246,7 @@ object SetContent {
  * Transformation that sets an attribute of some input element.
  */
 object SetAttr {
-  def apply(attr : String, value : String, condition : => Boolean = true) = 
+  def apply(attr : String, value : String, condition : => Boolean = true) : ElemModifier = 
     new ElemModifier(XmlHelpers.setAttr(_, attr, value), condition) 
 }
 

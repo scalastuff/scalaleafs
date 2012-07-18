@@ -74,4 +74,4 @@ case class Alert(message : String) extends JsRawCmd("alert('" + message + "');")
 case class SetWindowLocation(uri : Any) extends JsRawCmd("window.location = '" + uri + "';")
 case class ConsoleLog(msg : String) extends JsRawCmd("console.log('" + XmlHelpers.escape(msg) + "');")
 case class PushState(uri : String, callback : String ) extends JsRawCmd("window.history.pushState(\"" + callback + "\", '" + "title" + "', '" + uri + "');")
-
+class JsCall(f : => JsCmd) extends JsRawCmd("leafs.callback('" + R.callbackId(_ => f) + "');")
