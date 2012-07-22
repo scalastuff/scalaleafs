@@ -135,7 +135,7 @@ object Var {
 
 /**
  * A Var is a wrapper for a mutable value. One can listen for changes, or map a Var to other Vars that become
- * dependent on it. Vars can also be rendered, transforming XML based on the current value of the Var. When
+ * dependent on it. Vars can also be bound to a XML, transforming XML based on the current value of the Var. When
  * the Var changes (or one of the Vars it depends on), the transformation is performed again. The piece of 
  * XML that was created by the transformation is sent to the browser using a ReplaceHtml JavaScript command.
  */
@@ -170,7 +170,7 @@ trait Var[A] extends Changeable[A] { thisVar =>
    * 
    * @param f Transformation that renders the value of the var.
    */
-  def render(f : A => NodeSeq => NodeSeq) = new ElemWithIdTransformation {
+  def bind(f : A => NodeSeq => NodeSeq) = new ElemWithIdTransformation {
     override def apply(elem : Elem, id : String) = {
       onChange(value => {
         R.addEagerPostRequestJs(ReplaceHtml(id, f(value)(elem)))
@@ -213,7 +213,7 @@ trait SeqVar[A] extends Changeable[Seq[A]] { thisVar =>
    * @param empty Transformation to render the 'no elements available' case.
    * @param f Transformation that renders a single sequence element.
    */
-  def render(empty : NodeSeq => NodeSeq)(f : A => NodeSeq => NodeSeq) = new ElemWithIdTransformation {
+  def bind(empty : NodeSeq => NodeSeq)(f : A => NodeSeq => NodeSeq) = new ElemWithIdTransformation {
     override def apply(elem : Elem, id : String) = {
       def gen(values : Seq[A]) = 
         if (values.isEmpty) {

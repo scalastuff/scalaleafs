@@ -14,6 +14,7 @@ import java.util.concurrent.ConcurrentHashMap
 import scala.io.Source
 import javax.xml.bind.DatatypeConverter
 import java.io.InputStream
+import java.io.BufferedInputStream
 
 /**
  * Resource meta data.
@@ -24,9 +25,7 @@ object ResourceType {
   private val map = Map(
     "js" -> ResourceType("js", "text/javascript", Some("UTF-8")),
     "css" -> ResourceType("css", "text/css", Some("UTF-8")),
-    "png" -> ResourceType("js", "image/png", Some("UTF-8")),
-    "js" -> ResourceType("js", "text/javascript", Some("UTF-8")),
-    "js" -> ResourceType("js", "text/javascript", Some("UTF-8")),
+    "png" -> ResourceType("png", "image/png", None),
     "js" -> ResourceType("js", "text/javascript", Some("UTF-8"))
   )
   def get(extention : String) = map.get(extention)
@@ -98,7 +97,8 @@ class Resources(factory : ResourceFactory, substitutions : Map[String, String], 
   def hashedResourcePathFor(c : Class[_], name : String) : String = {
     resourcePaths.get((c, name)) match {
       case null =>
-        val (resourcePath, resourceType, bytes) = readHashedResource(name, c.getResourceAsStream("/" + c.getPackage().getName().replace('.', '/') + "/" + name), substitutions)
+        val fullName = "/" + c.getPackage().getName().replace('.', '/') + "/" + name
+        val (resourcePath, resourceType, bytes) = readHashedResource(name, c.getResourceAsStream(fullName), substitutions)
         resourceData.put(resourcePath, (bytes, resourceType));
         if (!debugMode) {
           resourcePaths.put((c, name), resourcePath)
@@ -130,31 +130,27 @@ class Resources(factory : ResourceFactory, substitutions : Map[String, String], 
       // Text resource?
       val bytes = resourceType.encoding match {
         case Some(encoding) =>
-          try {
-            val source = Source.fromInputStream(is)
-            val linesSeq = source.getLines map { line =>
-              substitutions.foldLeft(line)((line, subst) => line.replace("$$" + subst._1, subst._2))
-            } map { line =>
-              if (line.endsWith(debugPostfix1)) 
-                if (!R.debugMode) Seq[String]()
-                else Seq(line.dropRight(debugPostfix1.length()))
-              else if (line.endsWith(debugPostfix2)) 
-                if (!R.debugMode) Seq[String]()
-                else Seq(line.dropRight(debugPostfix2.length()))
-              else Seq(line.mkString)
-            } 
-            val lines = linesSeq.flatten
-            lines.mkString("\n").getBytes("UTF-8");
-          } finally {
-            // Witnessed behavior: Source.fromInputStream(is) does not close is!
-            is.close()
-          }
+          val source = Source.fromInputStream(is, "UTF-8") // TODO determine input encoding correctly
+          val linesSeq = source.getLines map { line =>
+            substitutions.foldLeft(line)((line, subst) => line.replace("$$" + subst._1, subst._2))
+          } map { line =>
+            if (line.endsWith(debugPostfix1)) 
+              if (!R.debugMode) Seq[String]()
+              else Seq(line.dropRight(debugPostfix1.length()))
+            else if (line.endsWith(debugPostfix2)) 
+              if (!R.debugMode) Seq[String]()
+              else Seq(line.dropRight(debugPostfix2.length()))
+            else Seq(line.mkString)
+          } 
+          val lines = linesSeq.flatten
+          lines.mkString("\n").getBytes("UTF-8");
         case None =>
-          Array[Byte]()
+          val bis = new BufferedInputStream(is)
+          Stream.continually(bis.read).takeWhile(-1 !=).map(_.toByte).toArray
       }
       (hashedName(name, bytes), resourceType, bytes)
     } catch {
-      case _ => throw new Exception("Resource could not be read: " + name)
+      case e => throw new Exception("Resource could not be read: " + name, e)
     } finally {
       is.close()
     }
@@ -163,9 +159,9 @@ class Resources(factory : ResourceFactory, substitutions : Map[String, String], 
   private val md = java.security.MessageDigest.getInstance("SHA-1")
   
   private def hashedName(name : String, data : Array[Byte]) = {
-    val hash = DatatypeConverter.printBase64Binary(md.digest(data)).reverse
-    val index = name.lastIndexOf('.')
-    if (index < 0) name + "-" + hash 
-    else name.substring(0, index) + "-" + hash + name.substring(index)  
+    val hash = DatatypeConverter.printBase64Binary(md.digest(data)).reverse.replace('/', '_')
+    val index = name.lastIndexOf('/')
+    if (index < 0) hash + "_" + name 
+    else name.substring(0, index) + "/" + hash + "_" + name.substring(index + 1)  
   }
 }

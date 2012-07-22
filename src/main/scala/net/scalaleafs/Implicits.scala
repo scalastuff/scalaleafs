@@ -31,7 +31,7 @@ package net {
       
       implicit def seqXmlTransformation(transformations : Seq[NodeSeq => NodeSeq]) = 
         new SeqXmlTransformation(transformations)
-      
+
       implicit def toCompoundChangeable2[A, B](changeables : (Changeable[A], Changeable[B])) = 
         new CompoundChangeable2[A, B](changeables._1, changeables._2)
     

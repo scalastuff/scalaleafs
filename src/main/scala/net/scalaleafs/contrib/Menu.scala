@@ -1,4 +1,4 @@
-package net.scalaleafs.contrib
+package net.scalaleafs
 
 import scala.xml.NodeSeq
 
@@ -19,14 +19,14 @@ case class Menu(items : MenuItem*) {
       println("Recalculating url: " + trail)
       (trail, sortedItems.find(item => trail.remainder.startsWith(item.path)))
     }
-    contentSelector #> selectedItem.render {
+    contentSelector #> selectedItem.bind {
       case (trail, Some(item)) =>
         SetContent(item.content(trail))
       case _ => 
         _ => NodeSeq.Empty
     } &
     menuItemSelector #> 
-      selectedItem.zipWith(items).render(_ => NodeSeq.Empty) {
+      selectedItem.zipWith(items).bind(_ => NodeSeq.Empty) {
         case ((trail, selected), item) => 
           AddClass(selectedClass, Some(item) == selected) & 
           "a" #> {

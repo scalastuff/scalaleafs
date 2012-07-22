@@ -22,11 +22,18 @@ import scala.xml.TopScope
  * A css transformation is a transformation based on a css selector. An instance is typically obtained
  * through the #> operator, e.g. <pre>"#mydiv" #> SetClass("selected")</pre> 
  */
-class CssTransformation(selector : CssSelector, replaceWith : Elem => NodeSeq) extends XmlTransformation {
+class CssTransformation[A <: NodeSeq => NodeSeq](val selector : CssSelector, val transformation : NodeSeq => NodeSeq) extends XmlTransformation {
 
   override def apply(xml : NodeSeq) : NodeSeq = 
-    XmlTransformation.transform(xml, selector, replaceWith)
+    XmlTransformation.transform(xml, selector, transformation)
 }
+
+class TextCssTransformation(selector : CssSelector, val text : String) 
+	extends CssTransformation(selector, _ => Text(text))
+
+class XmlCssTransformation(selector : CssSelector, val xml : NodeSeq) 
+	extends CssTransformation[NodeSeq => NodeSeq](selector, _ => xml)
+
 
 object CssSelector {
   private val cssSelCache = new ConcurrentHashMap[String, CssSelector]
@@ -48,11 +55,16 @@ object CssSelector {
 }
 
 class UnparsedCssSelector(s : String) {
-  def #> (text : String) = new CssTransformation(CssSelector.getOrParse(s), _ => Text(text)) 
-  def #> (xml : NodeSeq) = new CssTransformation(CssSelector.getOrParse(s), _ => xml) 
-  def #> (f : Elem => NodeSeq) = new CssTransformation(CssSelector.getOrParse(s), f) 
-  def #> (f : CssTransformation) = new CssTransformation(CssSelector.getOrParse(s), f) 
-  def #> (f : XmlTransformation) = new CssTransformation(CssSelector.getOrParse(s), f) 
+  def #> (text : String) = new TextCssTransformation(CssSelector.getOrParse(s), text) 
+  def #> (xml : NodeSeq) = new XmlCssTransformation(CssSelector.getOrParse(s), xml) 
+  def #>[A <: NodeSeq => NodeSeq] (f : A) = new CssTransformation[A](CssSelector.getOrParse(s), f) 
+//  def #> (f : NodeSeq => NodeSeq) = new BoundCssSelector[NodeSeq => NodeSeq](CssSelector.getOrParse(s), f) 
+//  def #> (f : CssTransformation) = new CssTransformation(CssSelector.getOrParse(s), f)
+  
+  /**
+   * Needed, since implicits like Implicits.toSeq can't transform to [A <: NodeSeq => NodeSeq]. 
+   */
+  def #> (f : XmlTransformation) = new CssTransformation[XmlTransformation](CssSelector.getOrParse(s), f) 
 }
 
 /**

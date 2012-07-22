@@ -8,53 +8,8 @@
  * 
  * http://www.apache.org/licenses/LICENSE-2.0
  */
-window.onpopstate = function(event) {
-  // Ignore state that wasn't put by leafs (like initial pop state) // DEBUG MODE
-  if (event.state != null) {
-    console.log('Pop state: ' + event.state) // DEBUG MODE
-    setUrl("pop:" + window.location);
-  }
-}  
+var leafs_richform = new function() {
 
-var leafs = new function() {
-
-  this.callback = function(callbackId) {
-    console.log('Callback invoked: /$$AJAX_CALLBACK_PATH/leafs/ajaxCallback/' + callbackId); // DEBUG MODE
-    $.getScript('/$$AJAX_CALLBACK_PATH/' + callbackId);
-  };
-  
-  this.postCallback = function(callbackId, data) {
-    data['action'] = callbackId;
-    console.log('Callback invoked: /$$AJAX_FORMPOST_PATH with data:'); // DEBUG MODE
-    console.log(data); // DEBUG MODE
-    $.ajax({
-        url: '/$$AJAX_FORMPOST_PATH',
-        type: "POST",
-        data: data,
-        dataType: "script"
-      });
-  }
-  
-  this.onPageLoad = function(f) {
-  $(document).ready(f)  
-  };
-  
-  this.addClass = function(elt, cls) {
-  $(elt).addClass(cls)
-  };
-  
-  this.removeClass = function(elt, cls) {
-    $(elt).removeClass(cls)
-  };
-  
-  this.replaceHtml = function(id, html) {
-    $('#' + id).replaceWith(html);
-  };
-
-  this.removeNextSiblings = function(id, idbase) {
-    $('#' + id).nextAll("[id^='" + idbase + "']").remove();
-  };
-  
   this.FormOptions = {
     None: 0,
     UpdateOnChange: 2,
@@ -79,7 +34,7 @@ var leafs = new function() {
     // Is it a form?         DEBUG MODE
     var form = $(input).closest('form');
     if (form.size() > 0) {
-      form.addClass("rich-form");
+      form.addClass("leafs-form");
       var label = form.find("label[for='" + input.attr('id') + "']");
       var inputAndLabel = input.add(label);
       
@@ -92,7 +47,7 @@ var leafs = new function() {
         data["changed"] = new Object();
         data.changesPending = false;
       }
-      if (options & leafs.FormOptions.EnableWhenChanged) {
+      if (options & leafs_richform.FormOptions.EnableWhenChanged) {
         data.disablingElements = input.add(data.disablingElements); 
         input.attr("disabled", "disabled").addClass("disabled");
       }
@@ -166,10 +121,10 @@ var leafs = new function() {
       inputAndLabel.removeClass("empty").addClass("non-empty"); 
     });
     input.on("change", function() { 
-      onChange(options & leafs.FormOptions.UpdateOnChange); 
+      onChange(options & leafs_richform.FormOptions.UpdateOnChange); 
     });
     input.on("keyup", function() {
-      onChange(options & leafs.FormOptions.UpdateOnKeyPress);
+      onChange(options & leafs_richform.FormOptions.UpdateOnKeyPress);
     });
     if (input.attr("type") == "button") {
       input.on("click", function() {
@@ -179,33 +134,3 @@ var leafs = new function() {
     };
   };
 };
-
-// Override buggy IE implementation of getElementById
-if (/msie/i.test (navigator.userAgent)) //only override IE
-{
-  document.nativeGetElementById = document.getElementById;
-  document.getElementById = function(id)
-  {
-    var elem = document.nativeGetElementById(id);
-    if(elem)
-    {
-      //make sure that it is a valid match on id
-      if(elem.attributes['id'].value == id)
-      {
-        return elem;
-      }
-      else
-      {
-        //otherwise find the correct element
-        for(var i=1;i<document.all[id].length;i++)
-        {
-          if(document.all[id][i].attributes['id'].value == id)
-          {
-            return document.all[id][i];
-          }
-        }
-      }
-    }
-    return null;
-  };
-}
