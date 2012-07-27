@@ -1,4 +1,4 @@
-package org.scalastuff.scalaleafs.demo
+package org.scalastuff.scalaleafs.documentation
 
 import scala.xml.NodeSeq
 
@@ -11,7 +11,7 @@ import net.scalaleafs.UrlTrail
 import net.scalaleafs.Var
 import net.scalaleafs.Var.fromInitialValue
 
-class DemoApplication extends LeafsServlet {
+class ScalaLeafsDocumentation extends LeafsServlet {
   val configuration = new Configuration()
   def render(trail : UrlTrail) : NodeSeq = {
     new DemoPageFrame(trail).render;

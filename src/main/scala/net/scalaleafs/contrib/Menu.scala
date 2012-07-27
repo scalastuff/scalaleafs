@@ -1,9 +1,7 @@
-package net.scalaleafs
+package net.scalaleafs.contrib
 
 import scala.xml.NodeSeq
-
-import net.scalaleafs.implicits._
-import net.scalaleafs.{XmlTransformation, Var, UrlTrail, Url, SetText, SetContent, SetAttr, R, Html, AddClass}
+import net.scalaleafs._
 
 case class MenuItem(path : List[String], text : String, content : UrlTrail => XmlTransformation) {
   val itemPathString = path.mkString("/")
@@ -21,17 +19,17 @@ case class Menu(items : MenuItem*) {
     }
     contentSelector #> selectedItem.bind {
       case (trail, Some(item)) =>
-        SetContent(item.content(trail))
+        Xml.setContent(item.content(trail))
       case _ => 
         _ => NodeSeq.Empty
     } &
     menuItemSelector #> 
       selectedItem.zipWith(items).bind(_ => NodeSeq.Empty) {
         case ((trail, selected), item) => 
-          AddClass(selectedClass, Some(item) == selected) & 
+          Xml.addClass(selectedClass, Some(item) == selected) & 
           "a" #> {
-            SetText(item.text) & 
-            SetAttr("href", item.path.mkString(trail.url.context.toString, "/", "")) & 
+            Xml.setText(item.text) & 
+            Xml.setAttr("href", item.path.mkString(trail.url.context.toString, "/", "")) & 
             Html.onclick(R.changeUrl(Url(trail.url.context, item.path, Map.empty)))
           }
       }

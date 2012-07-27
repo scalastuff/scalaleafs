@@ -6,11 +6,11 @@ import java.util.UUID
 
 object JQueryUI {
 
-  private def bindEvent(id : String, event : String, cmd : JsCmd) : JsCmd =
+  private def bindEvent(id : String, event : String, cmd : JSCmd) : JSCmd =
   bindEvent(id, event, cmd.toString)
     
-  private def bindEvent(id : String, event : String, cmd : String) : JsCmd = 
-    JsCmd(id + ".off(" + event + ").on(" + event + ", function(e) { " + cmd + "})")
+  private def bindEvent(id : String, event : String, cmd : String) : JSCmd = 
+    JSCmd(id + ".off(" + event + ").on(" + event + ", function(e) { " + cmd + "})")
 
 
   def searchBox(text : Var[String], defaultText : String = "") = new ElemWithIdTransformation {
@@ -22,8 +22,8 @@ object JQueryUI {
       }
       text.onChange { value =>
         R.addPostRequestJs {
-          if (text == "") JsCmd("$('#" + inputId + "').val('" + defaultText + "').parent().addClass('ui-search-box-default')")
-          else JsCmd("$('#" + inputId + "').val('" + text + "').parent().removeClass('ui-search-box-default')")
+          if (text == "") JSCmd("$('#" + inputId + "').val('" + defaultText + "').parent().addClass('ui-search-box-default')")
+          else JSCmd("$('#" + inputId + "').val('" + text + "').parent().removeClass('ui-search-box-default')")
         }
       }
       // calculate initial text and default for smoother rendering

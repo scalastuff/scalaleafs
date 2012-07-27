@@ -173,8 +173,8 @@ class UrlManager {
     urlHandlers.put((trail.url.context, trail.current), handler)
   }
   
- def handleUrl(url : Url) : JsCmd = {
-    var result : Option[JsCmd] = None 
+ def handleUrl(url : Url) : JSCmd = {
+    var result : Option[JSCmd] = None 
     if (urlHandlers != null) {
       var currentPath = url.path
       var remainingPath : List[String] = Nil
@@ -199,7 +199,7 @@ class UrlManager {
     }
   }
   
-  private def handleUrl(context : UrlContext, url : Url, currentPath : Seq[String], remainingPath : List[String], parameters : Map[String, Seq[String]]) : Option[JsCmd] = {
+  private def handleUrl(context : UrlContext, url : Url, currentPath : Seq[String], remainingPath : List[String], parameters : Map[String, Seq[String]]) : Option[JSCmd] = {
     urlHandlers.get((context, currentPath)) match {
       case Some(handler) => 
         val trail = UrlTrail(url, remainingPath)
@@ -209,7 +209,7 @@ class UrlManager {
           handler.handleUrl(trail)
           // Url was handled?
           if (trail == handler.trail.get) {
-            Some(JsCmd("window.history.pushState(\"" + url + "\", '" + "title" + "', '" + url + "');"))
+            Some(JSCmd("window.history.pushState(\"" + url + "\", '" + "title" + "', '" + url + "');"))
           }
           // Url not handled, try next handler.
           else None

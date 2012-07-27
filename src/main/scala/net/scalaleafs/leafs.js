@@ -35,15 +35,21 @@ var leafs = new function() {
       });
   }
   
-  this.loadJavascript(name) {
-	  $.getScript(name)
-  }
+  this.loadJavascript = function(name) {
+	  console.log('Loading script: ' + name); // DEBUG MODE
+	  $.ajax({
+	    url: name,
+	    dataType: 'script',
+	    async: false
+	    });
+  };
+  
   this.onPageLoad = function(f) {
-  $(document).ready(f)  
+    $(document).ready(f)  
   };
   
   this.addClass = function(elt, cls) {
-  $(elt).addClass(cls)
+    $(elt).addClass(cls)
   };
   
   this.removeClass = function(elt, cls) {

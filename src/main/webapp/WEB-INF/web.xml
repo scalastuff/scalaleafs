@@ -5,11 +5,11 @@
         "http://java.sun.com/dtd/web-app_2_3.dtd">
 
 <web-app>
-    <filter>
-        <filter-name>leafs</filter-name>
+    <servlet>
+        <servlet-name>leafs</servlet-name>
         <display-name>Scala Pages</display-name>
-        <filter-class>net.scalaleafs.documentation.Site</filter-class>
-    </filter>
+        <servlet-class>net.scalaleafs.documentation.ScalaLeafsDocumentation</servlet-class>
+    </servlet>
 
     <filter-mapping>
         <filter-name>leafs</filter-name>

@@ -16,17 +16,17 @@ import scala.xml.{Text, NodeSeq}
  ** Generic java-script functionality. 
  **/
 
-object JsExp {
+object JSExp {
   def apply(exp : String) = new JsRaw(exp)
-  implicit def toJsCmd(exp : JsExp) = new JsCmd() {
+  implicit def toJSCmd(exp : JSExp) = new JSCmd() {
     override def toString = exp.toString + ";"
   }
 }
 
-trait JsExp {
+trait JSExp {
   def toCmd = toString match {
     case "" => Noop
-    case s => new JsRawCmd(s + ";")
+    case s => new JSRawCmd(s + ";")
   }
 }
 
@@ -35,43 +35,43 @@ object JsConst {
   def apply(value : Any) = new JsRaw(value.toString)
 }
 
-object JsCmd {
-  def apply(cmd : String) = new JsRawCmd(cmd)
-  implicit def toNoop(unit : Unit) : JsCmd = Noop
-  implicit def toText(cmd : JsCmd) = Text(cmd.toString)
+object JSCmd {
+  def apply(cmd : String) = new JSRawCmd(cmd)
+  implicit def toNoop(unit : Unit) : JSCmd = Noop
+  implicit def toText(cmd : JSCmd) = Text(cmd.toString)
 }
 
-trait JsCmd {
-  def & (cmd : JsCmd) : JsCmd = new JsCmdSeq(toSeq ++ cmd.toSeq)
+trait JSCmd {
+  def & (cmd : JSCmd) : JSCmd = new JSCmdSeq(toSeq ++ cmd.toSeq)
   def toSeq = Seq(this)
 }
 
-protected class JsCmdSeq(seq : Seq[JsCmd]) extends JsCmd {
+protected class JSCmdSeq(seq : Seq[JSCmd]) extends JSCmd {
   override def toSeq = seq
   override def toString = toSeq.mkString("")
 }
 
-protected class JsRaw(exp : String) extends JsExp {
+protected class JsRaw(exp : String) extends JSExp {
   override def toString = exp
 }
 
-protected class JsRawCmd(exp : String) extends JsCmd {
+protected class JSRawCmd(exp : String) extends JSCmd {
   override def toString = exp
 }
 
-case class JsReturn(value : JsExp) extends JsRawCmd("return " + value + ";")
+case class JsReturn(value : JSExp) extends JSRawCmd("return " + value + ";")
 object JsReturnFalse extends JsReturn(JsConst(false))
 object JsReturnTrue extends JsReturn(JsConst(true))
 
-case object Noop extends JsRawCmd("") {
-  override def & (cmd : JsCmd) : JsCmd = cmd
+case object Noop extends JSRawCmd("") {
+  override def & (cmd : JSCmd) : JSCmd = cmd
   override def toSeq = Seq.empty
 }
 
-case class ReplaceHtml(id : String, xml : NodeSeq) extends JsRawCmd("leafs.replaceHtml('" + id + "', \"" + XmlHelpers.escape(xml.toString) + "\");")
-case class RemoveNextSiblings(id : String, idBase : String) extends JsRawCmd("leafs.removeNextSiblings(\"" + id + "\", \"" + idBase + "\");")
-case class Alert(message : String) extends JsRawCmd("alert('" + message + "');")
-case class SetWindowLocation(uri : Any) extends JsRawCmd("window.location = '" + uri + "';")
-case class ConsoleLog(msg : String) extends JsRawCmd("console.log('" + XmlHelpers.escape(msg) + "');")
-case class PushState(uri : String, callback : String ) extends JsRawCmd("window.history.pushState(\"" + callback + "\", '" + "title" + "', '" + uri + "');")
-class JsCall(f : => JsCmd) extends JsRawCmd("leafs.callback('" + R.callbackId(_ => f) + "');")
+case class ReplaceHtml(id : String, xml : NodeSeq) extends JSRawCmd("leafs.replaceHtml('" + id + "', \"" + XmlHelpers.escape(xml.toString) + "\");")
+case class RemoveNextSiblings(id : String, idBase : String) extends JSRawCmd("leafs.removeNextSiblings(\"" + id + "\", \"" + idBase + "\");")
+case class Alert(message : String) extends JSRawCmd("alert('" + message + "');")
+case class SetWindowLocation(uri : Any) extends JSRawCmd("window.location = '" + uri + "';")
+case class ConsoleLog(msg : String) extends JSRawCmd("console.log('" + XmlHelpers.escape(msg) + "');")
+case class PushState(uri : String, callback : String ) extends JSRawCmd("window.history.pushState(\"" + callback + "\", '" + "title" + "', '" + uri + "');")
+case class LoadJavaScript(uri : String) extends JSRawCmd("leafs.loadJavascript('" + uri + "');")

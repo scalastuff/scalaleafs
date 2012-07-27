@@ -16,11 +16,11 @@ import implicits._
 
 object Html {
  
-  def onclick(f : => JsCmd) : ElemModifier = {
-    SetAttr("onclick", R.callback(_ => R.addPostRequestJs(f)).toString + " return false;")
+  def onclick(f : => JSCmd) : ElemModifier = {
+    Xml.setAttr("onclick", R.callback(_ => R.addPostRequestJs(f)).toString + " return false;")
   }
 
-//  def onchange(f : String => JsCmd) : ElemModifier = {
+//  def onchange(f : String => JSCmd) : ElemModifier = {
 //    SetAttr("onchange", R.callback(s => R.addPostRequestJs(s)).toString + " return false;")
 //  }
 }

@@ -61,17 +61,38 @@ class Session(val server : Server, val configuration : Configuration) {
     mkPostRequestJsString(processAjaxCallback(callbackId, parameters).toSeq)
   }
   
-  def processAjaxCallback(callbackId : String, parameters : Map[String, Seq[String]]) : JsCmd = {
+  def handleRequest(url : Url, f : () => Unit) {
+    try {
+      val initialRequest = new InitialRequest(this, configuration, url)
+      val request = new Request(initialRequest, true)
+      R.set(request)
+      initialRequest.synchronized {
+        f()
+        initialRequest._headContributionKeys ++= request._headContributionKeys
+      }
+    } finally {
+      R.set(null)
+    }
+  }
+
+  def processAjaxCallback(callbackId : String, parameters : Map[String, Seq[String]]) : JSCmd = {
     ajaxCallbacks.get(callbackId) match {
       case null => 
         throw new ExpiredException("Callback expired: " + callbackId)
       case ajaxCallback => 
         try {
-          val request = new Request(ajaxCallback.request)
+          val initialRequest = ajaxCallback.request
+          val request = new Request(initialRequest, false)
           R.set(request)
           ajaxCallback.request.synchronized {
+            // Call the callback.
             ajaxCallback.f(parameters)
+            // Render additional head contributions.
+            request._headContributions.foreach(c => request.addEagerPostRequestJs(c.renderAdditional(request)))
+            // Store all current head contributions in the initial request. 
+            initialRequest._headContributionKeys ++= request._headContributionKeys
           }
+          // Process eager JS first, normal JS later
           request.eagerPostRequestJs & request.postRequestJs 
         } finally {
           R.set(null)
@@ -85,7 +106,7 @@ class Session(val server : Server, val configuration : Configuration) {
     val (fields, actions) = parameters.toSeq.partition(_._1 != "action")
         
     // Call callbacks for fields and actions, in order.
-    val jsCmds : Seq[JsCmd] =
+    val JSCmds : Seq[JSCmd] =
       // Fields go first that have a single, nameless parameter value.
       fields.map {
         case (callbackId, values) =>
@@ -100,143 +121,18 @@ class Session(val server : Server, val configuration : Configuration) {
       }
 
     // Make a result string.
-    mkPostRequestJsString(jsCmds)
+    mkPostRequestJsString(JSCmds)
   } 
 
-  def handleResource(resource : String) : Option[(Array[Byte], ResourceType)] = server.resources.resourceContent(resource)
+  def handleResource(resource : String) : Option[(Array[Byte], ResourceType)] = server.resources.resourceContent(resource)   
   
-  def handleRequest(url : Url, f : () => Unit) {
-    try {
-      val request = new InitialRequest(this, configuration, url)
-      val transientRequest = new Request(request)
-      R.set(transientRequest)
-      request.synchronized {
-        f()
-        request._headContributions = transientRequest._headContributions
-      }
-    } finally {
-      R.set(null)
-    }
-  }
-  
-  
-  def mkPostRequestJsString(jsCmds : Seq[JsCmd]) = 
-    jsCmds match {
+  def mkPostRequestJsString(JSCmds : Seq[JSCmd]) = 
+    JSCmds match {
       case Seq() => ""
       case cmds => cmds.map { cmd => 
         val logCmd = if (server.debugMode) "console.log(\"Callback result: " + cmd.toString.replace("\"", "'") + "\");\n" else ""
         logCmd + " try { " + cmd + "} catch (e) { console.log(e); };\n"
       }.mkString
     }
-}
-
-/**
- * An initial request is created for each http request but shared for each subsequent callback.
- */
-class InitialRequest(val session : Session, val configuration : Configuration, private[scalaleafs] var _url : Url) {
-  private[scalaleafs] var _headContributions : mutable.Map[String, HeadContribution] = null
-  private[scalaleafs] val urlManager = new UrlManager
-  
-  lazy val resourceBaseUrl = Url(_url.context, session.server.resourcePath, Map.empty)
-}
-
-/**
- * A request is created for each http request, including both the initial page request and the subsequent callback calls.
- */
-class Request(val initialRequest : InitialRequest) {
-  var eagerPostRequestJs : JsCmd = Noop
-  var postRequestJs : JsCmd = Noop
-  private[scalaleafs] var _headContributions : mutable.Map[String, HeadContribution] = null
-
-  def configuration = initialRequest.configuration
-  def session = initialRequest.session
-  def server = initialRequest.session.server
-  def resourceBaseUrl = initialRequest.resourceBaseUrl
-  def debugMode = session.server.debugMode
-  
-  /**
-   * The current request url.
-   */
-  def url = initialRequest._url
-  
-  /**
-   * Changes the browser url without a page refresh.
-   */
-  def changeUrl(uri : String) : Unit = changeUrl(initialRequest._url.resolve(uri))
-
-  /**
-   * Changes the browser url without a page refresh.
-   */
-  def changeUrl(url : Url) : Unit = {
-    if (initialRequest._url != url) {
-      initialRequest._url = url
-      addPostRequestJs(initialRequest.urlManager.handleUrl(url))
-    }
-  }
-  private[scalaleafs] def popUrl(uri : String) = {
-    val url = initialRequest._url.resolve(uri)
-    if (initialRequest._url != url) {
-      initialRequest._url = url
-      initialRequest.urlManager.handleUrl(url)
-    }
-  }
-
-  def headContributions = 
-    if (_headContributions == null) Seq.empty
-    else _headContributions.values
-    
-  def addHeadContribution(contribution : HeadContribution) {
-    if (_headContributions == null) {
-      _headContributions = mutable.Map[String, HeadContribution]()
-    }
-    
-    _headContributions.put(contribution.key, contribution) match {
-      case Some(_) =>
-      case None => contribution.dependsOn.foreach(dep => addHeadContribution(dep))
-    }
-  }
-  
-  def addPostRequestJs(jsCmd : JsCmd) {
-    if (jsCmd != Noop) {
-      postRequestJs &= jsCmd
-    }
-  }
-
-  def addEagerPostRequestJs(jsCmd : JsCmd) {
-    if (jsCmd != Noop) {
-      eagerPostRequestJs &= jsCmd
-    }
-  }
-  
-  def callbackId(f : Map[String, Seq[String]] => Unit) : String = {
-      val uid = session.callbackIDGenerator.generate
-      initialRequest.session.ajaxCallbacks.put(uid, AjaxCallback(initialRequest, f))
-      addHeadContribution(JQuery)
-      addHeadContribution(LeafsJavaScriptResource)
-      uid
-  }
-  
-  def callback(f : Map[String, Seq[String]] => Unit, parameters : (String, JsExp)*) : JsCmd = {
-      if (parameters.isEmpty)
-        JsCmd("leafs.callback('" + callbackId(f) + "');")
-      else 
-        JsCmd("leafs.callback('" + callbackId(f) + "?" + parameters.map(x => x._1.toString + "=' + " + x._2.toString).mkString(" + '&") + ");")
-  }
-}
-
-/**
- * Global entry point to ScalaLeafs context. R returns the current request, from which the current InitialRequest,
- * the Session and the Server can be reached.
- */
-object R extends ThreadLocal[Request] {
-  implicit def toRequest(r : ThreadLocal[Request]) : Request = r.get
-  
-  /**
-   * Overridden to throw an exception if thread local hasn't been set.
-   */
-  override def get = super.get match {
-    case null => throw new Exception("No request context")
-    case transientRequest => transientRequest
-  }
 }
 

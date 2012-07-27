@@ -1,4 +1,4 @@
-package net.scalaleafs
+package net.scalaleafs.contrib
 
 import scala.xml.Elem
 import scala.xml.NodeSeq
@@ -15,7 +15,7 @@ import net.scalaleafs._
 //    
 //}
 
-object RichFormHeadContribution extends JavaScriptResource(classOf[RichForm], "contrib/RichForm.js")
+object RichFormHeadContribution extends JavaScriptResource(classOf[RichForm], "RichForm.js")
 
 abstract class RichFormElement extends ElemTransformation { t0 =>
   def apply(elem : Elem) : Elem 
@@ -36,7 +36,7 @@ trait RichForm
 object RichForm {
 
   trait Validator {
-    val clientSide : Option[(JsExp, FormExecutionTime.Value)]
+    val clientSide : Option[(JSExp, FormExecutionTime.Value)]
     val serverSide : Option[(String => Boolean, FormExecutionTime.Value)]
   }
 
@@ -46,7 +46,7 @@ object RichForm {
   }
 
   object EmailValidator extends Validator {
-    val clientSide = Some(JsExp("value.contains('@')"), FormExecutionTime.OnKey)
+    val clientSide = Some(JSExp("value.contains('@')"), FormExecutionTime.OnKey)
     val serverSide = None
   }
 
@@ -60,8 +60,8 @@ object RichForm {
     override def apply(xml : NodeSeq) : NodeSeq = xml
   }
 
-  def onclick(f : => JsCmd) : ElemModifier = {
-    SetAttr("onclick", R.callback(_ => R.addPostRequestJs(f)).toString + " return false;")
+  def onclick(f : => JSCmd) : ElemModifier = {
+    Xml.setAttr("onclick", R.callback(_ => R.addPostRequestJs(f)).toString + " return false;")
   }
  
   def textbox(text : String, validator : Validator = NilValidator)(setter : String => Unit) = new RichFormElement {
@@ -73,7 +73,7 @@ object RichForm {
         case "input" => 
           val enableWhenChanged = false;// TODO make an option
             val options = if (enableWhenChanged) "leafs_richform.FormOptions.EnableWhenChanged" else "leafs_richform.FormOptions.None" 
-          R.addPostRequestJs(JsCmd("leafs_richform.formInputInit('" + id + "', " + options + ", '" + callbackId + "');"))
+          R.addPostRequestJs(JSCmd("leafs_richform.formInputInit('" + id + "', " + options + ", '" + callbackId + "');"))
           XmlHelpers.setId(XmlHelpers.setAttr(elem, "value", text), id)
         case _ => elem
       }
@@ -92,7 +92,7 @@ object RichForm {
       elem.label match {
           case "input" => 
             val options = if (enableWhenChanged) "leafs_richform.FormOptions.EnableWhenChanged" else "leafs_richform.FormOptions.None" 
-            R.addPostRequestJs(JsCmd("leafs_richform.formInputInit('" + id + "', " + options + ", '" + callbackId + "');"))
+            R.addPostRequestJs(JSCmd("leafs_richform.formInputInit('" + id + "', " + options + ", '" + callbackId + "');"))
             XmlHelpers.setId(elem, id)
           case _ => elem
       }
@@ -103,8 +103,8 @@ object RichForm {
   // TODO implement based on textbox
   def searchbox(textVar : Var[String], defaultText : String = "", defaultClass : String = "default", iconClass : String = "icon", clearLinkClass : String = "clear") = {
      textVar.bind { text =>
-       AddClass(defaultClass, text == "") & 
-       SetContent { _ =>
+       Xml.addClass(defaultClass, text == "") & 
+       Xml.setContent { _ =>
          <span class={iconClass}/> ++
          <a class={clearLinkClass} 
            onclick={R.callback(_ => textVar.set("")) & JsReturnFalse}> </a> ++
@@ -112,7 +112,7 @@ object RichForm {
            value={if (text == "") defaultText else text} 
            onfocus={"if (this.value == '" + defaultText + "') { this.value = ''; leafs.removeClass(this.parentNode, '" + defaultClass + "') }"} 
            onBlur={
-             R.callback(s => textVar.set(s("value").mkString), "value" -> JsExp("this.value")) + " return false;" +
+             R.callback(s => textVar.set(s("value").mkString), "value" -> JSExp("this.value")) + " return false;" +
              "if (this.value == '') { leafs.addClass(this.parentNode, '" + defaultClass + "'); this.value = '" + defaultText + "' } "
              } 
            />

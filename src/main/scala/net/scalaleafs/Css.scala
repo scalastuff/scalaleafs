@@ -155,10 +155,10 @@ object CssConstructorParser extends AbstractCssParser {
   def constructor = opt(ID <~ ":") ~ ID ~ modifiers ^^ (id => new ElemConstructor(id._1._1, id._1._2, id._2)) 
   def modifiers = rep(modifier) ^^ (_.foldLeft(Ident.asInstanceOf[ElemModifier])(_ & _))
   def modifier = idModifier | classModifier | attrModifier 
-  def idModifier = "#" ~> ID ^^ (id => SetAttr("id", id))
-  def classModifier = "." ~> ID ^^ (id => SetClass(id))
+  def idModifier = "#" ~> ID ^^ (id => Xml.setAttr("id", id))
+  def classModifier = "." ~> ID ^^ (id => Xml.setClass(id))
   def attrModifier = "[" ~> attrAssignment <~ "]" 
-  def attrAssignment = (ID <~ "=") ~ value ^^ (s => SetAttr(s._1, s._2))
+  def attrAssignment = (ID <~ "=") ~ value ^^ (s => Xml.setAttr(s._1, s._2))
   def nested(s : List[CssConstructor]) : CssConstructor = s match {
     case Nil => throw new Exception("cannot happen")
     case s :: Nil => s

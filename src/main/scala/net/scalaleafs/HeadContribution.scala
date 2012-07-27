@@ -115,11 +115,15 @@ object HeadContributions {
 abstract class HeadContribution(val key : String) {
   def dependsOn : List[HeadContribution] = Nil
   def render(request : Request) : NodeSeq
+  def renderAdditional(request : Request) : JSCmd = Noop
 }
 
 class JavaScript(key : String, uri : String) extends HeadContribution(key) {
   def render(request : Request) = {
     <script type="text/javascript" src={uri} />
+  }
+  override def renderAdditional(request : Request) = {
+    LoadJavaScript(uri)
   }
 }
 
@@ -128,10 +132,14 @@ class JavaScriptResource(c : Class[_], resource : String) extends HeadContributi
     var name = request.server.resources.hashedResourcePathFor(c, resource)
     <script type="text/javascript" src={request.resourceBaseUrl.resolve(name).toLocalString} />
   }
+  override def renderAdditional(request : Request) = {
+    var name = request.server.resources.hashedResourcePathFor(c, resource)
+    LoadJavaScript(request.resourceBaseUrl.resolve(name).toLocalString)
+  }
 }
 
 /**
- * Use JQuery as default javascript library.
+ * Use JQuery as default JavaScript library.
  */
 
 object LeafsJavaScriptResource extends JavaScriptResource(classOf[JavaScript], "leafs.js")
