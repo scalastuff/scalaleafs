@@ -61,7 +61,7 @@ object XmlTransformation {
    * Utility method that replaces elements of given xml that match according to given match function. 
    */
   def transform(xml : NodeSeq, matches : Elem => Boolean, replace : Elem => NodeSeq) : NodeSeq =
-    transform(xml, XmlSelector(matches), replace)
+    transform(xml, new XmlSelector(matches), replace)
     
   /**
    * Utility method that replaces elements of given xml that match according to given selector. 
@@ -173,4 +173,4 @@ object Ident extends ElemModifier(e => e, false) with XmlTransformation {
  * Otherwise (the default) only the top-level nodes are searched. When a nested selector is specified, child nodes of
  * a matched element are searched using the nested selector.
  */
-case class XmlSelector(matches : Elem => Boolean, recursive : Boolean = false, nested : Option[XmlSelector] = None) 
+class XmlSelector(val matches : Elem => Boolean, val recursive : Boolean = false, val nested : Option[XmlSelector] = None) 

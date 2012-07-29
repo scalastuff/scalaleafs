@@ -152,7 +152,7 @@ object XmlHelpers {
     out
   }
 
-  private def findValue(value : String, values : String) : Integer = {
+  private def findValue(value : String, values : String) : Int = {
     var index = values.indexOf(value, 0)
     while (index >= 0) {
       if ((index == 0 || values.charAt(index - 1) == ' ') &&
