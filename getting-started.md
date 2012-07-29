@@ -1,15 +1,10 @@
 ---
 layout: default
-title: Something with codes
+title: Getting Started
 category: Tutorial
 index: 2
 ---
 
-Happy fun highlighting. 
-[More details](https://github.com/mojombo/jekyll/wiki/liquid-extensions)
+Setup project with sbt / maven
 
-{% highlight ruby %}
-def foo
-  puts 'foo'
-end
-{% endhighlight %}
+/ My first app / servlet
