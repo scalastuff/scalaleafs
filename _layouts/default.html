@@ -22,6 +22,7 @@
   {% for p in site.pages %}
   {% for weight in (1..10) %}
   {% if p.index == weight %}
+        index: {{ p.index }}
   <a {% if p.url == page.url %}class="active"{% endif %} href="{{ p.url }}">
     {{ p.title }} 
         </a>
