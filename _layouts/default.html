@@ -35,6 +35,7 @@
       <li>
         <a {% if p.url == page.url %}class="active"{% endif %} href="{{ p.url }}">
           {{ p.title }}
+          {% include menuitem %}
         </a>
       </li>
     {% endif %}
