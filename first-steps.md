@@ -6,8 +6,9 @@ weight: 8
 # First Example
 
 
-{:lang='bash'}
+{:lang='scala'}
     # This is example code
+    def bind = <h1>hi there</h1>
     blah blah blah
     qwer qwer qwer
     
