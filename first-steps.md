@@ -5,6 +5,12 @@ weight: 8
 ---
 # First Example
 
+
+{:lang='bash'}
+    # This is example code
+    blah blah blah
+    qwer qwer qwer
+    
 This first example shows how to use **CSS Selectors** to bind a template to scala code. 
 
 FirstExample.html:
