@@ -18,31 +18,28 @@
         <h1>Scalaleafs</h1>
         <p>ScalaLeafs Web Framework</p>
 
-  <div>
+  <div class="menu">
     <h2><a {% if p.category == "Tutorial" %}class="active"{% endif %} href="tutorial.html">Tutorial</h2>
   {% for p in site.pages %}
   {% if p.category == "Tutorial" %}
   {% for index in (1..100) %}
   {% if p.index == index %}
-  <a {% if p.url == page.url %}class="active"{% endif %} href="{{ p.url }}">
+  <h3><a {% if p.url == page.url %}class="active"{% endif %} href="{{ p.url }}">
     {{ p.title }} 
-        </a>
+    </a></h3>
   {% endif %}
   {% endfor %}
   {% endif %}
   {% endfor %}
-  </div>
 
-    
-  <div>
-    <h2><a {% if p.category == "Documentation" %}class="active"{% endif %} href="documentation.html">Documentation</h2>
+      <h2><a {% if p.category == "Documentation" %}class="active"{% endif %} href="documentation.html">Documentation</h2>
   {% for p in site.pages %}
   {% if p.category == "Documentation" %}
   {% for index in (1..100) %}
   {% if p.index == index %}
-  <a {% if p.url == page.url %}class="active"{% endif %} href="{{ p.url }}">
+  <h3><a {% if p.url == page.url %}class="active"{% endif %} href="{{ p.url }}">
     {{ p.title }} 
-        </a>
+    </a></h3>
   {% endif %}
   {% endfor %}
   {% endif %}
