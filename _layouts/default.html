@@ -28,6 +28,17 @@
 <p><a href="#{{ category[0] }}-ref">&#8617;</a></p>
 {% endfor %}
 
+  <h2>Tutorial</h2>
+  {% for p in site.pages %}
+  {% for index in (1..100) %}
+  {% if p.category == 'tutorial' %}
+  {% if p.index == index %}
+  <a {% if p.url == page.url %}class="active"{% endif %} href="{{ p.url }}">{{ p.title }} </a>
+  {% endif %}
+  {% endif %}
+  {% endfor %}
+  {% endfor %}
+  
 {% for weight in (1..10) %}
   {% for p in site.pages %}
     {% if p.weight == weight %}
