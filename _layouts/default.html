@@ -19,7 +19,7 @@
         <p>ScalaLeafs Web Framework</p>
 
   <div class="menu">
-    <div class="menu1">x<a href="tutorial.html">Tutorial</div>y
+    <div class="menu1">x<a {% if p.category == "Tutorial" %}class="active"{% endif %} href="tutorial.html">Tutorial</a></div>y
   {% for p in site.pages %}
   {% if p.category == "Tutorial" %}
   {% for index in (1..100) %}
@@ -30,7 +30,7 @@ a  <div class="menu2"><a {% if p.url == page.url %}class="active"{% endif %} hre
   {% endif %}
   {% endfor %}
 c
-      <div class="menu1"><a {% if p.category == "Documentation" %}class="active"{% endif %} href="documentation.html">Documentation</div>
+    <div class="menu1"><a {% if p.category == "Documentation" %}class="active"{% endif %} href="documentation.html">Documentation</a></div>
   {% for p in site.pages %}
   {% if p.category == "Documentation" %}
   {% for index in (1..100) %}
