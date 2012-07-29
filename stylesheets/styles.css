@@ -1,5 +1,19 @@
 @import url(https://fonts.googleapis.com/css?family=Lato:300italic,700italic,300,700);
 
+
+.menu a {
+  display: block;
+}
+
+.menu .menu2 {
+  padding-left: 10px;
+}
+
+.menu a.active {
+  font-weight: bold;
+  color: black;
+}
+
 body {
   padding:50px;
   font:14px/1.5 Lato, "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -253,3 +267,4 @@ footer {
     color:#444;
   }
 }
+
