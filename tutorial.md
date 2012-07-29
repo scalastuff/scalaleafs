@@ -1,3 +1,6 @@
-# How does it work?
+---
+layout: default
+title: Tutorial
+category: Tutorial
+---
 
-Enter Text in Markdown format.
