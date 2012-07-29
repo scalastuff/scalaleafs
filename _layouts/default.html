@@ -20,7 +20,7 @@
 
   <h2>Tutorial</h2>
   {% for p in site.pages %}
-  {% if p.category == 'tutorial' %}
+  {% if p.category == "tutorial" %}
   {% for index in (1..100) %}
   {% if p.index == index %}
         index2: {{ p.index }}
