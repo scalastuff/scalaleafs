@@ -18,9 +18,11 @@
         <h1>Scalaleafs</h1>
         <p>ScalaLeafs Web Framework</p>
 <ul>
+{% for submenu in ("A", "B") %}  
 {% for weight in (1..10) %}
   {% for p in site.pages %}
     {% if p.weight == weight %}
+  <h2>{{submenu}}</h2>
       <li>
         <a {% if p.url == page.url %}class="active"{% endif %} href="{{ p.url }}">
           {{ p.title }}
@@ -29,6 +31,7 @@
     {% endif %}
   {% endfor %}
 {% endfor %}
+  {% endfor %}
 </ul>
         <p class="view"><a href="https://github.com/scalastuff/scalaleafs">View the Project on GitHub <small>scalastuff/scalaleafs</small></a></p>
 
@@ -54,4 +57,3 @@
     
   </body>
 </html>
-
