@@ -21,7 +21,7 @@
   <h2>Tutorial</h2>
   {% for p in site.pages %}
         cat: {{ p.category }}
-  {% if p.category == "tutorial" %}
+  {% if p.category == "Tutorial" %}
   {% for index in (1..100) %}
   {% if p.index == index %}
   <a {% if p.url == page.url %}class="active"{% endif %} href="{{ p.url }}">
