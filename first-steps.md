@@ -5,12 +5,6 @@ weight: 8
 ---
 # First Example
 
-
-{:lang='scala'}
-    # This is example code
-    def bind = <h1>hi there</h1>
-    blah blah blah
-    qwer qwer qwer
     
 This first example shows how to use **CSS Selectors** to bind a template to scala code. 
 
