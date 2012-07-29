@@ -19,27 +19,27 @@
         <p>ScalaLeafs Web Framework</p>
 
   <div class="menu">
-    <h2><a {% if p.category == "Tutorial" %}class="active"{% endif %} href="tutorial.html">Tutorial</h2>
+    <div class="menu1"><a {% if p.category == "Tutorial" %}class="active"{% endif %} href="tutorial.html">Tutorial</div>
   {% for p in site.pages %}
   {% if p.category == "Tutorial" %}
   {% for index in (1..100) %}
   {% if p.index == index %}
-  <h3><a {% if p.url == page.url %}class="active"{% endif %} href="{{ p.url }}">
+  <div class="menu2"><a {% if p.url == page.url %}class="active"{% endif %} href="{{ p.url }}">
     {{ p.title }} 
-    </a></h3>
+    </a></div>
   {% endif %}
   {% endfor %}
   {% endif %}
   {% endfor %}
 
-      <h2><a {% if p.category == "Documentation" %}class="active"{% endif %} href="documentation.html">Documentation</h2>
+      <div class="menu1"><a {% if p.category == "Documentation" %}class="active"{% endif %} href="documentation.html">Documentation</div>
   {% for p in site.pages %}
   {% if p.category == "Documentation" %}
   {% for index in (1..100) %}
   {% if p.index == index %}
-  <h3><a {% if p.url == page.url %}class="active"{% endif %} href="{{ p.url }}">
+  <div class="menu2"><a {% if p.url == page.url %}class="active"{% endif %} href="{{ p.url }}">
     {{ p.title }} 
-    </a></h3>
+    </a></div>
   {% endif %}
   {% endfor %}
   {% endif %}
