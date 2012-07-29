@@ -1,7 +1,8 @@
 ---
 layout: default
 title: Something with codes
-weight: 2
+category: Tutorial
+index: 2
 ---
 
 Happy fun highlighting. 
