@@ -1,6 +1,7 @@
 ---
 layout: default
 title: First Example
+category: Tutorial
 weight: 8
 ---
 # First Example
