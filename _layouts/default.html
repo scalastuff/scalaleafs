@@ -30,7 +30,7 @@
 
   <h2>Tutorial</h2>
   {% for p in site.pages %}
-  {% for index in (1..100) %}
+  {% for index in (1..10) %}
   {% if p.index == index %}
   <a {% if p.url == page.url %}class="active"{% endif %} href="{{ p.url }}">{{ p.title }} </a>
   {% endif %}
