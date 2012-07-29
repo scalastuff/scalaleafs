@@ -18,7 +18,16 @@
         <h1>Scalaleafs</h1>
         <p>ScalaLeafs Web Framework</p>
 <ul>
-{% for submenu in ("A", "B") %}  
+{% for category in site.categories %} 
+<h2 id="{{ category[0] }}-ref">{{ category[0] }}</h2>
+<ul>
+  {% for post in category[1] %} 
+    <li><a href="{{ post.url }}">{{ post.title }}</a></li> 
+  {% endfor %}
+</ul>
+<p><a href="#{{ category[0] }}-ref">&#8617;</a></p>
+{% endfor %}
+
 {% for weight in (1..10) %}
   {% for p in site.pages %}
     {% if p.weight == weight %}
@@ -31,7 +40,6 @@
     {% endif %}
   {% endfor %}
 {% endfor %}
-  {% endfor %}
 </ul>
         <p class="view"><a href="https://github.com/scalastuff/scalaleafs">View the Project on GitHub <small>scalastuff/scalaleafs</small></a></p>
 
