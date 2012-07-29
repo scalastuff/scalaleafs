@@ -19,31 +19,20 @@
         <p>ScalaLeafs Web Framework</p>
 
   <div class="menu">
-    <a class="menu1{% if p.category == "Tutorial" %} active{% endif %}" href="tutorial.html">Tutorial</a>
+    <a class="menu1{% if page.category == "Tutorial" %} active{% endif %}" href="tutorial.html">Tutorial</a>
+    {% if page.category == "Tutorial" %}
   {% for p in site.pages %}
-  {% if p.category == "Tutorial" %}
+  {% if p.category == page.category %}
   {% for index in (1..100) %}
   {% if p.index == index %}
-<a class="menu2 {% if p.url == page.url %} active{% endif %}" href="{{ p.url }}">{{ p.title }}</a>
+<a class="menu2{% if p.url == page.url %} active{% endif %}" href="{{ p.url }}">{{ p.title }}</a>
   {% endif %}
   {% endfor %}
   {% endif %}
   {% endfor %}
-
-    <div class="menu1"><a {% if p.category == "Documentation" %}class="active"{% endif %} href="documentation.html">Documentation</a></div>
-  {% for p in site.pages %}
-  {% if p.category == "Documentation" %}
-  {% for index in (1..100) %}
-  {% if p.index == index %}
-  <div class="menu2"><a {% if p.url == page.url %}class="active"{% endif %} href="{{ p.url }}">
-    {{ p.title }} 
-    </a></div>
   {% endif %}
-  {% endfor %}
-  {% endif %}
-  {% endfor %}
-  </div>
-
+        </div>
+        
         <p class="view"><a href="https://github.com/scalastuff/scalaleafs">View the Project on GitHub <small>scalastuff/scalaleafs</small></a></p>
 
 
