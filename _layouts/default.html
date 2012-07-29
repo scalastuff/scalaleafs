@@ -20,10 +20,10 @@
 
   <h2>Tutorial</h2>
   {% for p in site.pages %}
+        index3: {{ p.index }}
   {% if p.category == "tutorial" %}
   {% for index in (1..100) %}
   {% if p.index == index %}
-        index2: {{ p.index }}
   <a {% if p.url == page.url %}class="active"{% endif %} href="{{ p.url }}">
     {{ p.title }} 
         </a>
