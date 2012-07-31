@@ -1,68 +1,58 @@
-<!doctype html>
-<html>
-  <head> 
+<!DOCTYPE html>
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"> 
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
     <title>{{ page.title }}</title>
 
-    <link rel="stylesheet" href="stylesheets/styles.css">
-    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+  <link rel="stylesheet" href="/stylesheets/styles.css">
+    <link rel="stylesheet" href="/stylesheets/pygment_trac.css">
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
     <!--[if lt IE 9]>
     <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
   </head>
-  <body>
-    <div>
-        <img style="position:relative;top:-20px;z-index:-10" width="170px" height="130px" src="/img/leafs-autumn.jpg"/>
-      <div>
-        <h1>Scalaleafs</h1>
-        <p>ScalaLeafs Web Framework</p>
+  <body style="padding: 0">
+    <div style="">
+      <div style="display:inline-block;padding-left:200px">
       </div>
-      <div style="float:left">
-        <div class="menu">
-    <a class="menu1{% if page.category == "Tutorial" %} active{% endif %}" href="tutorial.html">Tutorial</a>
-    {% if page.category == "Tutorial" %}
-  {% for p in site.pages %}
-  {% if p.category == page.category %}
-  {% for index in (1..100) %}
-  {% if p.index == index %}
-<a class="menu2{% if p.url == page.url %} active{% endif %}" href="{{ p.url }}">{{ p.title }}</a>
-  {% endif %}
-  {% endfor %}
-  {% endif %}
-  {% endfor %}
-  {% endif %}
+            <table border=0>
+                <tr><td style="vertical-align: top; width: 260px">
+                    <img style="margin-left: 40px; position:absolute;top:-40px;z-index:-10" width="170px"
+                         height="130px"
+                         src="./First Example_files/leafs-autumn.jpg">
+                    <br/>
+                    <h1 style="margin-top: 40px; text-align: center; margin-bottom: 0;">Scala Leafs</h1>
+                    <div style="text-align: center;">A Web Framework for Scala</div>
+                    <br/>
+        <div class="menu" style="margin-top: 40px;">
+            <a class="menu1{% if page.category == "Tutorial" %} active{% endif %}" href="tutorial.html">Tutorial</a>
+            {% if page.category == "Tutorial" %}
+            {% for p in site.pages %}
+            {% if p.category == page.category %}
+            {% for index in (1..100) %}
+            {% if p.index == index %}
+            <a class="menu2{% if p.url == page.url %} active{% endif %}" href="{{ p.url }}">{{ p.title }}</a>
+            {% endif %}
+            {% endfor %}
+            {% endif %}
+            {% endfor %}
+            {% endif %}
         </div>
-      </div>
-      <div style="float:left">
+                    <br/>
+                    <br/>
+                    <br/>
+                    <p class="view"><a href="https://github.com/scalastuff/scalaleafs">View the Project on GitHub <small>scalastuff/scalaleafs</small></a></p>
+      </td>
+
+      <td >
           {{ content }}
-      </div>
-    </div>
-    <div class="qwrapper">
-      <header style="display:none" >
+      </td>
+      </tr>
+      </table>
+        </div>
 
-        
-        <p class="view"><a href="https://github.com/scalastuff/scalaleafs">View the Project on GitHub <small>scalastuff/scalaleafs</small></a></p>
-
-
-        <ul>
-          <li><a href="https://github.com/scalastuff/scalaleafs/zipball/master">Download <strong>ZIP File</strong></a></li>
-          <li><a href="https://github.com/scalastuff/scalaleafs/tarball/master">Download <strong>TAR Ball</strong></a></li>
-          <li><a href="https://github.com/scalastuff/scalaleafs">View On <strong>GitHub</strong></a></li>
-        </ul>
-      </header>
-      <section>
-        <h3>{{ page.title }}</h3>
-
-
-      </section>
-      <footer style="display:none">
-        <p>This project is maintained by <a href="https://github.com/scalastuff">scalastuff</a></p>
-        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
-      </footer>
-    </div>
-    <script src="javascripts/scale.fix.js"></script>
     
-  </body>
-</html>
+    <script src="javascripts/scale.fix.js"></script>
+  
+
+</body></html>
