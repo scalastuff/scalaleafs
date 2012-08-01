@@ -17,6 +17,7 @@ Steps 2 and 3 are not strictly necessary, but are useful during building and tes
 The provided samples use jetty and eclipse, but this is by no means a necessity.
 
 File: *project-dir*/build.sbt
+
 {% highlight scala %}
 organization := "com.mycom"
 
@@ -34,6 +35,7 @@ seq(webSettings :_*)
 {% endhighlight %}
 
 File: *project-dir*/project/plugins.sbt
+
 {% highlight scala %}
 addSbtPlugin("com.typesafe.sbteclipse" % "sbteclipse-plugin" % "2.1.0-RC1")
 
