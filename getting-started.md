@@ -66,15 +66,7 @@ case "0.11.3" => "com.github.siasia" %% "xsbt-web-plugin" % "0.11.3-0.2.11.1"
 
 Let's start by creating a minimal application 'com.mycom.MyApp' using SBT.
 
-## Create SBT file
 
-A minimal build.sbt file looks like:
-
-Create a simple project with the following files:
-
-    src/main/scala/com/mycom/MyApp.scala
-    src/main/webapp/WEB-INF/web.xml
-    build.sbt
 
 Setup project with sbt / maven
 
