@@ -32,6 +32,8 @@ libraryDependencies += "net.scalaleafs" %% "scalaleafs" % "0.1"
 
 libraryDependencies += "org.mortbay.jetty" % "jetty" % "6.1.22" % "container"
 
+// Only needed when using scalaleafs snapshot versions. 
+// Releases are in maven central.
 resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
 {% endhighlight %}
 
