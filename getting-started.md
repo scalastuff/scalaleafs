@@ -5,12 +5,6 @@ category: Tutorial
 index: 2
 ---
 
-## Required steps
-
-1. Add scalaleafs dependency.
-2. Create a servlet or servlet filter.
-3. Implement the render function.
-
 ## Setup SBT
 
 1. Add scalaleafs dependency.
