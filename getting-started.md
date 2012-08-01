@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Getting Started
-parent: Tutorial
+category: Tutorial
 index: 2
 ---
 
