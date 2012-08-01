@@ -18,7 +18,7 @@ index: 2
 3. IDE integration.
 
 ### File: *project-dir*/build.sbt
-```
+{% highlight scala linenos %}
 organization := "com.mycom"
 
 name := "myapp"
@@ -32,7 +32,7 @@ libraryDependencies += "net.scalaleafs" %% "scalaleafs" % "0.1"
 libraryDependencies += "org.mortbay.jetty" % "jetty" % "6.1.22" % "container"
 
 seq(webSettings :_*)
-```
+{% endhighlight %}
 
 ### File: *project-dir*/project/plugins.sbt
 ```
