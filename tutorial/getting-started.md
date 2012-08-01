@@ -24,6 +24,7 @@ name := "myapp"
 
 version := "1.0"
 
+// Scalaleafs is built against scala 2.8.0, 2.8.1, 2.9.0, 2.9.1, 2.9.2.
 scalaVersion := "2.9.2"
 
 // Add the dependency to scalaleafs.
