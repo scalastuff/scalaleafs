@@ -16,7 +16,7 @@ We will configure SBT to do the following:
 Steps 2 and 3 are not strictly necessary, but are useful during building and testing.
 The provided samples use jetty and eclipse, but this is by no means a necessity.
 
-### File: *project-dir*/build.sbt
+File: *project-dir*/build.sbt
 {% highlight scala %}
 organization := "com.mycom"
 
@@ -33,7 +33,7 @@ libraryDependencies += "org.mortbay.jetty" % "jetty" % "6.1.22" % "container"
 seq(webSettings :_*)
 {% endhighlight %}
 
-### File: *project-dir*/project/plugins.sbt
+File: *project-dir*/project/plugins.sbt
 {% highlight scala %}
 addSbtPlugin("com.typesafe.sbteclipse" % "sbteclipse-plugin" % "2.1.0-RC1")
 
