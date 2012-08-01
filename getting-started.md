@@ -45,27 +45,3 @@ case "0.11.2" => "com.github.siasia" %% "xsbt-web-plugin" % "0.11.2-0.2.11"
 case "0.11.3" => "com.github.siasia" %% "xsbt-web-plugin" % "0.11.3-0.2.11.1"
 })
 ```
-
-- Add a dependency to scala leafs
-
-```
-"net.scalaleafs" %% "scalaleafs" % "0.1"
-```
-
-- Create a filter in web.xml:
-```
-<filter>
-    <filter-name>MyApp</filter-name>
-    <filter-class>com.mycom.MyApp</filter-class>
-</filter>
-```
-
-- Create a filter
-
-Let's start by creating a minimal application 'com.mycom.MyApp' using SBT.
-
-
-
-Setup project with sbt / maven
-
-/ My first app / servlet
