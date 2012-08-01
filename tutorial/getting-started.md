@@ -26,11 +26,13 @@ version := "1.0"
 
 scalaVersion := "2.9.2"
 
+seq(webSettings :_*)
+
 libraryDependencies += "net.scalaleafs" %% "scalaleafs" % "0.1"
 
 libraryDependencies += "org.mortbay.jetty" % "jetty" % "6.1.22" % "container"
 
-seq(webSettings :_*)
+resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
 {% endhighlight %}
 
 File: *project-dir*/project/plugins.sbt
