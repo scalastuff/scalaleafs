@@ -30,7 +30,7 @@
             {% if page.category == "Tutorial" %}
             {% for p in site.pages %}
             {% if p.category == page.category %}
-            {% for index in (1..100) %}
+            {% for index in (1..20) %}
             {% if p.index == index %}
             <a class="menu2{% if p.url == page.url %} active{% endif %}" href="{{ p.url }}">{{ p.title }}</a>
             {% endif %}
