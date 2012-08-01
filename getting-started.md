@@ -7,9 +7,14 @@ index: 2
 
 ## Setup SBT
 
+We will configure SBT to do the following:
+
 1. Add scalaleafs dependency.
 2. Configure web container.
 3. IDE integration.
+
+Steps 2 and 3 are not strictly necessary, but are useful during building and testing.
+The provided samples use jetty and eclipse, but this is by no means a necessity.
 
 ### File: *project-dir*/build.sbt
 {% highlight scala %}
