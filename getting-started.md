@@ -18,4 +18,19 @@ index: 2
 3. IDE integration.
 
 ### File: *project-dir*/build.sbt
+```
+organization := "com.mycom"
+
+name := "myapp"
+
+version := "1.0"
+
+scalaVersion := "2.9.2"
+
+libraryDependencies += "net.scalaleafs" %% "scalaleafs" % "0.1"
+
+libraryDependencies += "org.mortbay.jetty" % "jetty" % "6.1.22" % "container"
+
+seq(webSettings :_*)
+```
 
