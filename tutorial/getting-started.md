@@ -26,10 +26,13 @@ version := "1.0"
 
 scalaVersion := "2.9.2"
 
-seq(webSettings :_*)
-
+// Add the dependency to scalaleafs.
 libraryDependencies += "net.scalaleafs" %% "scalaleafs" % "0.1"
 
+// Use the SBT web plugin.
+seq(webSettings :_*)
+
+// Use jetty to run the application from SBT.
 libraryDependencies += "org.mortbay.jetty" % "jetty" % "6.1.22" % "container"
 
 // Only needed when using scalaleafs snapshot versions. 
