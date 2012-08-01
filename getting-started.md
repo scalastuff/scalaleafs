@@ -13,8 +13,6 @@ index: 2
 
 ## Setup SBT
 
-(or, alternatively use maven)
-### Steps required:
 1. Add scalaleafs dependency.
 2. Configure web container.
 3. IDE integration.
