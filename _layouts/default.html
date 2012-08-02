@@ -29,7 +29,7 @@
                 
                   <div class="menu" style="margin-top: 40px; text-align: center;">
                     <div style="display: inline-block; text-align: left; min-width: 140px;">
-                      <a class="menu1{% if page.title == "Introduction" %} active{% endif %}" href="index.html">Introduction</a> 
+                      <a class="menu1{% if page.title == "Introduction" %} active{% endif %}" href="/index.html">Introduction</a> 
             {% if page.category == "Introduction" %}
             {% for p in site.pages %}
             {% if p.category == page.category %}
@@ -42,7 +42,7 @@
             {% endfor %}
             {% endif %}
 
-                      <a class="menu1{% if page.title == "Tutorial" %} active{% endif %}" href="tutorial/tutorial.html">Tutorial</a> 
+                      <a class="menu1{% if page.title == "Tutorial" %} active{% endif %}" href="/tutorial/tutorial.html">Tutorial</a> 
             {% if page.category == "Tutorial" %}
             {% for p in site.pages %}
             {% if p.category == page.category %}
@@ -55,7 +55,7 @@
             {% endfor %}
             {% endif %}
 
-                      <a class="menu1{% if page.title == "Documentation" %} active{% endif %}" href="documentation/documentation.html">Documentation</a> 
+                      <a class="menu1{% if page.title == "Documentation" %} active{% endif %}" href="/documentation/documentation.html">Documentation</a> 
             {% if page.category == "Documentation" %}
             {% for p in site.pages %}
             {% if p.category == page.category %}
