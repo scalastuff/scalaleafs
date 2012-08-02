@@ -7,14 +7,13 @@ index: 2
 
 ## Setup SBT
 
-We will configure SBT to do the following:
+Adding the scalaleafs dependency is all that's required.
 
- 1. Add scalaleafs dependency.
- 2. Configure web container.
- 3. IDE integration.
+{% highlight scala %}
+libraryDependencies += "net.scalaleafs" %% "scalaleafs" % "0.1"
+{% endhighlight %}
 
-Steps 2 and 3 are not strictly necessary, but are useful during building and testing.
-The provided samples use jetty and eclipse, but this is by no means a necessity.
+Releases of scalaleafs are in maven-central, cross-built against scala versions 2.8.0, 2.8.1, 2.9.0, 2.9.1 and 2.9.2. However, typically, one wants IDE integration, test the application from SBT or use snapshot releases. This sample SBT configuration will get you going:
 
 File: *project-dir*/build.sbt
 {% highlight scala %}
@@ -32,6 +31,9 @@ libraryDependencies += "net.scalaleafs" %% "scalaleafs" % "0.1"
 
 // Use the SBT web plugin.
 seq(webSettings :_*)
+
+// Put resource folders on Eclipse build path.
+EclipseKeys.createSrc := EclipseCreateSrc.Default + EclipseCreateSrc.Resource
 
 // Use jetty to run the application from SBT.
 libraryDependencies += "org.mortbay.jetty" % "jetty" % "6.1.22" % "container"
