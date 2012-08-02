@@ -27,7 +27,32 @@
                 
                   <div class="menu" style="margin-top: 40px; text-align: center;">
                     <div style="display: inline-block; text-align: left; min-width: 140px;">
-            <a class="menu1{% if page.category == "Tutorial" %} active{% endif %}" href="tutorial.html">Tutorial</a> 
+                      <a class="menu1{% if page.category == "Tutorial" %} active{% endif %}" href="tutorial/tutorial.html">Tutorial</a> 
+            {% if page.category == "Tutorial" %}
+            {% for p in site.pages %}
+            {% if p.category == page.category %}
+            {% for index in (1..20) %}
+            {% if p.index == index %}
+            <a class="menu2{% if p.url == page.url %} active{% endif %}" href="{{ p.url }}">{{ p.title }}</a>
+            {% endif %}
+            {% endfor %}
+            {% endif %}
+            {% endfor %}
+            {% endif %}
+                      <a class="menu1{% if page.category == "Introduction" %} active{% endif %}" href="introduction/introduction.html">Introduction</a> 
+            {% if page.category == "Tutorial" %}
+            {% for p in site.pages %}
+            {% if p.category == page.category %}
+            {% for index in (1..20) %}
+            {% if p.index == index %}
+            <a class="menu2{% if p.url == page.url %} active{% endif %}" href="{{ p.url }}">{{ p.title }}</a>
+            {% endif %}
+            {% endfor %}
+            {% endif %}
+            {% endfor %}
+            {% endif %}
+
+                      <a class="menu1{% if page.category == "Documentation" %} active{% endif %}" href="documentation/documentation.html">Documentation</a> 
             {% if page.category == "Tutorial" %}
             {% for p in site.pages %}
             {% if p.category == page.category %}
