@@ -1,3 +1,13 @@
+/**
+ * Copyright (c) 2012 Ruud Diterwich.
+ * All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ */
 package net.scalaleafs.contrib
 
 import scala.xml.Elem
@@ -112,7 +122,7 @@ object RichForm {
            value={if (text == "") defaultText else text} 
            onfocus={"if (this.value == '" + defaultText + "') { this.value = ''; leafs.removeClass(this.parentNode, '" + defaultClass + "') }"} 
            onBlur={
-             R.callback(s => textVar.set(s("value").mkString), "value" -> JSExp("this.value")) + " return false;" +
+             R.callback("value" -> JSExp("this.value"))(s => textVar.set(s("value").mkString)) + " return false;" +
              "if (this.value == '') { leafs.addClass(this.parentNode, '" + defaultClass + "'); this.value = '" + defaultText + "' } "
              } 
            />

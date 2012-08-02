@@ -1,3 +1,13 @@
+/**
+ * Copyright (c) 2012 Ruud Diterwich.
+ * All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ */
 package net.scalaleafs
 
 import scala.xml.NodeSeq
@@ -66,8 +76,14 @@ trait Xml {
   /**
    * Transformation that sets an attribute of some input element.
    */
-  def setAttr(attr : String, value : String, condition : => Boolean = true) : ElemModifier = 
+  def setAttr(attr : String, value : String) : ElemModifier = 
+    new ElemModifier(XmlHelpers.setAttr(_, attr, value), true) 
+  
+  def setAttr(attr : String, value : String, condition : => Boolean) : ElemModifier = 
     new ElemModifier(XmlHelpers.setAttr(_, attr, value), condition) 
+  
+  def setAttr(attr : String, value : JSCmd) : ElemModifier = 
+    new ElemModifier(XmlHelpers.setAttr(_, attr, value.toString), true) 
   
   /**
    * Transformation that replaces child nodes of some input element with a text node.

@@ -17,10 +17,11 @@ import implicits._
 object Html {
  
   def onclick(f : => JSCmd) : ElemModifier = {
-    Xml.setAttr("onclick", R.callback(_ => R.addPostRequestJs(f)).toString + " return false;")
+    Xml.setAttr("onclick", R.callback(_ => R.addPostRequestJs(f)) & JsReturnFalse)
   }
-
-//  def onchange(f : String => JSCmd) : ElemModifier = {
-//    SetAttr("onchange", R.callback(s => R.addPostRequestJs(s)).toString + " return false;")
-//  }
+  
+  def select[A](values : Seq[A])(f : A => JSCmd) = {
+    Xml.setAttr("onchange", R.callback1(s => f(values(Integer.parseInt(s))), JSExp("this.selectedIndex"))) & 
+    Xml.setContent(content_ => values.map(v => <option>{v}</option>))
+  }
 }

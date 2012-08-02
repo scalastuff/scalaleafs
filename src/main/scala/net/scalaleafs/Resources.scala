@@ -142,7 +142,7 @@ class Resources(factory : ResourceFactory, substitutions : Map[String, String], 
               else Seq(line.dropRight(debugPostfix2.length()))
             else Seq(line.mkString)
           } 
-          val lines = linesSeq.flatten
+          val lines = linesSeq.toSeq.flatten
           lines.mkString("\n").getBytes("UTF-8");
         case None =>
           val bis = new BufferedInputStream(is)

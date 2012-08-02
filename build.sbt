@@ -5,15 +5,17 @@ name := "scalaleafs"
 
 version := "0.1"
 
+crossScalaVersions := Seq("2.8.0", "2.8.1", "2.9.0", "2.9.1", "2.9.2")
+
 scalaVersion := "2.9.2"
+
+EclipseKeys.createSrc := EclipseCreateSrc.Default + EclipseCreateSrc.Resource
 
 libraryDependencies ++= Seq (
   "org.slf4j" % "slf4j-log4j12" % "1.6.4",
-  "com.google.guava" % "guava" % "10.0.1",
   "javax.servlet" % "servlet-api" % "2.5" withSources(),
   "nu.validator.htmlparser" % "htmlparser" % "1.2.1",
   "org.clapper" %% "grizzled-slf4j" % "0.6.9",
-  "log4j" % "log4j" % "1.2.16",
   "junit" % "junit" % "4.8" % "test")
   
 publishMavenStyle := true
@@ -30,12 +32,11 @@ publishTo <<= version { (v: String) =>
 
 licenses := Seq("The Apache Software Licence, Version 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0"))
 
-homepage := Some(url("http://jsuereth.com/scala-arm"))
+homepage := Some(url("http://scalaleafs.net"))
 
 pomIncludeRepository := { _ => false }
 
 pomExtra := (
-  <url>http://scalaleafs.net</url>
   <scm>
     <connection>scm:git:git@github.com:scalastuff/scalaleafs.git</connection>
     <url>https://github.com/scalastuff/scalaleafs</url>

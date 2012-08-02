@@ -29,7 +29,7 @@ case class UrlContext(protocol : String, host : String, port : String, path : Se
 object Url {
   
   /**
-   * parse a path relative to the  
+   * parse a path relative to the context.
    */
   def parse(path : String) : (List[String], Map[String, Seq[String]]) = {
     val index = path.indexOf('?')
@@ -101,13 +101,38 @@ case class Url(context : UrlContext, path : Seq[String], parameters : Map[String
   def child(segment : String) = 
     Url(context, path :+ segment, parameters)
     
-  def resolve(path : String) : Url =
-    Url.parse(path) match {
-      case (p, pars) if p.startsWith("/") => 
-        Url(context, p, pars)
-      case (p, pars) =>
-        Url(context, this.path ++ p, pars)
+  def resolve(path : String) : Url = {
+    // Is it an absolute path?
+    path.indexOf("://") match {
+      // Relative path.
+      case -1 => 
+        val (p, pars) = Url.parse(path)
+        // Paths starting with / are relative to context.
+        if (path.trim().startsWith("/"))
+          Url(context, p, pars)
+        // Normal resolve simply appends current path and new path.
+        else 
+          Url(context, this.path ++ p, pars)
+      // Absolute path.
+      case i0 => 
+        val protocol = path.substring(0, i0).trim()
+        val hostAndPortEndIndex = path.indexOf('/', i0 + 3) match {
+          case -1 => path.length
+          case i => i
+        }
+        val (host, port) = path.indexOf(':', i0 + 3) match {
+          case i if i < 0 || i >= hostAndPortEndIndex => (path.substring(i0 + 3, hostAndPortEndIndex), "")
+          case i => (path.substring(i0 + 3, i), path.substring(i + 1, hostAndPortEndIndex))
+        }
+        val (p, pars) = Url.parse(path.substring(hostAndPortEndIndex))
+        // Path is relative to current context?
+        if (context.protocol == protocol && context.host == host && context.port == port && p.startsWith(context.path)) 
+          Url(context, p.drop(context.path.size), pars)
+        // Or was it a path with a different context?
+        else
+          Url(UrlContext(protocol, host, port, Nil), p, pars)
     }
+  }
   
   override def toString = 
     toString(true, true)
@@ -160,6 +185,7 @@ trait UrlHandler {
     this.trail.set(trail)
   }
   R.initialRequest.urlManager.addUrlHandler(this)
+  R.addHeadContribution(OnPopStateHeadContribution)
 }
 
 class UrlManager {

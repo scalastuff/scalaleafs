@@ -53,8 +53,8 @@ class Session(val server : Server, val configuration : Configuration) {
 
   private[scalaleafs] val ajaxCallbacks = new ConcurrentHashMap[String, AjaxCallback]()
  
-  private[scalaleafs] val callbackIDGenerator = new AtomicLong {
-    def generate : String = "cb" + getAndIncrement()
+  private[scalaleafs] val callbackIDGenerator = new Object {
+    def generate : String = "cb" + UUID.randomUUID
   }
   
   def handleAjaxCallback(callbackId : String, parameters : Map[String, Seq[String]]) : String = {

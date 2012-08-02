@@ -1,3 +1,13 @@
+/**
+ * Copyright (c) 2012 Ruud Diterwich.
+ * All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ */
 package net.scalaleafs
 
 /**
@@ -92,7 +102,20 @@ class Request(val initialRequest : InitialRequest, val isInitialRequest : Boolea
       uid
   }
   
-  def callback(f : Map[String, Seq[String]] => Unit, parameters : (String, JSExp)*) : JSCmd = {
+  // Deprecated: see if flatMap works
+  def callback1(f : String => Unit, parameter : JSExp) = {
+    JSCmd("leafs.callback('" + callbackId(m => f(m.get("value").getOrElse(Seq.empty).headOption.getOrElse(""))) + "?value=' + " + parameter.toString + ");")
+  }
+  
+  def callback(parameter : JSExp)(f : String => Unit) = {
+    JSCmd("leafs.callback('" + callbackId(m => f(m.get("value").flatMap(_.headOption).getOrElse(""))) + "?value=' + " + parameter.toString + ");")
+  }
+  
+  def callback(f : Map[String, Seq[String]] => Unit) : JSCmd = {
+    callback()(f)
+  }
+  
+  def callback(parameters : (String, JSExp)*)(f : Map[String, Seq[String]] => Unit) : JSCmd = {
       if (parameters.isEmpty)
         JSCmd("leafs.callback('" + callbackId(f) + "');")
       else 

@@ -146,11 +146,43 @@ object LeafsJavaScriptResource extends JavaScriptResource(classOf[JavaScript], "
 
 object JQueryUrl extends ConfigVar[String]("http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js")
 
-object JQuery extends HeadContribution("jquery") {
+object JQuery extends HeadContribution("JQuery") {
   def render(request : Request) = {
     <script type="text/javascript" src={request.configuration(JQueryUrl)} />
   }
 }
+
+object OnPopStateHeadContribution extends HeadContribution("OnPopState") {
+  override def dependsOn = LeafsJavaScriptResource :: Nil
+  def render(request : Request) = {
+    <script type="text/javascript"> 
+      window.setLocationCallback = '{ R.callbackId { map => 
+        map.get("value").flatMap(_.headOption)  match {
+          case Some(url) =>
+            if (url.startsWith("pop:")) R.popUrl(url.substring(4))
+            else R.changeUrl(url)
+          case None =>
+        }       
+        }
+      }'
+    </script>
+  }  
+}
+
+//object OnPopState extends HeadContribution("onPopState") {
+//  override def dependsOn = LeafsJavaScriptResource :: Nil
+//  def render(request : Request) = {
+//    <script type="text/javascript">      
+//      function setUrl(url) {"{"} {
+//        R.callback(JSExp("url")) { url =>
+//          if (url.startsWith("pop:")) R.popUrl(url.substring(4))
+//          else R.changeUrl(url)
+//        }
+//      }
+//      {"}"};
+//    </script>
+//  }  
+//}
 //
 //object Callback extends HeadContribution("callback") {
 //  override def dependsOn = JQuery :: LeafsJavaScriptResource :: Nil

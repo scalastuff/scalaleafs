@@ -12,14 +12,27 @@ window.onpopstate = function(event) {
   // Ignore state that wasn't put by leafs (like initial pop state) // DEBUG MODE
   if (event.state != null) {
     console.log('Pop state: ' + event.state) // DEBUG MODE
-    setUrl("pop:" + window.location);
+    leafs.setLocation("pop:" + window.location);
   }
 }  
 
 var leafs = new function() {
-
+  
+  this.setLocation = function(url) {
+    var setLocationCallback = window.setLocationCallback;
+    if (setLocationCallback != null) {
+      console.log('Set url invoked: /$$AJAX_CALLBACK_PATH/' + setLocationCallback + "?value=" + url); // DEBUG MODE
+      $.getScript('/$$AJAX_CALLBACK_PATH/' + setLocationCallback + "?value=" + url);    
+    } else {
+      if (url.substring(0, 4) == "pop:") {
+        url = url.substring(4);
+      }
+      window.location.href = url;
+    }
+  } 
+  
   this.callback = function(callbackId) {
-    console.log('Callback invoked: /$$AJAX_CALLBACK_PATH/leafs/ajaxCallback/' + callbackId); // DEBUG MODE
+    console.log('Callback invoked: /$$AJAX_CALLBACK_PATH/' + callbackId); // DEBUG MODE
     $.getScript('/$$AJAX_CALLBACK_PATH/' + callbackId);
   };
   

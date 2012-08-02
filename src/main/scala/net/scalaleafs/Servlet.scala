@@ -114,6 +114,9 @@ trait LeafsServletProcessor extends Logging {
 }
 
 trait LeafsServlet extends HttpServlet with LeafsServletProcessor with Logging with FilterChain {
+  
+  protected val configuration = new Configuration
+  
   override def init(config : ServletConfig) {
     initialize(config.getServletContext())
   }
@@ -134,6 +137,9 @@ trait LeafsServlet extends HttpServlet with LeafsServletProcessor with Logging w
 }
 
 trait LeafsFilter extends Filter with LeafsServletProcessor {
+  
+  protected val configuration = new Configuration 
+  
   override def init(config : FilterConfig) {
     initialize(config.getServletContext())
   }
