@@ -10,7 +10,7 @@ layout: default
 
 Play has a focus on scalability and the server-side of things, it is quite bare-bone for rich web-applications. Javascript goodness is left to programmer, which seems to be the trend. The sweet spot for ScalaLeafs are projects where there is a single team with mainly scala expertise that still wants to develop neat looking rich web applications fast. I've found myself in this situation more than once.
 
-ScalaLeafs is stateful, closures are kept in sessions, and is inherently more difficult to scale. However, not everyone is building facebook-scale applications (let's be real). I fully concur with David Pollack's view on this topic: sldfjaldjkf
+ScalaLeafs is stateful, closures are kept in sessions, and is inherently more difficult to scale. However, not everyone is building facebook-scale applications (let's be real). I fully concur with David Pollack's view on this topic: http://simply.liftweb.net/index-Chapter-20.html
 
 # ...to Lift?
 
