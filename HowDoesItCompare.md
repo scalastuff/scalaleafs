@@ -17,5 +17,5 @@ Lift's view-first approach was abandoned. Request handling is more transparent, 
 
 Play has a focus on scalability and the server-side of things. It is quite bare-bone for rich web-applications. Javascript goodness is left to programmer, which seems to be the trend. The sweet spot for ScalaLeafs are projects where there is a single team with mainly scala expertise that still wants to develop neat looking rich web applications fast. I've found myself in this situation more than once.
 
-ScalaLeafs is stateful, closures are kept in sessions, and is inherently more difficult to scale. However, not everyone is building facebook-scale applications. Most of Lift's scalabilty considerations also apply to ScalaLeafs: http://simply.liftweb.net/index-Chapter-20.html
+ScalaLeafs is stateful, closures are kept in sessions, and is inherently more difficult to scale. This doesn't mean to say it isn't. Most of Lift's scalabilty considerations also apply to ScalaLeafs: http://simply.liftweb.net/index-Chapter-20.html
 
