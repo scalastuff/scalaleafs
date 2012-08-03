@@ -1,6 +1,6 @@
 ---
 title: How does it compare?
-category: Introduction
+category: qqqIntroduction
 index: 2
 layout: default
 ---
