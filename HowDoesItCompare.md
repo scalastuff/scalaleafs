@@ -2,6 +2,7 @@
 title: How does it compare?
 category: Introduction
 index: 2
+layout: default
 ---
 
 # ...to Play?
