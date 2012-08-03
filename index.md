@@ -1,4 +1,5 @@
 ---
+title: Introduction
 layout: default
 index: 0
 category: Introduction
