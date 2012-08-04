@@ -71,6 +71,7 @@ dTree.prototype.add = function (id, pid, name, url, title, target, icon, iconOpe
 
 dTree.prototype.open = function (url) {
     for (var n = 0; n < this.aNodes.length; n++) {
+       console.log("comparing " + this.aNodes[n].url + " and " + url);
         if (this.aNodes[n].url == url) {
             this.openTo(this.aNodes[n].id);
             break;
