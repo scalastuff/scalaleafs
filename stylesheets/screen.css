@@ -35,6 +35,10 @@ body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,form,fieldset,p,blockquote,th,t
 .dtree {
 	white-space: nowrap;
 }
+#sd0 {
+  margin-left: 15px;
+}
+
 .dtree img {
 	border: 0px;
 	vertical-align: middle;
