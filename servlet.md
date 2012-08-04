@@ -17,3 +17,5 @@ class MyApp extends ScalaFilter {
 }
 {% endhighlight %}
 <span class="label">src/main/scala/com/mycom/MyApp.scala</span>
+
+Your application should and does not need any further dependency on the Servlet API. This makes trasition to other types of containers painless. For example, support for Unfiltered is in the works. 
