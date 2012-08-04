@@ -44,7 +44,10 @@
 		d.add(200,0,'Documentation');
 		d.add(201,200,'Servlet','servlet.html');
 		document.write(d);
-        d.openTo(2, true);
+      switch (page.url) {
+        case "index.html": d.openTo(0, true); break;
+        case "getting-started.html": d.openTo(101, true); break;
+      }
     </script>
             </div>
                   </div>     
