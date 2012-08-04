@@ -248,7 +248,7 @@ ul.compact li a {
 	margin-bottom: 0;
 }
 #header h1 {
-	font-family: Palatino, georgia, "times new roman", serif;
+//	font-family: Palatino, georgia, "times new roman", serif;
 	margin-bottom: 0;
 	line-height: 0.9em;
 	display: block;
@@ -259,7 +259,8 @@ ul.compact li a {
 	position: absolute;
 	top: 0;
 	right: 0;
-	font-size: 100%;
+    color: #777;
+	font-size: 90%;
 	line-height: 1.6em;
 	display: block;
 	margin: 0;
