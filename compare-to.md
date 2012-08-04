@@ -1,7 +1,5 @@
 ---
 title: How does it compare?
-category: qqqIntroduction
-index: 2
 layout: default
 ---
 
