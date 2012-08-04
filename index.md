@@ -3,7 +3,7 @@ title: Introduction
 layout: default
 ---
 
-<div style="float:right; margin-left: 80px;">
+<div style="float:right; margin: 80px; background-color: #555">
 <a href="https://github.com/scalastuff/scalaleafs">GitHub</a><br/>
 <a href="https://groups.google.com/forum/#!forum/scalaleafs">Forum</a><br/>
 <a href="https://github.com/scalastuff/scalaleafs/blob/master/LICENSE.TXT">BSD License</a>
