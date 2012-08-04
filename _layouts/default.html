@@ -39,56 +39,17 @@
         d.config.useLines = false;
         d.closeAll();
 
-		d.add(0,-1,'Introduction', "introduction.html");
+		d.add(0,-1,'Introduction', "index.html");
 		d.add(1,0,'Tutorial');
 		d.add(2,1,'Getting Started','getting-started.html');
-		d.add(2,1,'First Steps','first-steps.html');
+		d.add(2,2,'First Steps','first-steps.html');
 		d.add(3,0,'Documentation');
 		d.add(4,3,'Servlet','servlet.html');
 		document.write(d);
         d.openTo(2, true);
 		//-->
     </script>
-                      <br/>                      <br/>                      <br/>                      <br/>
-
-                      <a class="menu1{% if page.title == "Introduction" %} active{% endif %}" href="/index.html">Introduction</a> 
-            {% if page.category == "Introduction" %}
-            {% for p in site.pages %}
-            {% if p.category == page.category %}
-            {% for index in (1..20) %}
-            {% if p.index == index %}
-            <a class="menu2{% if p.url == page.url %} active{% endif %}" href="{{ p.url }}">{{ p.title }}</a>
-            {% endif %}
-            {% endfor %}
-            {% endif %}
-            {% endfor %}
-            {% endif %}
-
-                      <a class="menu1{% if page.title == "Tutorial" %} active{% endif %}" href="/tutorial/tutorial.html">Tutorial</a> 
-            {% if page.category == "Tutorial" %}
-            {% for p in site.pages %}
-            {% if p.category == page.category %}
-            {% for index in (1..20) %}
-            {% if p.index == index %}
-            <a class="menu2{% if p.url == page.url %} active{% endif %}" href="{{ p.url }}">{{ p.title }}</a>
-            {% endif %}
-            {% endfor %}
-            {% endif %}
-            {% endfor %}
-            {% endif %}
-
-                      <a class="menu1{% if page.title == "Documentation" %} active{% endif %}" href="/documentation/documentation.html">Documentation</a> 
-            {% if page.category == "Documentation" %}
-            {% for p in site.pages %}
-            {% if p.category == page.category %}
-            {% for index in (1..20) %}
-            {% if p.index == index %}
-            <a class="menu2{% if p.url == page.url %} active{% endif %}" href="{{ p.url }}">{{ p.title }}</a>
-            {% endif %}
-            {% endfor %}
-            {% endif %}
-            {% endfor %}
-            {% endif %}
+                
             </div>
                   </div>     
                   <br/>
