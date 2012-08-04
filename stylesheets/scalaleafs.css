@@ -404,8 +404,8 @@ pre {
 	-moz-box-shadow: 1px 1px 6px #ccc;
 }
 pre:hover {
-	border-right: none;
-	overflow: visible;
+//	border-right: none;
+//	overflow: visible;
 }
 code {
 	font-size: 1em;
