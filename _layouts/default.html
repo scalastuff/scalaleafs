@@ -6,10 +6,30 @@
 
   <link rel="stylesheet" href="/stylesheets/screen.css">
     <link rel="stylesheet" href="/stylesheets/syntax.css">
+  <script type="text/javascript" src="javascripts/dtree.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
     <!--[if lt IE 9]>
     <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
+  <div class="dtree">
+  	<script type="text/javascript">
+		<!--
+
+		d = new dTree('d');
+        d.config.useIcons = false;
+        d.config.useLines = false;
+        d.closeAll();
+
+		d.add(0,-1,'Introduction', "introduction.html");
+		d.add(1,0,'Tutorial');
+		d.add(2,1,'Getting Started','example01.html');
+		d.add(3,0,'Documentation');
+		d.add(4,3,'Servlet','example01.html');
+		document.write(d);
+        d.openTo(2, true);
+		//-->
+    </script>
+  </div>
   </head>
   <body>
     <div>
@@ -29,6 +49,18 @@
                 
                   <div class="menu" style="margin-top: 40px; text-align: center;">
                     <div style="display: inline-block; text-align: left; min-width: 140px;">
+                      d = new dTree('d');
+        d.config.useIcons = false;
+        d.config.useLines = false;
+        d.closeAll();
+
+		d.add(0,-1,'Introduction', "introduction.html");
+		d.add(1,0,'Tutorial');
+		d.add(2,1,'Getting Started','example01.html');
+		d.add(3,0,'Documentation');
+		d.add(4,3,'Servlet','example01.html');
+		document.write(d);
+        d.openTo(2, true);
                       <a class="menu1{% if page.title == "Introduction" %} active{% endif %}" href="/index.html">Introduction</a> 
             {% if page.category == "Introduction" %}
             {% for p in site.pages %}
