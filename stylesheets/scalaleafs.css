@@ -24,9 +24,9 @@ label {
   margin-top: -12px;
   padding-bottom: 6px;
 display: block;
-font-style: italic;
   text-align: center;
   color: #555;
+  font-size: 0.75em;
   font-family: monospace;
 }
 
