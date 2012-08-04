@@ -3,7 +3,7 @@ title: Hello World
 layout: default
 ---
 
-The application's starting point is either a servlet or a filter. Define the application class by extending [LeafsServlet](api/index.html#net.scalaleafs.LeafsServlet) or [LeafsFilter](/api/index.html#net.scalaleafs.LeafsServlet) and implement the `render` function. See [servlets](/servlets.html) for more information.
+The application's starting point is either a servlet or a filter. Define the application class by extending [LeafsServlet](api/index.html#net.scalaleafs.LeafsServlet) or [LeafsFilter](/api/index.html#net.scalaleafs.LeafsFilter) and implement the `render` function. See [servlets](/servlets.html) for more information.
 
 <label>File: src/main/scala/com/mycom/MyApp.scala</label>
 {% highlight scala %}
