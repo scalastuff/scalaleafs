@@ -277,8 +277,8 @@ ul.compact li a {
 	border-bottom: 2px solid blue;
 }
 #header .byline {
-	color: silver;
-	font-size: 10pt;
+//	color: #777;
+//	font-size: 10pt;
 	line-height: 75%
 }
 #header:hover .byline a { color: silver; text-shadow: none; }
