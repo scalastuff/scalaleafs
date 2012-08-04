@@ -27,7 +27,7 @@ class MyPage extends Template {
 }
 {% endhighlight %}
 
-When the template is rendered , the following output is produced:
+When the template is rendered, the following output is produced:
 
 {% highlight html %}
 <div>
