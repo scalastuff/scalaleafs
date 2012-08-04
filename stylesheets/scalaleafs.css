@@ -26,6 +26,8 @@ label {
 display: block;
 font-style: italic;
   text-align: center;
+  color: #555;
+  font-family: monospace;
 }
 
 .menu { text-align: center; }
