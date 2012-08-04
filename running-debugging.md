@@ -5,7 +5,7 @@ layout: default
 
 ## ScalaLeafs Debug Mode
 
-To facilitate development, ScalaLeafs can be run in debug mode. Debug mode is activated by setting the system property `leafsDebugMode` to `"true"`. Resource caching will be disabled and extra logging information will be shown, both on the server and in the browser.
+To facilitate development, ScalaLeafs can be run in debug mode. Debug mode is activated by setting the system property `leafsDebugMode`. Resource caching will be disabled and extra logging information will be shown, both on the server and in the browser.
 
 The system property can be set on the command-line (`-DleafsDebugMode=true`) or programmatically from within SBT:
 
@@ -26,6 +26,10 @@ This will start the application inside jetty as configured in build.sbt. When de
 {% highlight scala %}
 > ~;container:start; container:reload /
 {% endhighlight %}
+
+## Run and debug in Eclipse
+
+There are many options to run the application from within eclipse. A good option is to use [run-jetty-run](http://code.google.com/p/run-jetty-run/) to run and debug the web application. An advantage of running from Eclipse is the ability to debug the application. The debug mode flag can be set in the launch configuration that is used to start the application.
 
 ## Publish 
 
