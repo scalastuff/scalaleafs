@@ -3,15 +3,17 @@ title: Introduction
 layout: default
 ---
 
-<table style="float:right">
-<tr><td>License:</td><td><a href="https://github.com/scalastuff/scalaleafs/blob/master/LICENSE.TXT">BSD</a></td></tr>
-</table>
+<div style="float:right; margin-left: 80px;">
+<a href="https://github.com/scalastuff/scalaleafs">GitHub</a>
+<a href="https://groups.google.com/forum/#!forum/scalaleafs">Forum</a>
+<a href="https://github.com/scalastuff/scalaleafs/blob/master/LICENSE.TXT">BSD License</a>
+</div>
 
 Scala Leafs is an open-source server-side framework for scala to build rich, interactive, ajax-enabled web applications. 
 
 Scala Leafs is **minimalistic**; its purpose is to create web applications and nothing else. It is **unobtrusive**; it doesn't force your application into any structure and plays nice with other libraries. It is **developer oriented**; developing rich web applications should be fast and easy for the average scala developer.
 
-Scala Leafs is **open source**. It has a [BSD](https://github.com/scalastuff/scalaleafs/blob/master/LICENSE.TXT) license. Feel free to participate at [GitHub](https://github.com/scalastuff/scalaleafs), or discuss about ScalaLeafs on [google group](https://groups.google.com/forum/#!forum/liftweb).
+Scala Leafs is **open source**. It has a [BSD](https://github.com/scalastuff/scalaleafs/blob/master/LICENSE.TXT) license. Feel free to participate at [GitHub](https://github.com/scalastuff/scalaleafs), or discuss about ScalaLeafs on [google group]().
 
 Some notable features:
 
