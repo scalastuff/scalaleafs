@@ -103,7 +103,8 @@ h1 { margin-bottom: 1em; }
 h2 {
 	font-size: 110%;
 	line-height: 1.5em;
-	margin:1.5em 0 1.5em 0;
+	margin:1.5em 0 1em 0;
+    
 	font-weight:bold;
 }
 
