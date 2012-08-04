@@ -5,8 +5,6 @@ title: Templates
 
 This first example shows how to use **CSS Selectors** to bind a **template** to scala code. 
 
-<label>File: src/main/resources/com/mycom/MyPage.html</label>
-
 {% highlight html %}
 <div>
   <span id="elt1">some text</span>
@@ -14,8 +12,8 @@ This first example shows how to use **CSS Selectors** to bind a **template** to 
   <span id="elt3">some text</span>
 </div>
 {% endhighlight %}
+<label>src/main/resources/com/mycom/MyPage.html</label>
 
-<label>File: src/main/scala/com/mycom/MyPage.scala</label>
 
 {% highlight scala %}
 package com.mycom.MyPage
@@ -28,6 +26,7 @@ class MyPage extends Template {
     "#elt3" #> AddClass("selected")
 }
 {% endhighlight %}
+<label>File: src/main/scala/com/mycom/MyPage.scala</label>
 
 When the template is rendered, the following output is produced:
 
@@ -40,5 +39,4 @@ When the template is rendered, the following output is produced:
 {% endhighlight %}
 
 The example shows the 3 things that can be on the right side of a CSS selector: a string, an XML literal, or an XML transformation. An XML transformation is basically a NodeSeq => NodeSeq function. Since nearly everything is an XML transformation (like the expression `"#elt1" #> "Hi there"`, `bind`, `AddClass` and the `FirstExample` class), everthing composes nicely. See [Fun With Tranformations](fun-with-transformations.html).
-
 
