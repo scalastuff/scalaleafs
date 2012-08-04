@@ -3,7 +3,7 @@ layout: default
 title: Setup SBT
 ---
 
-Adding the scalaleafs dependency is really all that's required.
+Adding the scalaleafs dependency is all that's required.
 
 {% highlight scala %}
 "net.scalaleafs" %% "scalaleafs" % "0.1"
