@@ -35,7 +35,7 @@ libraryDependencies += "org.mortbay.jetty" % "jetty" % "6.1.22" % "container"
 // Needed when using scalaleafs snapshot versions. 
 resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
 {% endhighlight %}
-<label>File: build.sbt</label>
+<label>build.sbt</label>
 
 {% highlight scala %}
 // Enables generation of Eclipse project files.
@@ -44,7 +44,7 @@ addSbtPlugin("com.typesafe.sbteclipse" % "sbteclipse-plugin" % "2.1.0-RC1")
 // Add web-plugin to run the application from SBT.
 libraryDependencies <+= sbtVersion(v => "com.github.siasia" %% "xsbt-web-plugin" % (v+"-0.2.11"))
 {% endhighlight %}
-<label>File: project/plugins.sbt</label>
+<label>project/plugins.sbt</label>
 
 ## Eclipse configuration
 
