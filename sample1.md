@@ -44,3 +44,13 @@ The example shows the 3 things that can be on the right side of a CSS selector: 
 - The `addClass` function
 - The `bind` function
 - The `Sample1` class
+
+## Using MyPage
+
+To use the `MyPage` template, change the MyApp class into:
+
+{% highlight scala %}
+class MyApp extends LeafsServlet {
+  def render(trail : UrlTrail) = new MyPage().render
+}
+{% endhighlight %}
