@@ -37,6 +37,7 @@ libraryDependencies += "org.mortbay.jetty" % "jetty" % "6.1.22" % "container"
 resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
 {% endhighlight %}
 
+
 <label>File: project/plugins.sbt</label>
 {% highlight scala %}
 // Enables generation of Eclipse project files.
