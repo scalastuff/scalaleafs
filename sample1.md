@@ -37,7 +37,7 @@ When the template is rendered, the following output is produced:
 </div>
 {% endhighlight %}
 
-The example shows the 3 things that can be on the right side of a CSS selector: a string, an XML literal, or an XML transformation. An XML transformation is a NodeSeq => NodeSeq function. Since nearly everything is an XML transformation, everything composes nicely. In the example above, the following XML transformations can be identified:
+The example shows the 3 things that can be on the right side of a CSS selector: a string, an XML literal, or an XML transformation. An XML transformation is a NodeSeq => NodeSeq function. Since nearly everything is an XML transformation, things composes nicely. In the example above, the following XML transformations can be identified:
 
 - The expression `"#elt1" #> "Hi there"`
 - The expression `"#elt1" #> "Hi there" & "#elt2" #> <h3>Hi There!</h3>`
