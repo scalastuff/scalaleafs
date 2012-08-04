@@ -9,7 +9,7 @@ Adding the scalaleafs dependency is all that's required.
 "net.scalaleafs" %% "scalaleafs" % "0.1"
 {% endhighlight %}
 
-Releases of scalaleafs are in maven-central, cross-built against scala versions 2.8.0, 2.8.1, 2.9.0, 2.9.1 and 2.9.2. Typically, one wants IDE integration, run the application from SBT or use snapshot releases. This sample SBT configuration will get you going:
+Releases of scalaleafs are in maven-central, cross-built against scala versions 2.8.0, 2.8.1, 2.9.0, 2.9.1 and 2.9.2. Typically, however, one wants IDE integration, run the application from SBT or use snapshot releases. This sample SBT configuration will get you going:
 
 File: *project-dir*/build.sbt
 {% highlight scala %}
