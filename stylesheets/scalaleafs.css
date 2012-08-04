@@ -25,6 +25,7 @@ label {
   padding-bottom: 6px;
 display: block;
   text-align: center;
+  font-style: italic;
   color: #777;
   font-size: 0.9em;
 }
