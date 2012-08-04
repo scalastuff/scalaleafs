@@ -34,8 +34,5 @@ Make sure to register the servlet or filter in `web.xml`:
 {% endhighlight %}
 
 Now, the SBT application can be run from the SBT command line:
-```
-> container:start
-```
 
 
