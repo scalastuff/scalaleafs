@@ -1,10 +1,7 @@
 ---
-title: Servlet
+title: Servlets
 layout: default
-index: 2
 ---
-
-#Servlets
 
 An application exposes itself through the Servlet API, either as a servlet or a filter. Inherit a class from either LeafsServlet or LeafsFilter. It should implement the render function and possibly override the configuration field. The application's `web.xml` should point to this class.
 
