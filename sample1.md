@@ -1,11 +1,11 @@
 ---
 layout: default
-title: Templates
+title: Sample1
 ---
 
-This first example shows how to use **CSS Selectors** to bind a **template** to scala code. 
+This first example shows how to use [CSS Selectors](/css-selectors.html) to bind a template to scala code. 
 
-<label>src/main/resources/com/mycom/MyPage.html</label>
+<label>src/main/resources/com/mycom/Sample1.html</label>
 {% highlight html %}
 <div>
   <span id="elt1">some text</span>
@@ -15,16 +15,16 @@ This first example shows how to use **CSS Selectors** to bind a **template** to 
 {% endhighlight %}
 
 
-<label>src/main/scala/com/mycom/MyPage.scala</label>
+<label>src/main/scala/com/mycom/Sample1.scala</label>
 {% highlight scala %}
-package com.mycom.MyPage
+package com.mycom
 import net.scalaleafs._
 
-class MyPage extends Template {
+class Sample1 extends Template {
   val bind = 
     "#elt1" #> "Hi there" &
     "#elt2" #> <h3>Hi There!</h3> &
-    "#elt3" #> AddClass("selected")
+    "#elt3" #> addClass("selected")
 }
 {% endhighlight %}
 
@@ -39,4 +39,3 @@ When the template is rendered, the following output is produced:
 {% endhighlight %}
 
 The example shows the 3 things that can be on the right side of a CSS selector: a string, an XML literal, or an XML transformation. An XML transformation is basically a NodeSeq => NodeSeq function. Since nearly everything is an XML transformation (like the expression `"#elt1" #> "Hi there"`, `bind`, `AddClass` and the `FirstExample` class), everthing composes nicely. See [Fun With Tranformations](fun-with-transformations.html).
-
