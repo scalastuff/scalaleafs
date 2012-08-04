@@ -42,7 +42,7 @@
 		d.add(0,-1,'Introduction', "index.html");
 		d.add(1,0,'Tutorial');
 		d.add(2,1,'Getting Started','getting-started.html');
-		d.add(2,2,'First Steps','first-steps.html');
+		d.add(2,1,'First Steps','first-steps.html');
 		d.add(3,0,'Documentation');
 		d.add(4,3,'Servlet','servlet.html');
 		document.write(d);
@@ -78,7 +78,17 @@
             {% endif %}
 
                       <a class="menu1{% if page.title == "Documentation" %} active{% endif %}" href="/documentation/documentation.html">Documentation</a> 
-           
+            {% if page.category == "Documentation" %}
+            {% for p in site.pages %}
+            {% if p.category == page.category %}
+            {% for index in (1..20) %}
+            {% if p.index == index %}
+            <a class="menu2{% if p.url == page.url %} active{% endif %}" href="{{ p.url }}">{{ p.title }}</a>
+            {% endif %}
+            {% endfor %}
+            {% endif %}
+            {% endfor %}
+            {% endif %}
             </div>
                   </div>     
                   <br/>
