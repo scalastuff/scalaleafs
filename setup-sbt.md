@@ -11,7 +11,6 @@ Adding the scalaleafs dependency is essentially all that is required.
 
 Releases of scalaleafs are in maven-central, cross-built against scala versions 2.8.0, 2.8.1, 2.9.0, 2.9.1 and 2.9.2. Typically, however, one wants IDE integration, run the application from SBT or use snapshot releases. This sample SBT configuration will get you going:
 
-<label>File: build.sbt</label>
 {% highlight scala %}
 organization := "com.mycom"
 
@@ -36,9 +35,8 @@ libraryDependencies += "org.mortbay.jetty" % "jetty" % "6.1.22" % "container"
 // Needed when using scalaleafs snapshot versions. 
 resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
 {% endhighlight %}
+<label>File: build.sbt</label>
 
-<br/>
-<label>File: project/plugins.sbt</label>
 {% highlight scala %}
 // Enables generation of Eclipse project files.
 addSbtPlugin("com.typesafe.sbteclipse" % "sbteclipse-plugin" % "2.1.0-RC1")
@@ -46,6 +44,7 @@ addSbtPlugin("com.typesafe.sbteclipse" % "sbteclipse-plugin" % "2.1.0-RC1")
 // Add web-plugin to run the application from SBT.
 libraryDependencies <+= sbtVersion(v => "com.github.siasia" %% "xsbt-web-plugin" % (v+"-0.2.11"))
 {% endhighlight %}
+<label>File: project/plugins.sbt</label>
 
 ## Eclipse configuration
 
