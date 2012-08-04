@@ -53,7 +53,7 @@ libraryDependencies <+= sbtVersion(v => "com.github.siasia" %% "xsbt-web-plugin"
 //})
 {% endhighlight %}
 
-Running the application
+## Running the application
 
 Your application can be run from the SBT command line:
 
@@ -68,3 +68,13 @@ SBT can monitor application changes and reload the application automatically:
 {% endhighlight %}
 
 See [xsbt-web-plugin](https://github.com/siasia/xsbt-web-plugin/wiki) for more details.
+
+## Using eclipse
+
+To generate or update eclipse project files based on build.sbt, run eclipse on the SBT command-line:
+
+{% highlight scala %}
+> eclipse
+{% endhighlight %}
+
+From within Eclipse, one can also opt to use [run-jetty-run](http://code.google.com/p/run-jetty-run/) to run and debug the web application.
