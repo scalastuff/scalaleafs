@@ -27,6 +27,8 @@ This will start the application inside jetty as configured in build.sbt. When de
 > ~;container:start; container:reload /
 {% endhighlight %}
 
+See [xsbt-web-plugin](https://github.com/siasia/xsbt-web-plugin/wiki) for more options.
+
 ## Run and debug in Eclipse
 
 There are many options to run the application from within eclipse. An advantage of running from Eclipse is the ability to debug the application. The debug mode flag can be set in the launch configuration that is used to start the application.
