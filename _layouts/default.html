@@ -32,10 +32,10 @@
                   <div class="menu" style="margin-top: 40px; text-align: center;">
                     <div class="dtree" style="white-space: nowrap; display: inline-block; text-align: left; min-width: 140px;">
   	<script type="text/javascript">
-      alert('drawing tree');
 		d = new dTree('d');
         d.config.useIcons = false;
         d.config.useLines = false;
+        d.config.inOrder = true;
         d.closeAll();
 
 		d.add(0,-1,'Introduction', "index.html");
