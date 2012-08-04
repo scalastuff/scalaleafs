@@ -52,3 +52,14 @@ case "0.11.3" => "com.github.siasia" %% "xsbt-web-plugin" % "0.11.3-0.2.11.1"
 })
 {% endhighlight %}
 
+## Running the application
+
+Your application can be run from the SBT command line:
+```
+> container:start
+```
+
+SBT can monitor application changes and reload the application automatically:
+```
+~;container:start; container:reload /
+```
