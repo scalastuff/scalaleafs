@@ -49,7 +49,7 @@ libraryDependencies <+= sbtVersion(v => "com.github.siasia" %% "xsbt-web-plugin"
 
 ## Eclipse configuration
 
-To generate or update eclipse project files based on the SBT project definition, run eclipse on the SBT command-line:
+To generate or update eclipse project files, run eclipse on the SBT command-line. This will add dependencies and set source folders based on the SBT project definition.
 
 {% highlight scala %}
 > eclipse
