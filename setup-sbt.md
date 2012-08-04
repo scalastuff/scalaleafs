@@ -57,11 +57,11 @@ case "0.11.3" => "com.github.siasia" %% "xsbt-web-plugin" % "0.11.3-0.2.11.1"
 Your application can be run from the SBT command line:
 
 {% highlight scala %}
-> container:start
+container:start
 {% endhighlight %}
 
 SBT can monitor application changes and reload the application automatically:
-{% highlight scala %}
 
+{% highlight scala %}
 ~;container:start; container:reload /
 {% endhighlight %}
