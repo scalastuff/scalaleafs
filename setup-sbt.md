@@ -1,11 +1,7 @@
 ---
 layout: default
-title: Getting Started
-category: Tutorial
-index: 2
+title: Setup SBT
 ---
-
-## Setup SBT
 
 Adding the scalaleafs dependency is all that's required.
 
