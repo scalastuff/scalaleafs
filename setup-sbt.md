@@ -45,36 +45,12 @@ addSbtPlugin("com.typesafe.sbteclipse" % "sbteclipse-plugin" % "2.1.0-RC1")
 
 // Add web-plugin to run the application from SBT.
 libraryDependencies <+= sbtVersion(v => "com.github.siasia" %% "xsbt-web-plugin" % (v+"-0.2.11"))
-//libraryDependencies <+= sbtVersion(v => v match {
-//case "0.11.0" => "com.github.siasia" %% "xsbt-web-plugin" % "0.11.0-0.2.8"
-//case "0.11.1" => "com.github.siasia" %% "xsbt-web-plugin" % "0.11.1-0.2.10"
-//case "0.11.2" => "com.github.siasia" %% "xsbt-web-plugin" % "0.11.2-0.2.11"
-//case "0.11.3" => "com.github.siasia" %% "xsbt-web-plugin" % "0.11.3-0.2.11.1"
-//})
 {% endhighlight %}
 
-## Running the application
+## Eclipse configuration
 
-Your application can be run from the SBT command line:
-
-{% highlight scala %}
-> container:start
-{% endhighlight %}
-
-SBT can monitor application changes and reload the application automatically:
-
-{% highlight scala %}
-> ~;container:start; container:reload /
-{% endhighlight %}
-
-See [xsbt-web-plugin](https://github.com/siasia/xsbt-web-plugin/wiki) for more details.
-
-## Using eclipse
-
-To generate or update eclipse project files based on build.sbt, run eclipse on the SBT command-line:
+To generate or update eclipse project files based on the SBT project definition, run eclipse on the SBT command-line:
 
 {% highlight scala %}
 > eclipse
 {% endhighlight %}
-
-From within Eclipse, one can also opt to use [run-jetty-run](http://code.google.com/p/run-jetty-run/) to run and debug the web application.
