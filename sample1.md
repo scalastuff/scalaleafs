@@ -51,6 +51,6 @@ To use the `MyPage` template, change the MyApp class into:
 
 {% highlight scala %}
 class MyApp extends LeafsServlet {
-  def render(trail : UrlTrail) = new MyPage().render
+  def render(trail : UrlTrail) = new Sample1().render
 }
 {% endhighlight %}
