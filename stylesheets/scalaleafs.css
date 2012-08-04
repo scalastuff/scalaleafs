@@ -21,6 +21,7 @@ body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,form,fieldset,p,blockquote,th,t
 /* @end */
 
 label {
+  margin-top: 8px;
   margin-left: 4px;
 line-height: 0.2em;
 display: block;
