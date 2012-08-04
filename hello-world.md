@@ -3,7 +3,7 @@ title: Hello World
 layout: default
 ---
 
-The application's starting point is either a servlet or a filter. Define the application class by extending LeafsServlet or LeafsFilter and implement the `render` function. See [servlets](/servlets.html) for more information.
+The application's starting point is either a servlet or a filter. Define the application class by extending [LeafsServlet](api/index.html#net.scalaleafs.LeafsServlet) or [LeafsFilter](/api/index.html#net.scalaleafs.LeafsServlet) and implement the `render` function. See [servlets](/servlets.html) for more information.
 
 <label>File: src/main/scala/com/mycom/MyApp.scala</label>
 {% highlight scala %}
@@ -34,5 +34,4 @@ Make sure to register the servlet or filter in `web.xml`:
 {% endhighlight %}
 
 Now, the SBT application can be run from the SBT command line:
-
 
