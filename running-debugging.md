@@ -1,7 +1,7 @@
---
+---
 title: Running and Debugging
 layout: default
---
+---
 
 ## ScalaLeafs Debug Mode
 
