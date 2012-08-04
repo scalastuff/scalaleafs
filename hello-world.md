@@ -33,5 +33,8 @@ Make sure to register the servlet or filter in `web.xml`:
 </web-app>
 {% endhighlight %}
 
-Now, the SBT application can be run from the SBT command line:
+Now, the application can be run from the SBT command line. See also [Running and debugging](/running-debugging.html).
 
+{% highlight scala %}
+> eclipse
+{% endhighlight %}
