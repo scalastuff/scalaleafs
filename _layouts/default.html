@@ -49,7 +49,10 @@
                 
                   <div class="menu" style="margin-top: 40px; text-align: center;">
                     <div style="display: inline-block; text-align: left; min-width: 140px;">
-                      d = new dTree('d');
+  	<script type="text/javascript">
+		<!--
+
+		d = new dTree('d');
         d.config.useIcons = false;
         d.config.useLines = false;
         d.closeAll();
@@ -61,6 +64,10 @@
 		d.add(4,3,'Servlet','example01.html');
 		document.write(d);
         d.openTo(2, true);
+		//-->
+    </script>
+                      <br/>                      <br/>                      <br/>                      <br/>
+
                       <a class="menu1{% if page.title == "Introduction" %} active{% endif %}" href="/index.html">Introduction</a> 
             {% if page.category == "Introduction" %}
             {% for p in site.pages %}
