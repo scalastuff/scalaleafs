@@ -38,7 +38,7 @@ resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repos
 {% endhighlight %}
 
 
-<label>File: project/plugins.sbt</label>
+<br/><label>File: project/plugins.sbt</label>
 {% highlight scala %}
 // Enables generation of Eclipse project files.
 addSbtPlugin("com.typesafe.sbteclipse" % "sbteclipse-plugin" % "2.1.0-RC1")
