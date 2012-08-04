@@ -4,8 +4,8 @@ layout: default
 ---
 
 <div style="float:right; margin-left: 80px;">
-<a href="https://github.com/scalastuff/scalaleafs">GitHub</a>
-<a href="https://groups.google.com/forum/#!forum/scalaleafs">Forum</a>
+<a href="https://github.com/scalastuff/scalaleafs">GitHub</a><br/>
+<a href="https://groups.google.com/forum/#!forum/scalaleafs">Forum</a><br/>
 <a href="https://github.com/scalastuff/scalaleafs/blob/master/LICENSE.TXT">BSD License</a>
 </div>
 
