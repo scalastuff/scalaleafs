@@ -66,3 +66,5 @@ SBT can monitor application changes and reload the application automatically:
 {% highlight scala %}
 > ~;container:start; container:reload /
 {% endhighlight %}
+
+See [xsbt-web-plugin](https://github.com/siasia/xsbt-web-plugin/wiki) for more details.
