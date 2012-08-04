@@ -3,8 +3,8 @@ title: Introduction
 layout: default
 ---
 
-<table>
-<tr><td>License:</td><td>[BSD](https://github.com/scalastuff/scalaleafs/blob/master/LICENSE.TXT)</td></tr>
+<table style="float:right">
+<tr><td>License:</td><td><a href="https://github.com/scalastuff/scalaleafs/blob/master/LICENSE.TXT">BSD</a></td></tr>
 </table>
 
 Scala Leafs is an open-source server-side framework for scala to build rich, interactive, ajax-enabled web applications. 
