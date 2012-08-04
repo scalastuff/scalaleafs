@@ -235,14 +235,14 @@ ul.compact li a {
 /* @end */
 
 /* @group Header */
-#header, #header a {}
+#header, #header a { color: #777; }
 #header .hover { color: transparent; }
 #header:hover a { color: black; text-shadow: #aaa 2px 2px 3px;}
 #header:hover a:hover { text-decoration: none; }
 #header a:hover .hover { }
 #header {
 	position: relative;
-	font-variant: small-caps;
+//	font-variant: small-caps;
 	line-height: 1em;
 	margin-top: .5em;
 	margin-bottom: 0;
