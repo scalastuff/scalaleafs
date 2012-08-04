@@ -32,7 +32,7 @@
                   <div class="menu" style="margin-top: 40px; text-align: center;">
                     <div class="dtree" style="white-space: nowrap; display: inline-block; text-align: left; min-width: 140px;">
   	<script type="text/javascript">
-		<!--
+      //		<!--
 
 		d = new dTree('d');
         d.config.useIcons = false;
@@ -50,18 +50,7 @@
 		//-->
     </script>
      
-                      <a class="menu1{% if page.title == "Documentation" %} active{% endif %}" href="/documentation/documentation.html">Documentation</a> 
-            {% if page.category == "Documentation" %}
-            {% for p in site.pages %}
-            {% if p.category == page.category %}
-            {% for index in (1..20) %}
-            {% if p.index == index %}
-            <a class="menu2{% if p.url == page.url %} active{% endif %}" href="{{ p.url }}">{{ p.title }}</a>
-            {% endif %}
-            {% endfor %}
-            {% endif %}
-            {% endfor %}
-            {% endif %}
+                  
             </div>
                   </div>     
                   <br/>
