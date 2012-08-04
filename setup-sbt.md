@@ -22,7 +22,7 @@ version := "1.0"
 scalaVersion := "2.9.2"
 
 // Add the scalaleafs dependency.
-libraryDependencies += "net.scalaleafs" %% "scalaleafs" % "0.1"
+libraryDependencies += "net.scalaleafs" %% "scalaleafs" % "0.1" withSources()
 
 // Use the SBT web plugin.
 seq(webSettings :_*)
