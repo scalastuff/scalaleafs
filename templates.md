@@ -1,16 +1,11 @@
 ---
 layout: default
-title: First Example
-category: Tutorial
-index: 8
+title: Templates
 ---
-# First Example
 
-    
-This first example shows how to use **CSS Selectors** to bind a template to scala code. 
+This first example shows how to use **CSS Selectors** to bind a **template** to scala code. 
 
-FirstExample.html:
-
+<label>File: src/main/resources/com/mycom/MyPage.html</label>
 {% highlight html %}
 <div>
   <span id="elt1">some text</span>
@@ -19,10 +14,12 @@ FirstExample.html:
 </div>
 {% endhighlight %}
 
-FirstExample.scala:
-
+<label>File: src/main/scala/com/mycom/MyPage.scala</label>
 {% highlight scala %}
-class FirstExample extends Template {
+package com.mycom.MyPage
+import net.scalaleafs._
+
+class MyPage extends Template {
   val bind = 
     "#elt1" #> "Hi there" &
     "#elt2" #> <h3>Hi There!</h3> &
@@ -30,8 +27,7 @@ class FirstExample extends Template {
 }
 {% endhighlight %}
 
-The template file should be placed on the classpath.
-When the template is rendered (Template.render), the following output is produced:
+When the template is rendered , the following output is produced:
 
 {% highlight html %}
 <div>
