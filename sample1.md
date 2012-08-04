@@ -41,6 +41,6 @@ The example shows the 3 things that can be on the right side of a CSS selector: 
 
 - The expression `"#elt1" #> "Hi there"`
 - The expression `"#elt1" #> "Hi there" & "#elt2" #> <h3>Hi There!</h3>`
-- The `bind` function
 - The `addClass` function
+- The `bind` function
 - The `Sample1` class
