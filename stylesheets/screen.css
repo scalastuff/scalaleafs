@@ -54,6 +54,8 @@ body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,form,fieldset,p,blockquote,th,t
 	text-decoration: underline;
 }
 .dtree a.nodeSel {
+  font-weight: 500;
+  color: black;
 }
 .dtree .clip {
 	overflow: hidden;
