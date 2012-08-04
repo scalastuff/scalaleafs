@@ -26,7 +26,7 @@ class MyPage extends Template {
     "#elt3" #> AddClass("selected")
 }
 {% endhighlight %}
-<label>File: src/main/scala/com/mycom/MyPage.scala</label>
+<label>src/main/scala/com/mycom/MyPage.scala</label>
 
 When the template is rendered, the following output is produced:
 
