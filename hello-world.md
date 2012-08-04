@@ -36,5 +36,5 @@ Make sure to register the servlet or filter in `web.xml`:
 Now, the application can be run from the SBT command line. See also [Running and debugging](/running-debugging.html).
 
 {% highlight scala %}
-> eclipse
+> container:start
 {% endhighlight %}
