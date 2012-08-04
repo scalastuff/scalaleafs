@@ -4,6 +4,7 @@ layout: default
 ---
 
 <table>
-<tr><td><pre>#id</pre></td><td>Selects elements with `id` <pre>id</pre></td></tr>
-<tr><td><pre>#id</pre></td><td>Selects elements with `id` <pre>id</pre></td></tr>
+<tr><td><code>#id</code></td><td>Selects elements with id <code>id</code></td></tr>
+<tr><td><code>.selected</code></td><td>Selects elements with class <code>selected</code>.</td></tr>
+<tr><td><code>.useful.selected</code></td><td>Selects elements that both the <code>useful</code> and <code>selected</code> class.</td></tr>
 </table>
