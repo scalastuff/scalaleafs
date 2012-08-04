@@ -6,6 +6,7 @@ title: Templates
 This first example shows how to use **CSS Selectors** to bind a **template** to scala code. 
 
 <label>File: src/main/resources/com/mycom/MyPage.html</label>
+
 {% highlight html %}
 <div>
   <span id="elt1">some text</span>
@@ -15,6 +16,7 @@ This first example shows how to use **CSS Selectors** to bind a **template** to 
 {% endhighlight %}
 
 <label>File: src/main/scala/com/mycom/MyPage.scala</label>
+
 {% highlight scala %}
 package com.mycom.MyPage
 import net.scalaleafs._
