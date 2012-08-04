@@ -13,7 +13,7 @@ class MyApp extends LeafsServlet {
   def render(trail : UrlTrail) = <h1>Hello world!</h1>
 }
 {% endhighlight %}
-<label>File: src/main/scala/com/mycom/MyApp.scala</label>
+<label>src/main/scala/com/mycom/MyApp.scala</label>
 
 Make sure to register the servlet or filter in `web.xml`:
 
@@ -31,7 +31,7 @@ Make sure to register the servlet or filter in `web.xml`:
     </servlet-mapping>
 </web-app>
 {% endhighlight %}
-<label>File: src/main/webapp/WEB-INF/web.xml</label>
+<label>src/main/webapp/WEB-INF/web.xml</label>
 
 Now, the application can be run from the SBT command line. See also [Running and debugging](/running-debugging.html).
 
