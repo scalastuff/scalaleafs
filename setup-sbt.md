@@ -61,5 +61,7 @@ Your application can be run from the SBT command line:
 {% endhighlight %}
 
 SBT can monitor application changes and reload the application automatically:
+{% highlight scala %}
 
 ~;container:start; container:reload /
+{% endhighlight %}
