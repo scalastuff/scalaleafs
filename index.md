@@ -3,11 +3,6 @@ title: Introduction
 layout: default
 ---
 
-<div style="float:right; margin-left: 80px; margin-bottom: 20px; background-color: #339">
-<div style="margin: 8px; padding: 4px; background-color: white;"><a href="https://github.com/scalastuff/scalaleafs">GitHub</a> Project</div>
-<div style="margin: 8px; padding: 4px; background-color: white;">Discussion <a href="https://groups.google.com/forum/#!forum/scalaleafs">Forum</a></div>
-<div style="margin: 8px; padding: 4px; background-color: white;">License: <a href="https://github.com/scalastuff/scalaleafs/blob/master/LICENSE.TXT">BSD</a></div>
-</div>
 
 Scala Leafs is an open-source server-side framework for scala to build rich, interactive, ajax-enabled web applications. 
 
