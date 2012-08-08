@@ -11,6 +11,8 @@ import net.scalaleafs._
 
 class PageFrame(trail : UrlTrail) extends Template {
   def bind = 
-    "#content" #> trail.next match {
-      case "
+    "#content" #> trail.remainder match {
+      case "books" :: _ => new BooksPage(trail.advance).render
+      case "toys" :: _ => new TiysPage(trail.advance).render
+    }
 {% endhighlight %}
