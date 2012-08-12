@@ -39,7 +39,7 @@ Remember to generate eclipse project files as described in [Setup SBT](/setup-sb
 
 ## Publish 
 
-When development is done, the final war file can be generated using SBT:
+The final war file can be generated using SBT:
 
 {% highlight scala %}
 > package
