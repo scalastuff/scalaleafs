@@ -7,8 +7,8 @@ This first example shows how to use templates and how to bind them to scala code
 
 {% highlight html %}
 <div>
-  <span id="elt1">some text</span>
-  <span class="title">some text</span>
+  <span class="empty">some text</span>
+  <span id="title">some text</span>
   <span class="row1">some text</span>
 </div>
 {% endhighlight %}
@@ -20,8 +20,8 @@ import net.scalaleafs._
 
 class Sample1 extends Template {
   val bind = 
-    "#elt1" #> "Hi there" &
-    ".title" #> <h3>Hi There!</h3> &
+    ".empty" #> "Nothing here" &
+    "#title" #> <h3>Hi There!</h3> &
     "span.row1" #> addClass("selected")
 }
 {% endhighlight %}
