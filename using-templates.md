@@ -27,7 +27,7 @@ class Sample1 extends Template {
 {% endhighlight %}
 <label>src/main/scala/com/mycom/Sample1.scala</label>
 
-When this template is rendered (`new Sample1().render`), the following output is produced:
+See [CSS Selectors](/css-selectors.html) for a complete description of allowed CSS selectors. When this template is rendered (`new Sample1().render`), the following output is produced:
 
 {% highlight html %}
 <div>
