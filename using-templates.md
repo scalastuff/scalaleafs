@@ -45,9 +45,9 @@ The example shows the 3 things that can be on the right side of a CSS selector: 
 - The `bind` function result
 - The `Sample1` class
 
-## Using MyPage
+## Using the template
 
-To use the `MyPage` template, change the MyApp class into:
+To use the `Sample1` template, change the MyApp class into:
 
 {% highlight scala %}
 class MyApp extends LeafsServlet {
