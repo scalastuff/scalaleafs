@@ -14,7 +14,7 @@ This example shows how to bind a list of data elements to a template.
   </tr>
 </table>
 {% endhighlight %}
-<label>src/main/resources/com/mycom/Sample1.html</label>
+<label>src/main/resources/com/mycom/Sample2.html</label>
 
 {% highlight scala %}
 package com.mycom
@@ -31,8 +31,10 @@ class Sample2(users : List[User]) extends Template {
     } 
 }
 {% endhighlight %}
-<label>src/main/scala/com/mycom/Sample1.scala</label>
+<label>src/main/scala/com/mycom/Sample2.scala</label>
 
 The expression `users.map {...}` results in a list of XML transformations, which is
 implicitly converted to a transformation which simply concatenates the results of the individual transformations. The end-result is a natural way to loop over data.
+
+The `setAttr` function is one of the [Predefined XML Transformations](predefined-xml-transformations.html).
 
