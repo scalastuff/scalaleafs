@@ -22,7 +22,7 @@ class Sample1 extends Template {
   val bind = 
     "#elt1" #> "Hi there" &
     ".title" #> <h3>Hi There!</h3> &
-    "span .row1" #> addClass("selected")
+    "span.row1" #> addClass("selected")
 }
 {% endhighlight %}
 <label>src/main/scala/com/mycom/Sample1.scala</label>
