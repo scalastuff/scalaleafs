@@ -27,7 +27,7 @@ class Sample1 extends Template {
 {% endhighlight %}
 <label>src/main/scala/com/mycom/Sample1.scala</label>
 
-See [CSS Selectors](/css-selectors.html) for a complete description of allowed CSS selectors. When this template is rendered (`new Sample1().render`), the following output is produced:
+When this template is rendered (`new Sample1().render`), the following output is produced:
 
 {% highlight html %}
 <div>
@@ -44,6 +44,8 @@ The example shows the 3 things that can be on the right side of a CSS selector: 
 - The `addClass` function result
 - The `bind` function result
 - The `Sample1` class
+
+See [CSS Selectors](/css-selectors.html) for a complete description of allowed CSS selectors.
 
 ## Using the template
 
