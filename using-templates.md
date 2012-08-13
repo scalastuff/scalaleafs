@@ -33,7 +33,7 @@ When this template is rendered (`new Sample1().render`), the following output is
 <div>
   Nothing here
   <h3>Hi There!</h3>
-  <span id="elt3" class="selected">some text</span>
+  <span id="row1" class="selected">some text</span>
 </div>
 {% endhighlight %}
 
