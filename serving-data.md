@@ -34,7 +34,7 @@ class Sample2(users : List[User]) extends Template {
 <label>src/main/scala/com/mycom/Sample2.scala</label>
 
 The expression `users.map {...}` results in a list of XML transformations, which is
-implicitly converted to a transformation which simply concatenates the results of the individual transformations. The end-result is a natural way to loop over data.
+implicitly converted to a transformation that concatenates the results of the individual transformations. The end-result is a natural way to loop over data.
 
 The `setAttr` function is one of the predefined XML transformations in [Xml](http://scalaleafs.net/api/index.html#net.scalaleafs.Xml$).
 
