@@ -1,9 +1,9 @@
 ---
 layout: default
-title: Sample1
+title: Using Templates
 ---
 
-This first example shows how to use [CSS Selectors](/css-selectors.html) to bind a template to scala code. 
+This first example shows how to use templates and how to bind them to scala coce using [CSS Selectors](/css-selectors.html). The easiest way to use templates is to have an XML file accompanied with a scala class with the same name.
 
 {% highlight html %}
 <div>
@@ -27,7 +27,7 @@ class Sample1 extends Template {
 {% endhighlight %}
 <label>src/main/scala/com/mycom/Sample1.scala</label>
 
-When the template is rendered, the following output is produced:
+When this template is rendered (using new `Sample1().render`), the following output is produced:
 
 {% highlight html %}
 <div>
