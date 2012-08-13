@@ -31,7 +31,7 @@ When this template is rendered (`new Sample1().render`), the following output is
 
 {% highlight html %}
 <div>
-  Hi there
+  Nothing here
   <h3>Hi There!</h3>
   <span id="elt3" class="selected">some text</span>
 </div>
