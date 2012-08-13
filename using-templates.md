@@ -39,10 +39,10 @@ When this template is rendered (`new Sample1().render`), the following output is
 
 The example shows the 3 things that can be on the right side of a CSS selector: a string, an XML literal, or an XML transformation. An XML transformation is a NodeSeq => NodeSeq function. Since nearly everything is an XML transformation, things compose nicely. In the example above, the following XML transformations can be identified:
 
-- The expression `"#elt1" #> "Hi there"`
-- The expression `"#elt1" #> "Hi there" & "#elt2" #> <h3>Hi There!</h3>`
-- The `addClass` function
-- The `bind` function
+- The expression `".empty" #> "Nothing here"`
+- The expression ` ".empty" #> "Nothing here" & "#title" #> <h3>Hi There!</h3>`
+- The `addClass` function result
+- The `bind` function result
 - The `Sample1` class
 
 ## Using MyPage
