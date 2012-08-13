@@ -45,6 +45,8 @@ The example shows the 3 things that can be on the right side of a CSS selector: 
 - The `bind` function
 - The `Sample1` class
 
+TODO: explain templates without an accompanying scala class.
+
 ## Using MyPage
 
 To use the `MyPage` template, change the MyApp class into:
