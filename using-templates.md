@@ -3,7 +3,7 @@ layout: default
 title: Using Templates
 ---
 
-This first example shows how to use templates and how to bind them to scala code using [CSS Selectors](/css-selectors.html). The easiest way to use templates is to have an XML file accompanied with a scala class with the same name.
+This first example shows how to use templates and how to bind them to scala code using [CSS Selectors](/css-selectors.html). The easiest way to use templates is to have an XML file accompanied with a scala class with the same name. A more detailed explaination can be found in the [Templates](/templates.html) documentation.
 
 {% highlight html %}
 <div>
@@ -44,8 +44,6 @@ The example shows the 3 things that can be on the right side of a CSS selector: 
 - The `addClass` function
 - The `bind` function
 - The `Sample1` class
-
-TODO: explain templates without an accompanying scala class.
 
 ## Using MyPage
 
