@@ -14,6 +14,8 @@ This first example shows how to use templates and how to bind them to scala code
 {% endhighlight %}
 <label>src/main/resources/com/mycom/Sample1.html</label>
 
+The template class should inherit from [Template](/api/index.html#net.scalaleafs.Template) and override `bind`.
+
 {% highlight scala %}
 package com.mycom
 import net.scalaleafs._
