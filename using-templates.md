@@ -45,7 +45,7 @@ The example shows the 3 things that can be on the right side of a CSS selector: 
 - The `bind` function result
 - The `Sample1` class
 
-See [CSS Selectors](/css-selectors.html) for a complete description of allowed CSS selectors.
+See [CSS Selectors](/css-selectors.html) for a complete description of allowed selectors.
 
 ## Using the template
 
