@@ -32,8 +32,8 @@ When this template is rendered (`new Sample1().render`), the following output is
 
 {% highlight html %}
 <div>
-  Nothing here
   <h3>Hi There!</h3>
+  Nothing here
   <span id="row1" class="selected">some text</span>
 </div>
 {% endhighlight %}
