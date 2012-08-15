@@ -26,8 +26,11 @@ import net.scalaleafs._
 case class User(firstName : String, lastName : String, profilePage : String)
 
 class Sample3(users : List[User]) extends Template {
-  val search : Var[String] = Var("")
-  val visibleUsers : SeqVar[User] = search.mapSeq(s => users.filter(_.firstName.constains(s)))
+  val search : Var[String] = 
+    Var("")
+    
+  val visibleUsers : SeqVar[User] = 
+    search.mapSeq(s => users.filter(_.firstName.constains(s)))
 
   val bind = 
     "#search" #> search.bind { s => 
