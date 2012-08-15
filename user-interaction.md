@@ -8,6 +8,7 @@ This example shows how to bind a list of data elements to a template.
 {% highlight html %}
 <html>
   <input id="search" type="text"/>
+  <input id="clear-search" type="button" value="clear"/>
   <table id="users">
     <tr>
       <td><span class="first-name"/></td>
@@ -37,6 +38,7 @@ class Sample3(users : List[User]) extends Template {
       setAttr("value", s) &
       onChange(s => search.set(s))
     } &
+    "#clear-search" #> onClick(search.set("")) &
     "#users tr" #> visibleUsers.bind(_ => <h3>No results</h3>) { user =>
       ".first-name" #> user.firstName &
       ".last-name" #> user.lastName &
