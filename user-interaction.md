@@ -6,15 +6,18 @@ layout: default
 This example shows how to bind a list of data elements to a template.
 
 {% highlight html %}
-<table id="users">
-  <tr>
-    <td><span class="first-name"/></td>
-    <td><span class="last-name"/></td>
-    <td><a class="profile">profile</a></td>
-  </tr>
-</table>
+<html>
+  <input id="search" type="text"/>
+  <table id="users">
+    <tr>
+      <td><span class="first-name"/></td>
+      <td><span class="last-name"/></td>
+      <td><a class="profile">profile</a></td>
+    </tr>
+  </table>
+</html>
 {% endhighlight %}
-<label>src/main/resources/com/mycom/Sample2.html</label>
+<label>src/main/resources/com/mycom/Sample3.html</label>
 
 {% highlight scala %}
 package com.mycom
@@ -22,7 +25,9 @@ import net.scalaleafs._
 
 case class User(firstName : String, lastName : String, profilePage : String)
 
-class Sample2(users : List[User]) extends Template {
+class Sample3(users : List[User]) extends Template {
+  val search = Var("")
+
   val bind = 
     "#users tr" #> users.map { user =>
       ".first-name" #> user.firstName &
