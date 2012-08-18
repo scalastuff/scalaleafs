@@ -3,7 +3,7 @@ layout: default
 title: Using Templates
 ---
 
-This first example shows how to use templates and how to bind them to scala code using css selectors. The easiest way to use templates is to have an XML file accompanied with a scala class with the same name. A more detailed explanation can be found in the [Templates](/templates.html) documentation.
+This first example shows how to use templates and how to bind them to scala code using css selectors. 
 
 {% highlight html %}
 <div>
@@ -27,14 +27,14 @@ class Sample1 extends Template {
 {% endhighlight %}
 <label>src/main/scala/com/mycom/Sample1.scala</label>
 
-The template class should inherit from [Template](/api/index.html#net.scalaleafs.Template) and override `bind`.
+The easiest way to use templates is to have an XML file accompanied with a scala class with the same name. A more detailed explanation can be found in the [Templates](/templates.html) documentation. The template class should inherit from [Template](/api/index.html#net.scalaleafs.Template) and override `bind`.
 When this template is rendered (`new Sample1().render`), the following output is produced:
 
 {% highlight html %}
 <div>
   <h3>Hi There!</h3>
   Nothing here
-  <span id="row1" class="selected">some text</span>
+  <span class="row1 selected">some text</span>
 </div>
 {% endhighlight %}
 
