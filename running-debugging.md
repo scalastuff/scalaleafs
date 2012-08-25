@@ -7,7 +7,7 @@ layout: default
 
 To help development, ScalaLeafs can be run in debug mode. In debug mode, resource caching is disabled and extra debugging information will be logged, both on the server and in the browser.
 
-Debug mode is activated by setting the system property `leafsDebugMode` (to any value). It can be set on the command-line (`-DleafsDebugMode=true`) or programmatically from within SBT:
+Debug mode is activated by setting the system property `leafsDebugMode` (to any value). It can be set on the command-line (`-DleafsDebugMode=true`) or from within SBT:
 
 {% highlight scala %}
 > eval System.setProperty("leafsDebugMode", "true")
