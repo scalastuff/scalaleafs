@@ -3,6 +3,13 @@ title: Introduction
 layout: default
 ---
 
+  <div style="float: right; height: 200px; margin-left: 12px;padding-left: 12px; border-left: 1px solid #bbb">
+
+<h3>News</h3>
+<ul>
+    <li><span style="white-space:nowrap; color: #339">ScalaLeafs 0.1 released</span><div style="color:#777; font-style:italic; font-size: 90%">2 Aug 2012</div></li>
+</ul>
+        </div>
 
 Scala Leafs is an open-source server-side framework for scala to build rich, interactive, ajax-enabled web applications. 
 
