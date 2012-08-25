@@ -1,9 +1,9 @@
 ---
-title: Serving Data
+title: Data Binding
 layout: default
 ---
 
-This example shows how to bind a list of data elements to a template.
+This example shows how to use templates and css selectors, as explained in the previous example, to serve up some real data. Specifically, it shows how to iterator over collections of data.
 
 {% highlight html %}
 <table id="users">
