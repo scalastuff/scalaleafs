@@ -95,7 +95,7 @@
   </div>
                   
         <div id="page">
-          <h1 onmouseover="document.getElementById('edit-link').style.display = 'inline';" onmouseout="document.getElementById('edit-link').style.display = 'none';">{{ page.title }} <span id="edit-link" style="display: none; font-size:70%; color: black"><a target="edit" href="http://prose.io/#scalastuff/scalaleafs/edit/gh-pages{{ page.url }}">edit</a></span></h1>
+          <h1 onmouseover="document.getElementById('edit-link').style.display = 'inline';" onmouseout="document.getElementById('edit-link').style.display = 'none';">{{ page.title }} <span id="edit-link" style="display: none; font-size:70%; color: black"><a target="edit" href="http://prose.io/#scalastuff/scalaleafs/edit/gh-pages{{ page.url | replace:'.html','.md' }}">edit</a></span></h1>
           {{ content }}
         </div>
         <div style="text-align: center; padding: 8px;">
