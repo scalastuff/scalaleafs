@@ -42,7 +42,7 @@ The example shows the 3 things that can be on the right side of a CSS selector: 
 
 ## XML Transformations
 
-Nearly everything in Scala Leafs is an XML transformation. An XML transformation is basically a NodeSeq => NodeSeq function. In the example above, the following XML transformations can be identified:
+An XML transformation is basically a NodeSeq => NodeSeq function. Since nearly everything in Scala Leafs is an XML transformation, things compose nicely. In the example above, the following XML transformations can be identified:
 
 - The expression `".empty" #> "Nothing here"`
 - The expression ` ".empty" #> "Nothing here" & "#title" #> <h3>Hi There!</h3>`
@@ -50,7 +50,7 @@ Nearly everything in Scala Leafs is an XML transformation. An XML transformation
 - The `bind` function result
 - The `Sample1` class
 
-It may seem hard to reason about transformations, but it actually leads to a very natural way to express bindings.
+While it may seem hard to reason about transformations at first, it actually leads to a very natural way to express template bindings.
 
 ## Using the template
 
