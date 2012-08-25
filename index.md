@@ -3,10 +3,10 @@ title: Introduction
 layout: default
 ---
 
-  <div style="float: right; height: 200px; margin-left: 36px;padding-left: 12px; border-left: 1px solid #bbb">
+  <div style="float: right; height: 200px; margin-left: 36px;padding-left: 12px; border-left: 1px solid #bbb; color: #339"">
 <h3>News</h3>
 <ul>
-    <li><span style="white-space:nowrap; color: #339">ScalaLeafs 0.1 released</span><div style="color:#777; font-style:italic; font-size: 90%">2 Aug 2012</div></li>
+    <li><span style="white-space:nowrap; >ScalaLeafs 0.1 released</span><div style="color:#777; font-style:italic; font-size: 90%">2 Aug 2012</div></li>
 </ul>
         </div>
 
