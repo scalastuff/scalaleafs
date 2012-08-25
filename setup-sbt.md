@@ -3,7 +3,7 @@ layout: default
 title: Setup SBT
 ---
 
-Adding the scalaleafs dependency is essentially all that is required. Releases of scala leafs are in maven-central, cross-built against 2.8.0, 2.8.1, 2.9.0, 2.9.1 and 2.9.2.
+Adding the scalaleafs dependency is essentially all that is required. Releases of scala leafs are in maven-central, cross-built against 2.8.0, 2.8.1, 2.9.0, 2.9.1 and 2.9.2. 
 
 {% highlight scala %}
 "net.scalaleafs" %% "scalaleafs" % "0.1"
@@ -42,9 +42,11 @@ resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repos
 addSbtPlugin("com.typesafe.sbteclipse" % "sbteclipse-plugin" % "2.1.0")
 
 // Add web-plugin to run the application from SBT.
-libraryDependencies <+= sbtVersion(v => "com.github.siasia" %% "xsbt-web-plugin" % (v+"-0.2.11"))
+libraryDependencies <+= sbtVersion(v => "com.github.siasia" %% "xsbt-web-plugin" % (v+"-0.2.11.1"))
 {% endhighlight %}
 <label>project/plugins.sbt</label>
+
+This example works with SBT 0.11.3 or higher.
 
 ## Eclipse configuration
 
