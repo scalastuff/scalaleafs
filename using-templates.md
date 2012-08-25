@@ -38,11 +38,11 @@ When this template is rendered (`new Sample1().render`), the following output is
 </div>
 {% endhighlight %}
 
-The example shows the 3 things that can be on the right side of a CSS selector: an XML literal, a string or an XML transformation. An XML transformation is a NodeSeq => NodeSeq function. See [CSS Selectors](/css-selectors.html) for a complete description of allowed selectors.
+The example shows the 3 things that can be on the right side of a CSS selector: an XML literal, a string or an XML transformation. See [CSS Selectors](/css-selectors.html) for a complete description of allowed selectors.
 
 ## XML Transformations
 
-Nearly everything in Scala Leafs is an XML transformation. In the example above, the following XML transformations can be identified:
+Nearly everything in Scala Leafs is an XML transformation. An XML transformation is basically a NodeSeq => NodeSeq function. In the example above, the following XML transformations can be identified:
 
 - The expression `".empty" #> "Nothing here"`
 - The expression ` ".empty" #> "Nothing here" & "#title" #> <h3>Hi There!</h3>`
