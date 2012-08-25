@@ -33,7 +33,7 @@ Make sure to register the servlet or filter in `web.xml`:
 {% endhighlight %}
 <label>src/main/webapp/WEB-INF/web.xml</label>
 
-Now, the application can be run from the SBT command line. Make sure to [setup SBT](/setup-sbt.html). See also [Running and debugging](/running-debugging.html).
+Now, the application can be run from the SBT command line. Make sure to have [setup SBT](/setup-sbt.html) first. See also [Running and debugging](/running-debugging.html).
 
 {% highlight scala %}
 > container:start
