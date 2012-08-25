@@ -3,7 +3,7 @@ title: Data Binding
 layout: default
 ---
 
-This example shows how to use templates and css selectors, as explained in the [previous example](/using-templates.html), to serve up some real data. Specifically, it shows how to iterator over collections of data.
+This example shows how to use templates and css selectors, as explained in the [previous example](/using-templates.html), to serve up some real data. Specifically, it shows how to iterate over collections of data.
 
 {% highlight html %}
 <table id="users">
