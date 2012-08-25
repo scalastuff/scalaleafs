@@ -8,9 +8,9 @@ This example shows how to use templates and css selectors, as explained in the [
 {% highlight html %}
 <table id="users">
   <tr>
+    <td><img alt="person's image"/></td>
     <td><span class="first-name"/></td>
     <td><span class="last-name"/></td>
-    <td><a class="profile">profile</a></td>
   </tr>
 </table>
 {% endhighlight %}
@@ -20,14 +20,14 @@ This example shows how to use templates and css selectors, as explained in the [
 package com.mycom
 import net.scalaleafs._
 
-case class User(firstName : String, lastName : String, profilePage : String)
+case class User(firstName : String, lastName : String, image : String)
 
 class Sample2(users : List[User]) extends Template {
   val bind = 
     "#users tr" #> users.map { user =>
+      "img" #> setAttr("src", user.image) &
       ".first-name" #> user.firstName &
-      ".last-name" #> user.lastName &
-      "a.profile" #> setAttr("href", user.profilePage)
+      ".last-name" #> user.lastName 
     } 
 }
 {% endhighlight %}
