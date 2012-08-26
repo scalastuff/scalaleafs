@@ -50,7 +50,7 @@ An XML transformation is basically a NodeSeq => NodeSeq function. Since nearly e
 - The `bind` function result
 - The `Sample1` class
 
-While it may seem hard to reason about transformations at first, it actually leads to a very natural way to express template bindings.
+While it may seem hard to reason about transformations at first, it actually leads to a natural way to express template bindings.
 
 ## Using the template
 
