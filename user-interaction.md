@@ -3,7 +3,14 @@ title: User Interaction
 layout: default
 ---
 
-This example shows how to bind a list of data elements to a template.
+HTML elements can be bound directly to scala closures.
+
+{% highlight scala %}
+    "#button" #> onclick(println("button clicked"))
+}
+{% endhighlight %}
+
+
 
 {% highlight html %}
 <html>
@@ -36,9 +43,9 @@ class Sample3(users : List[User]) extends Template {
   val bind = 
     "#search" #> search.bind { s => 
       setAttr("value", s) &
-      onChange(s => search.set(s))
+      onchange(s => search.set(s))
     } &
-    "#clear-search" #> onClick(search.set("")) &
+    "#clear-search" #> onclick(search.set("")) &
     "#users tr" #> visibleUsers.bind(_ => <h3>No results</h3>) { user =>
       ".first-name" #> user.firstName &
       ".last-name" #> user.lastName &
