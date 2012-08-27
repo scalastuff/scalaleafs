@@ -9,7 +9,7 @@ HTML elements can be bound directly to scala closures.
 "#button" #> onclick(println("button clicked"))
 {% endhighlight %}
 
-
+User interaction usually requires updating the output page as well. To this end, `Var`s can be used. A var is a mutable data container that can be bound to an XML transformation. Whenever the data changes, the transformation is run again and the result is sent back to the browser as a partial page update. 
 
 {% highlight html %}
 <html>
@@ -19,7 +19,7 @@ HTML elements can be bound directly to scala closures.
     <tr>
       <td><span class="first-name"/></td>
       <td><span class="last-name"/></td>
-      <td><a class="profile">profile</a></td>
+      <td><a class="image">profile</a></td>
     </tr>
   </table>
 </html>
@@ -30,11 +30,10 @@ HTML elements can be bound directly to scala closures.
 package com.mycom
 import net.scalaleafs._
 
-case class User(firstName : String, lastName : String, profilePage : String)
+case class User(firstName : String, lastName : String, image : String)
 
 class Sample3(users : List[User]) extends Template {
-  val search : Var[String] = 
-    Var("")
+  val search : Var[String] = Var("")
     
   val visibleUsers : SeqVar[User] = 
     search.mapSeq(s => users.filter(_.firstName.constains(s)))
@@ -48,13 +47,8 @@ class Sample3(users : List[User]) extends Template {
     "#users tr" #> visibleUsers.bind(_ => <h3>No results</h3>) { user =>
       ".first-name" #> user.firstName &
       ".last-name" #> user.lastName &
-      "a.profile" #> setAttr("href", user.profilePage)
+      "img" #> setAttr("src", user.img)
     } 
 }
 {% endhighlight %}
-<label>src/main/scala/com/mycom/Sample2.scala</label>
-
-The expression `users.map {...}` results in a list of XML transformations, which is
-implicitly converted to a transformation that concatenates the results of the individual transformations. The end-result is a natural way to loop over data.
-
-The `setAttr` function is one of the predefined XML transformations in [Xml](http://scalaleafs.net/api/index.html#net.scalaleafs.Xml$).
+<label>src/main/scala/com/mycom/Sample3.scala</label>
