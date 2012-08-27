@@ -8,9 +8,9 @@ This example shows how to use templates and css selectors to serve up some real 
 {% highlight html %}
 <table id="users">
   <tr>
-    <td><img alt="person's image"/></td>
     <td><span class="first-name"/></td>
     <td><span class="last-name"/></td>
+    <td><img alt="person's image"/></td>
   </tr>
 </table>
 {% endhighlight %}
@@ -25,9 +25,9 @@ case class User(firstName : String, lastName : String, image : String)
 class Sample2(users : List[User]) extends Template {
   val bind = 
     "#users tr" #> users.map { user =>
-      "img" #> setAttr("src", user.image) &
       ".first-name" #> user.firstName &
-      ".last-name" #> user.lastName 
+      ".last-name" #> user.lastName &
+      "img" #> setAttr("src", user.image) 
     } 
 }
 {% endhighlight %}
