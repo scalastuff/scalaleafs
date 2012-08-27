@@ -6,8 +6,7 @@ layout: default
 HTML elements can be bound directly to scala closures.
 
 {% highlight scala %}
-    "#button" #> onclick(println("button clicked"))
-}
+"#button" #> onclick(println("button clicked"))
 {% endhighlight %}
 
 
