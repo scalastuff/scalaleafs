@@ -9,7 +9,7 @@ HTML elements can be bound directly to scala closures.
 "#button" #> onclick(println("button clicked"))
 {% endhighlight %}
 
-User interaction usually requires updating the output page as well. To this end, `Var`s can be used. A var is a mutable data container that can be bound to an XML transformation. Whenever the data changes, the transformation is run again and the result is sent back to the browser as a partial page update. 
+User interaction usually requires updating the output page as well. The use of `Var`s greatly simplifies this. A var is a mutable data container that can be bound to an XML transformation. Whenever the data changes, the transformation is run again and the result is sent back to the browser as a partial page update. Vars can be mapped onto other vars. See [Var](/var.html) for details.
 
 {% highlight html %}
 <html>
