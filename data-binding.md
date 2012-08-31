@@ -6,13 +6,15 @@ layout: default
 This example shows how to use templates and css selectors to serve up some data. Specifically, it shows how to iterate over collections of data.
 
 {% highlight html %}
-<table id="users">
-  <tr>
-    <td><span class="first-name"/></td>
-    <td><span class="last-name"/></td>
-    <td><img alt="person's image"/></td>
-  </tr>
-</table>
+<html>
+  <table id="albums">
+    <tr>
+      <td><img alt="image"/></td>
+      <td><span class="title"/></td>
+      <td><span class="artist"/></td>
+    </tr>
+  </table>
+</html>
 {% endhighlight %}
 <label>src/main/resources/com/mycom/Sample2.html</label>
 
@@ -20,14 +22,15 @@ This example shows how to use templates and css selectors to serve up some data.
 package com.mycom
 import net.scalaleafs._
 
-case class User(firstName : String, lastName : String, image : String)
+case class Album(title : String, artist : String, image : String)
 
-class Sample2(users : List[User]) extends Template {
-  val bind = 
-    "#users tr" #> users.map { user =>
-      ".first-name" #> user.firstName &
-      ".last-name" #> user.lastName &
-      "img" #> setAttr("src", user.image) 
+class Sample2(users : List[Album]) extends Template {
+
+  def bind = 
+    "#users" #> users.map { album =>
+      "img" #> setAttr("src", album.image) &
+      ".title" #> album.title &
+      ".artist" #> album.artist 
     } 
 }
 {% endhighlight %}
