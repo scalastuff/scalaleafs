@@ -5,6 +5,8 @@ layout: default
 
 The application's starting point is either a servlet or a filter. Define the application class by extending [LeafsServlet](api/index.html#net.scalaleafs.LeafsServlet) or [LeafsFilter](/api/index.html#net.scalaleafs.LeafsFilter) and implement the `render` function. See [servlets](/servlets.html) for more information.
 
+Note that Leafs has a minimal dependency on the servlet API. It should be fairly easy to create an container-less Leafs application, or to integrate it with other containers.
+
 {% highlight scala %}
 package com.mycom
 import net.scalaleafs._
