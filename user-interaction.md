@@ -55,3 +55,7 @@ class Sample3 extends Template {
 }
 {% endhighlight %}
 <label>src/main/scala/com/mycom/Sample3.scala</label>
+
+Two vars are being used. One that contains the current search string, one that contains the albums filtered by the current search string. Since the search string is mapped onto album list, the album list is recalculated whenever the search string is changed.
+
+Both vars are bound. The HTML search box will always correspond to the current search string and the album list is re-rendered whenever `visibleAlbums` changes. A `SeqVar` differs from a normal var in that it binds XML for each element and concatenates the result. A special transformation can be provided (`_ => <h3>No results</h3>`) for the empty collection case.
