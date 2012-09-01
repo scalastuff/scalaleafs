@@ -20,3 +20,11 @@ class PageFrame(trail : UrlTrail) extends Template {
 class BooksPage(trail : UrlTrail) extends Template { ... }
 class ToysPage(trail : UrlTrail) extends Template { ... }
 {% endhighlight %}
+
+<h2>Ajax Page Switching</h2>
+
+Leafs allows server-side page switching through the R object. 
+
+{% highlight scala %}
+R.changeUrl("page2.html")
+{% endhighlight %}
