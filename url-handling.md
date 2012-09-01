@@ -38,7 +38,7 @@ package com.mycom
 import net.scalaleafs._
 
 class PageFrame(val trail : Var[UrlTrail]) extends Template with UrlHandler {
-  def bind = trail.bind {
+  def bind = trail.bind { trail =>
     "#content" #> trail.remainder match {
       case "books" :: _ => new BooksPage(trail.advance).render
       case "toys" :: _ => new ToysPage(trail.advance).render
