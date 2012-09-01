@@ -6,6 +6,7 @@ layout: default
 A CSS selector is string that can be used to match elements in a transformation. For example, the following expression is a transformation that replaces all `<h1>` elements by `<h2>` elements:
 
 {% highlight scala %}
+"h1" #> replaceElem("h2")
 {% endhighlight %}
 
 
