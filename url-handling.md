@@ -13,6 +13,10 @@ class PageFrame(trail : UrlTrail) extends Template {
   def bind = 
     "#content" #> trail.remainder match {
       case "books" :: _ => new BooksPage(trail.advance).render
-      case "toys" :: _ => new TiysPage(trail.advance).render
+      case "toys" :: _ => new ToysPage(trail.advance).render
     }
+}
+
+class BooksPage(trail : UrlTrail) extends Template { ... }
+class ToysPage(trail : UrlTrail) extends Template { ... }
 {% endhighlight %}
