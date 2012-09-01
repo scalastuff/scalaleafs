@@ -26,7 +26,7 @@ class ToysPage(trail : UrlTrail) extends Template { ... }
 Leafs allows server-side page switching with integrated support for the [history API](http://html5demos.com/history). There are several ways to switch pages, using the request object R is one of them:
 
 {% highlight scala %}
-R.changeUrl("books")
+R.changeUrl("toys")
 {% endhighlight %}
 
 Leafs will look for the appropriate URL handler to re-render the smallest possible part of the page. The page is (partially) re-rendered and the browser's URL is changed through the history API.
