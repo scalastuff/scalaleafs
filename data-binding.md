@@ -9,7 +9,7 @@ This example shows how to use templates and css selectors to serve up some data.
 <html>
   <table id="albums">
     <tr>
-      <td><img alt="image"/></td>
+      <td><img class="image"/></td>
       <td><span class="title"/></td>
       <td><span class="artist"/></td>
     </tr>
@@ -32,7 +32,7 @@ class Sample2 extends Template {
 
   def bind = 
     "#albums" #> fetchAlbums.map { album =>
-      "img" #> setAttr("src", album.image) &
+      ".image" #> setAttr("src", album.image) &
       ".title" #> album.title &
       ".artist" #> album.artist 
     } 
