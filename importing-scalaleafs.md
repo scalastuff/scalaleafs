@@ -9,7 +9,7 @@ The easiest way to import scala leafs in your source code is by importing everyt
 import net.scalaleafs._
 {% endhighlight %}
 
-However, the recommended way is to import each class explicitly, and to import the implicits definitions using wildcards:
+However, the recommended way is to import each class explicitly, and to import the implicit definitions using wildcards:
 
 {% highlight scala %}
 import net.scalaleafs.Template
