@@ -15,11 +15,11 @@ User interaction usually requires updating the output page as well. The use of `
 <html>
   <input id="search" type="text"/>
   <input id="clear-search" type="button" value="clear"/>
-  <table id="users">
+  <table id="albums">
     <tr>
-      <td><span class="first-name"/></td>
-      <td><span class="last-name"/></td>
-      <td><a class="image">profile</a></td>
+      <td><img alt="image"/></td>
+      <td><span class="title"/></td>
+      <td><span class="artist"/></td>
     </tr>
   </table>
 </html>
@@ -30,24 +30,27 @@ User interaction usually requires updating the output page as well. The use of `
 package com.mycom
 import net.scalaleafs._
 
-case class User(firstName : String, lastName : String, image : String)
+class Sample3 extends Template {
+  
+  def fetchAlbums = 
+    Album("Songs of Love & Hate", "Leonard Cohen", "http://ecx.images-amazon.com/images/I/51mvXVc%2BbqL._AA115_.jpg") :: 
+    Album("Are you gonna go my way", "Lenny Kravitz", "http://ecx.images-amazon.com/images/I/51QbegkJVkL._AA115_.jpg") :: Nil
 
-class Sample3(users : List[User]) extends Template {
   val search : Var[String] = Var("")
     
-  val visibleUsers : SeqVar[User] = 
-    search.mapSeq(s => users.filter(_.firstName.constains(s)))
+  val visibleAlbums : SeqVar[Album] = 
+    search.mapSeq(s => fetchAlbums.filter(a => a.title.contains(s) || a.artist.contains(s)))
 
   val bind = 
     "#search" #> search.bind { s => 
       setAttr("value", s) &
-      onchange(s => search.set(s))
+      Html.onchange(s => search.set(s))
     } &
-    "#clear-search" #> onclick(search.set("")) &
-    "#users tr" #> visibleUsers.bind(_ => <h3>No results</h3>) { user =>
-      ".first-name" #> user.firstName &
-      ".last-name" #> user.lastName &
-      "img" #> setAttr("src", user.img)
+    "#clear-search" #> Html.onclick(search.set("")) &
+    "#albums tr" #> visibleAlbums.bind(_ => <h3>No results</h3>) { album =>
+      ".title" #> album.title &
+      ".artist" #> album.artist &
+      "img" #> setAttr("src", album.image)
     } 
 }
 {% endhighlight %}
