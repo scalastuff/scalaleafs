@@ -16,7 +16,7 @@ Scala Leafs is **developer oriented**; developing rich web applications should b
 
 Please read through the [tutorial](/hello-world.html) to familiarize yourself with Leaf's concepts. 
 
-<h3>Some notable features:</h3>
+<h4>Some notable features:</h4>
 
 - Clean separation between HTML and code.
 - Transparent Ajax support.
