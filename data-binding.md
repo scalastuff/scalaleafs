@@ -24,10 +24,14 @@ import net.scalaleafs._
 
 case class Album(title : String, artist : String, image : String)
 
-class Sample2(users : List[Album]) extends Template {
+class Sample2 extends Template {
+
+  def fetchAlbums = 
+    Album("Songs of Love & Hate", "Leonard Cohen", "http://ecx.images-amazon.com/images/I/51mvXVc%2BbqL._AA115_.jpg") :: 
+    Album("Are you gonna go my way", "Lenny Kravitz", "http://ecx.images-amazon.com/images/I/51QbegkJVkL._AA115_.jpg") :: Nil
 
   def bind = 
-    "#users" #> users.map { album =>
+    "#users" #> fetchAlbums.map { album =>
       "img" #> setAttr("src", album.image) &
       ".title" #> album.title &
       ".artist" #> album.artist 
