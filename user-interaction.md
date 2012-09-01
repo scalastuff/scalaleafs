@@ -17,7 +17,7 @@ User interaction usually requires updating the output page as well. The use of `
   <input id="clear-search" type="button" value="clear"/>
   <table id="albums">
     <tr>
-      <td><img alt="image"/></td>
+      <td><img class="image"/></td>
       <td><span class="title"/></td>
       <td><span class="artist"/></td>
     </tr>
@@ -48,9 +48,9 @@ class Sample3 extends Template {
     } &
     "#clear-search" #> Html.onclick(search.set("")) &
     "#albums tr" #> visibleAlbums.bind(_ => <h3>No results</h3>) { album =>
+      ".image" #> setAttr("src", album.image) &
       ".title" #> album.title &
-      ".artist" #> album.artist &
-      "img" #> setAttr("src", album.image)
+      ".artist" #> album.artist 
     } 
 }
 {% endhighlight %}
