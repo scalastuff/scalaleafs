@@ -9,6 +9,7 @@ A CSS selector is string that can be used to match elements in a transformation.
 "h1" #> replaceElem("h2")
 {% endhighlight %}
 
+The selector syntax follows the CSS syntax closely:
 
 <table cell-spacing="16px">
 <tr><td><code>#id</code></td><td>Selects elements with id <code>id</code></td></tr>
