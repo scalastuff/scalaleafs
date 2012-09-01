@@ -3,7 +3,7 @@ title: URL Handling
 layout: default
 ---
 
-A typical scala leafs application starts at a common root, and refines its rendering based on the following element of the requested URL. A UrlTrail represents this process. It starts at the root URL and the application advances it until it reaches the end, which is the requested URL.
+A typical Leafs application uses a single-page approach. There is a single template where rendering begins. Other templates are included conditionally, based on, for example, the current request URL. This approach is helped by the [UrlTrail](/api/index.html#net.scalaleafs.UrlTrail) class. A URL trail denotes the process of starting at a root point and finding your way to the current URL.
 
 {% highlight scala %}
 package com.mycom
