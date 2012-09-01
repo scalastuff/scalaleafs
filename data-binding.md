@@ -31,7 +31,7 @@ class Sample2 extends Template {
     Album("Are you gonna go my way", "Lenny Kravitz", "http://ecx.images-amazon.com/images/I/51QbegkJVkL._AA115_.jpg") :: Nil
 
   def bind = 
-    "#users" #> fetchAlbums.map { album =>
+    "#albums" #> fetchAlbums.map { album =>
       "img" #> setAttr("src", album.image) &
       ".title" #> album.title &
       ".artist" #> album.artist 
