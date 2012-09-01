@@ -3,6 +3,12 @@ title: CSS Selectors
 layout: default
 ---
 
+A CSS selector is string that can be used to match elements in a transformation. For example, the following expression is a transformation that replaces all `<h1>` elements by `<h2>` elements:
+
+{% highlight scala %}
+{% endhighlight %}
+
+
 <table cell-spacing="16px">
 <tr><td><code>#id</code></td><td>Selects elements with id <code>id</code></td></tr>
 <tr><td><code>.selected</code></td><td>Selects elements with class <code>selected</code>.</td></tr>
