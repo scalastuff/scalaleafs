@@ -15,9 +15,5 @@ layout: default
 <tr><td><code>input[value^='a']</code></td><td>Selects all <code>input</code> elements with a value attribute starting with an <code>a</code>.</td></tr>
 <tr><td><code>input[value$='a']</code></td><td>Selects all <code>input</code> elements with a value attribute ending with an <code>a</code>.</td></tr>
 <tr><td><code>input[value|='sub']</code></td><td>Selects all <code>input</code> elements with a value <code>sub</code> or starting with <code>sub-</code>.</td></tr>
-<tr><td><code>input[value^='a']</code></td><td>Selects all <code>input</code> elements with a value attribute starting with an <code>a</code>.</td></tr>
-<tr><td><code>input[value^='a']</code></td><td>Selects all <code>input</code> elements with a value attribute starting with an <code>a</code>.</td></tr>
-<tr><td><code>input[value^='a']</code></td><td>Selects all <code>input</code> elements with a value attribute starting with an <code>a</code>.</td></tr>
+<tr><td><code>input[value*='sub']</code></td><td>Selects all <code>input</code> elements with a value attribute containing <code>sub</code>.</td></tr>
 </table>
-
-TODO: Complete this list.
