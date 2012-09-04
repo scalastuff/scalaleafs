@@ -108,7 +108,7 @@ class Request(val initialRequest : InitialRequest, val isInitialRequest : Boolea
   }
   
   def callback(parameter : JSExp)(f : String => Unit) = {
-    JSCmd("leafs.callback('" + callbackId(m => f(m.get("value").flatMap(_.headOption).getOrElse(""))) + "?value=' + " + parameter.toString + ");")
+    JSCmd("leafs.callback('" + callbackId(m => f(m.get("value").flatMap(_.headOption).getOrElse(""))) + "?value=' + encodeURIComponent(" + parameter.toString + "));")
   }
   
   def callback(f : Map[String, Seq[String]] => Unit) : JSCmd = {
@@ -119,7 +119,7 @@ class Request(val initialRequest : InitialRequest, val isInitialRequest : Boolea
       if (parameters.isEmpty)
         JSCmd("leafs.callback('" + callbackId(f) + "');")
       else 
-        JSCmd("leafs.callback('" + callbackId(f) + "?" + parameters.map(x => x._1.toString + "=' + " + x._2.toString).mkString(" + '&") + ");")
+        JSCmd("leafs.callback('" + callbackId(f) + "?" + parameters.map(x => x._1.toString + "=' + encodeURIComponent(" + x._2.toString + ")").mkString(" + '&") + ");")
   }
 }
 

@@ -14,14 +14,20 @@ import scala.xml.Elem
 import scala.xml.NodeSeq
 import implicits._
 
-object Html {
+object Html extends Html
+
+trait Html {
  
   def onclick(f : => JSCmd) : ElemModifier = {
     Xml.setAttr("onclick", R.callback(_ => R.addPostRequestJs(f)) & JsReturnFalse)
   }
   
+  def onchange(f : String => JSCmd) : ElemModifier = {
+    Xml.setAttr("onchange", R.callback(JSExp("this.value"))(s => f(s)))
+  }
+  
   def select[A](values : Seq[A])(f : A => JSCmd) = {
-    Xml.setAttr("onchange", R.callback1(s => f(values(Integer.parseInt(s))), JSExp("this.selectedIndex"))) & 
+    Xml.setAttr("onchange", R.callback(JSExp("this.selectedIndex"))(s => f(values(Integer.parseInt(s))))) & 
     Xml.setContent(content_ => values.map(v => <option>{v}</option>))
   }
 }

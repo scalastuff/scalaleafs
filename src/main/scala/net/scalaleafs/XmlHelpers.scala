@@ -83,6 +83,14 @@ object XmlHelpers {
 
   def setId(elem : Elem, value : String) = setAttr(elem, "id", value)
   
+  def setId(xml : NodeSeq, id : String) : NodeSeq = {
+    xml match {
+      case elem : Elem => setId(elem, id)
+      case Seq(elem : Elem) => Seq(setId(elem, id))
+      case xml => xml    
+    }
+  }
+  
   def hasClass(elem : Elem, value : String) = hasAttrValue(elem, "class", value)
 
   def setClass(elem : Elem, value : String) = setAttr(elem, "class", value)

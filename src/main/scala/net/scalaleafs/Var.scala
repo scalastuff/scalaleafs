@@ -217,7 +217,7 @@ trait SeqVar[A] extends Changeable[Seq[A]] { thisVar =>
     override def apply(elem : Elem, id : String) = {
       def gen(values : Seq[A]) = 
         if (values.isEmpty) {
-          empty(elem)
+          XmlHelpers.setId(empty(elem), id)
         } else {
           values.zipWithIndex.flatMap {
             case (value, 0) => f(value)(elem)

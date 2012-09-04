@@ -27,45 +27,56 @@ import java.io.InputStream
 import javax.servlet.ServletContext
 
 trait LeafsServletProcessor extends Logging {
-  
-  private var server : Server = null;
-  private var ajaxCallbackPrefix = "";
-  private var ajaxFormPostPrefix = "";
-  private var resourcePrefix = "";
+
+  private var context : ServletContext = null
+  private var server : Server = null
+  private var ajaxCallbackPrefix = ""
+  private var ajaxFormPostPrefix = ""
+  private var resourcePrefix = ""
   protected val configuration : Configuration
   protected def render(trail : UrlTrail) : NodeSeq
+  protected def postProcess(request : Request, xml : NodeSeq) = HeadContributions.render(request, xml)
 
   def initialize(context : ServletContext) {
-    val webAppResourceFactory = new ResourceFactory {
-        def getResource(name : String) : Option[InputStream] = {
-          Option(context.getResourceAsStream(if (name.startsWith("/")) name else "/" + name))
-        }
-    }
-    val contextPath = Url.parsePath(context.getContextPath)
-    server = new Server(contextPath, configuration.withDefaults(ResourceFactory -> webAppResourceFactory))
-    ajaxCallbackPrefix = server.ajaxCallbackPath.mkString("/", "/", "/")
-    ajaxFormPostPrefix = server.ajaxFormPostPath.mkString("/", "/", "")
-    resourcePrefix = server.resourcePath.mkString("/", "/", "/")
+    this.context = context
   }
   
   protected def process(request : HttpServletRequest, response : ServletResponse, chain : FilterChain) {
+    if (server == null) {
+      val webAppResourceFactory = new ResourceFactory {
+          def getResource(name : String) : Option[InputStream] = {
+            Option(context.getResourceAsStream(if (name.startsWith("/")) name else "/" + name))
+          }
+      }
+      val contextPath = Url.parsePath(request.getContextPath + request.getServletPath)
+      server = new Server(contextPath, configuration.withDefaults(ResourceFactory -> webAppResourceFactory))
+      ajaxCallbackPrefix = server.ajaxCallbackPath.mkString("/", "/", "/")
+      ajaxFormPostPrefix = server.ajaxFormPostPath.mkString("/", "/", "")
+      resourcePrefix = server.resourcePath.mkString("/", "/", "/")
+    }
     try {
       val startTime = System.currentTimeMillis
       val session = getSession(request)
-      val servletPath = request.getServletPath()
+        val path = 
+          if (request.getPathInfo == null) ""
+          else request.getPathInfo
+      println("Context path: " + request.getContextPath())
+      println("Servlet path: " + request.getServletPath())
+      println("Path Info: " + request.getPathInfo())
+      println("Path: " + path)
       val parameters : Map[String, Seq[String]] = request.getParameterMap().toMap.map(kv => kv._1.toString -> kv._2.asInstanceOf[Array[String]].toSeq)
-      if (request.getMethod == "GET" && servletPath.startsWith(ajaxCallbackPrefix)) {
-        val js = session.handleAjaxCallback(servletPath.substring(ajaxCallbackPrefix.length), parameters)
+      if (request.getMethod == "GET" && path.startsWith(ajaxCallbackPrefix)) {
+        val js = session.handleAjaxCallback(path.substring(ajaxCallbackPrefix.length), parameters)
         response.getWriter.write(js)
         response.flushBuffer
       }
-      else if (request.getMethod == "POST" && servletPath.startsWith(ajaxFormPostPrefix)) {
+      else if (request.getMethod == "POST" && path.startsWith(ajaxFormPostPrefix)) {
         val js = session.handleAjaxFormPost(parameters)
             response.getWriter.write(js)
             response.flushBuffer
       } 
-      else if (request.getMethod == "GET" && servletPath.startsWith(resourcePrefix)) {
-        session.handleResource(servletPath.substring(resourcePrefix.length)) match {
+      else if (request.getMethod == "GET" && request.getPathInfo().startsWith(resourcePrefix)) {
+        session.handleResource(path.substring(resourcePrefix.length)) match {
           case Some((bytes, resourceType)) =>
             response.setContentType(resourceType.contentType)
             response.getOutputStream.write(bytes)
@@ -75,13 +86,11 @@ trait LeafsServletProcessor extends Logging {
         }
       } 
       else if (request.getMethod == "GET") {
-        val urlContext = UrlContext(request.getScheme(), request.getServerName(), Integer.toString(request.getLocalPort), Url.parsePath(request.getContextPath))
-        val path = 
-          if (request.getPathInfo == null) Url.parsePath(request.getServletPath())
-          else Url.parsePath(request.getServletPath()) ++ Url.parsePath(request.getPathInfo)
-        val url = new Url(urlContext, path, parameters)
-        session.handleRequest(url, { () =>
-          val xml = render(UrlTrail(url, path))
+        val urlContext = UrlContext(request.getScheme(), request.getServerName(), Integer.toString(request.getLocalPort), Url.parsePath(request.getContextPath + request.getServletPath))
+        val ps = Url.parsePath(path)
+        val url = new Url(urlContext, ps, parameters)
+        session.handleRequest(url, { request =>
+          val xml = postProcess(request, render(UrlTrail(url, ps)))
           val outputString = xml.toString
           response.setContentType("text/html")
           response.getWriter.append(outputString);

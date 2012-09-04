@@ -56,5 +56,5 @@ package net {
     
     package object implicits extends Implicits
   }
-  package object scalaleafs extends Implicits with Xml
+  package object scalaleafs extends Implicits with Xml with Html
 }

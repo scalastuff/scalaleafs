@@ -100,7 +100,7 @@ trait Xml {
   /**
    * Transformation that adds a value to an attribute of some input element.
    */
-  def AddAttrValue(attr : String, value : String, condition : => Boolean = true) = 
+  def addAttrValue(attr : String, value : String, condition : => Boolean = true) = 
     new ElemModifier(XmlHelpers.addAttrValue(_, attr, value), condition) 
   
   /**

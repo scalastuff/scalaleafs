@@ -30,9 +30,9 @@ class Server(val contextPath : List[String], val configuration : Configuration) 
 
   val substitutions = Map[String, String] (
       "CONTEXT_PATH" -> contextPath.mkString("/"),
-      "AJAX_CALLBACK_PATH" -> contextPath.mkString("", "/", "/" + configuration(AjaxCallbackPath)),
-      "AJAX_FORMPOST_PATH" -> contextPath.mkString("", "/", "/" + configuration(AjaxFormPostPath)),
-      "RESOURCE_PATH" -> contextPath.mkString("", "/", "/" + configuration(ResourcePath)))
+      "AJAX_CALLBACK_PATH" -> (contextPath :+ configuration(AjaxCallbackPath)).mkString("/"),
+      "AJAX_FORMPOST_PATH" -> (contextPath :+ configuration(AjaxFormPostPath)).mkString("/"),
+      "RESOURCE_PATH" -> (contextPath :+ configuration(ResourcePath)).mkString("/"))
 
   val debugMode = configuration(DebugMode) || System.getProperty("leafsDebugMode") != null
 
@@ -61,13 +61,13 @@ class Session(val server : Server, val configuration : Configuration) {
     mkPostRequestJsString(processAjaxCallback(callbackId, parameters).toSeq)
   }
   
-  def handleRequest(url : Url, f : () => Unit) {
+  def handleRequest(url : Url, f : Request => Unit) {
     try {
       val initialRequest = new InitialRequest(this, configuration, url)
       val request = new Request(initialRequest, true)
       R.set(request)
       initialRequest.synchronized {
-        f()
+        f(request)
         initialRequest._headContributionKeys ++= request._headContributionKeys
       }
     } finally {
@@ -130,7 +130,7 @@ class Session(val server : Server, val configuration : Configuration) {
     JSCmds match {
       case Seq() => ""
       case cmds => cmds.map { cmd => 
-        val logCmd = if (server.debugMode) "console.log(\"Callback result: " + cmd.toString.replace("\"", "'") + "\");\n" else ""
+        val logCmd = if (server.debugMode) "console.log(\"Callback result command: " + cmd.toString.replace("\"", "'") + "\");\n" else ""
         logCmd + " try { " + cmd + "} catch (e) { console.log(e); };\n"
       }.mkString
     }

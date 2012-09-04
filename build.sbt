@@ -3,13 +3,21 @@ organization := "net.scalaleafs"
 
 name := "scalaleafs"
 
-version := "0.1"
+version := "0.2-SNAPSHOT"
 
 crossScalaVersions := Seq("2.8.0", "2.8.1", "2.9.0", "2.9.1", "2.9.2")
 
 scalaVersion := "2.9.2"
 
 EclipseKeys.createSrc := EclipseCreateSrc.Default + EclipseCreateSrc.Resource
+
+//site.settings
+
+//site.includeScaladoc()
+
+//ghpages.settings
+
+//git.remoteRepo := "git@github.com:scalastuff/scalaleafs.git"
 
 libraryDependencies ++= Seq (
   "org.slf4j" % "slf4j-log4j12" % "1.6.4",
