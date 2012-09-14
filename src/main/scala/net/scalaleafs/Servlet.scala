@@ -75,7 +75,7 @@ trait LeafsServletProcessor extends Logging {
             response.getWriter.write(js)
             response.flushBuffer
       } 
-      else if (request.getMethod == "GET" && request.getPathInfo().startsWith(resourcePrefix)) {
+      else if (request.getMethod == "GET" && path.startsWith(resourcePrefix)) {
         session.handleResource(path.substring(resourcePrefix.length)) match {
           case Some((bytes, resourceType)) =>
             response.setContentType(resourceType.contentType)
