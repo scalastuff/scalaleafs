@@ -24,6 +24,7 @@ case class UrlContext(protocol : String, host : String, port : String, path : Se
     Url.parse(path) match {
       case (path, parameters) => Url(this, path, parameters)
     }
+  override def toString = protocol + "://" + host + ":" + port + "/" + path.mkString("/") + "/"
 }
 
 object Url {

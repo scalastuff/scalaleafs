@@ -24,7 +24,6 @@ case class Menu(items : MenuItem*) {
   
   def render(trail : Var[UrlTrail], contentSelector : String, menuItemSelector : String, selectedClass : String = "selected") = { 
     val selectedItem = trail map { trail =>
-      println("Recalculating url: " + trail)
       (trail, sortedItems.find(item => trail.remainder.startsWith(item.path)))
     }
     contentSelector #> selectedItem.bind {

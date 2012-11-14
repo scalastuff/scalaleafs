@@ -4,9 +4,9 @@
 
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>net.scalaleafs</groupId>
-	<artifactId>scalaleafs_${scala.version}</artifactId>
+	<artifactId>scalaleafs_2.9.2</artifactId>
 	<packaging>jar</packaging>
-	<version>0.1</version>
+	<version>0.2-SNAPSHOT</version>
 	<name>ScalaLeafs</name>
 	<description>Web framework for Scala</description>
 	<url>http://scalaleafs.net</url>

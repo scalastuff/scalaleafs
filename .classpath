@@ -1,18 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-  <classpathentry output="target/scala-2.9.2/classes" path="src/main/scala" kind="src"></classpathentry>
-  <classpathentry output="target/scala-2.9.2/classes" path="src/main/java" kind="src"></classpathentry>
-  <classpathentry output="target/scala-2.9.2/classes" path="src/main/resources" kind="src"></classpathentry>
-  <classpathentry output="target/scala-2.9.2/test-classes" path="src/test/scala" kind="src"></classpathentry>
-  <classpathentry output="target/scala-2.9.2/test-classes" path="src/test/java" kind="src"></classpathentry>
-  <classpathentry output="target/scala-2.9.2/test-classes" path="src/test/resources" kind="src"></classpathentry>
-  <classpathentry kind="con" path="org.scala-ide.sdt.launching.SCALA_CONTAINER"></classpathentry>
-  <classpathentry path="/Users/ruud/.ivy2/cache/org.slf4j/slf4j-log4j12/jars/slf4j-log4j12-1.6.4.jar" kind="lib"></classpathentry>
-  <classpathentry path="/Users/ruud/.ivy2/cache/org.slf4j/slf4j-api/jars/slf4j-api-1.6.4.jar" kind="lib"></classpathentry>
-  <classpathentry path="/Users/ruud/.ivy2/cache/log4j/log4j/bundles/log4j-1.2.16.jar" kind="lib"></classpathentry>
-  <classpathentry path="/Users/ruud/.ivy2/cache/javax.servlet/servlet-api/jars/servlet-api-2.5.jar" kind="lib"></classpathentry>
-  <classpathentry path="/Users/ruud/.ivy2/cache/nu.validator.htmlparser/htmlparser/jars/htmlparser-1.2.1.jar" kind="lib"></classpathentry>
-  <classpathentry path="/Users/ruud/.ivy2/cache/org.clapper/grizzled-slf4j_2.9.2/jars/grizzled-slf4j_2.9.2-0.6.9.jar" kind="lib"></classpathentry>
-  <classpathentry path="/Users/ruud/.ivy2/cache/junit/junit/jars/junit-4.8.jar" kind="lib"></classpathentry>
-  <classpathentry path="org.eclipse.jdt.launching.JRE_CONTAINER" kind="con"></classpathentry>
-  <classpathentry path="bin" kind="output"></classpathentry>
+	<classpathentry kind="src" output="target/classes" path="src/main/scala">
+		<attributes>
+			<attribute name="optional" value="true"/>
+			<attribute name="maven.pomderived" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="src" output="target/scala-2.9.2/classes" path="src/main/java"/>
+	<classpathentry including="**/*.java" kind="src" output="target/scala-2.9.2/classes" path="src/main/resources"/>
+	<classpathentry kind="src" output="target/test-classes" path="src/test/scala">
+		<attributes>
+			<attribute name="optional" value="true"/>
+			<attribute name="maven.pomderived" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="src" output="target/scala-2.9.2/test-classes" path="src/test/java"/>
+	<classpathentry including="**/*.java" kind="src" output="target/scala-2.9.2/test-classes" path="src/test/resources"/>
+	<classpathentry kind="con" path="org.scala-ide.sdt.launching.SCALA_CONTAINER"/>
+	<classpathentry kind="lib" path="/Users/ruud/.ivy2/cache/org.slf4j/slf4j-log4j12/jars/slf4j-log4j12-1.6.4.jar"/>
+	<classpathentry kind="lib" path="/Users/ruud/.ivy2/cache/org.slf4j/slf4j-api/jars/slf4j-api-1.6.4.jar"/>
+	<classpathentry kind="lib" path="/Users/ruud/.ivy2/cache/log4j/log4j/bundles/log4j-1.2.16.jar"/>
+	<classpathentry kind="lib" path="/Users/ruud/.ivy2/cache/javax.servlet/servlet-api/jars/servlet-api-2.5.jar"/>
+	<classpathentry kind="lib" path="/Users/ruud/.ivy2/cache/nu.validator.htmlparser/htmlparser/jars/htmlparser-1.2.1.jar"/>
+	<classpathentry kind="lib" path="/Users/ruud/.ivy2/cache/org.clapper/grizzled-slf4j_2.9.2/jars/grizzled-slf4j_2.9.2-0.6.9.jar"/>
+	<classpathentry kind="lib" path="/Users/ruud/.ivy2/cache/junit/junit/jars/junit-4.8.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/J2SE-1.5">
+		<attributes>
+			<attribute name="maven.pomderived" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="con" path="org.eclipse.m2e.MAVEN2_CLASSPATH_CONTAINER">
+		<attributes>
+			<attribute name="maven.pomderived" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="output" path="target/classes"/>
 </classpath>

@@ -17,7 +17,7 @@ class InitialRequest(val session : Session, val configuration : Configuration, p
   private[scalaleafs] var _headContributionKeys : Set[String] = Set.empty
   private[scalaleafs] val urlManager = new UrlManager
   
-  lazy val resourceBaseUrl = Url(_url.context, session.server.resourcePath, Map.empty)
+  lazy val resourceBase = _url.context.copy(path = _url.context.path ++ session.server.resourcePath)
 }
 
 /**
@@ -32,7 +32,7 @@ class Request(val initialRequest : InitialRequest, val isInitialRequest : Boolea
   def configuration = initialRequest.configuration
   def session = initialRequest.session
   def server = initialRequest.session.server
-  def resourceBaseUrl = initialRequest.resourceBaseUrl
+  def resourceBase = initialRequest.resourceBase
   def debugMode = session.server.debugMode
   
   /**

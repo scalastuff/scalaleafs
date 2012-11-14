@@ -48,7 +48,7 @@ trait LeafsServletProcessor extends Logging {
             Option(context.getResourceAsStream(if (name.startsWith("/")) name else "/" + name))
           }
       }
-      val contextPath = Url.parsePath(request.getContextPath + request.getServletPath)
+      val contextPath = Url.parsePath(request.getContextPath)
       server = new Server(contextPath, configuration.withDefaults(ResourceFactory -> webAppResourceFactory))
       ajaxCallbackPrefix = server.ajaxCallbackPath.mkString("/", "/", "/")
       ajaxFormPostPrefix = server.ajaxFormPostPath.mkString("/", "/", "")
@@ -58,7 +58,7 @@ trait LeafsServletProcessor extends Logging {
       val startTime = System.currentTimeMillis
       val session = getSession(request)
         val path = 
-          if (request.getPathInfo == null) ""
+          if (request.getPathInfo == null) request.getServletPath()
           else request.getPathInfo
       println("Context path: " + request.getContextPath())
       println("Servlet path: " + request.getServletPath())
@@ -86,7 +86,7 @@ trait LeafsServletProcessor extends Logging {
         }
       } 
       else if (request.getMethod == "GET") {
-        val urlContext = UrlContext(request.getScheme(), request.getServerName(), Integer.toString(request.getLocalPort), Url.parsePath(request.getContextPath + request.getServletPath))
+        val urlContext = UrlContext(request.getScheme(), request.getServerName(), Integer.toString(request.getLocalPort), Url.parsePath(request.getContextPath))
         val ps = Url.parsePath(path)
         val url = new Url(urlContext, ps, parameters)
         session.handleRequest(url, { request =>

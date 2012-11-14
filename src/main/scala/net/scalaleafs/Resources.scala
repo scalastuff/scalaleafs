@@ -77,6 +77,7 @@ class Resources(factory : ResourceFactory, substitutions : Map[String, String], 
   private val resourceFactoryClass = classOf[ResourceFactory]
 
   def resourceContent(resourcePath : String) : Option[(Array[Byte], ResourceType)] = {
+    assert (!resourcePath.startsWith("/"))
     resourceData.get(resourcePath) match {
       case null =>
         factory.getResource(resourcePath) match {
@@ -95,10 +96,12 @@ class Resources(factory : ResourceFactory, substitutions : Map[String, String], 
   }
   
   def hashedResourcePathFor(c : Class[_], name : String) : String = {
+    assert (!name.startsWith("/"))
     resourcePaths.get((c, name)) match {
       case null =>
         val fullName = "/" + c.getPackage().getName().replace('.', '/') + "/" + name
         val (resourcePath, resourceType, bytes) = readHashedResource(name, c.getResourceAsStream(fullName), substitutions)
+        assert (!resourcePath.startsWith("/"))
         resourceData.put(resourcePath, (bytes, resourceType));
         if (!debugMode) {
           resourcePaths.put((c, name), resourcePath)
@@ -109,6 +112,7 @@ class Resources(factory : ResourceFactory, substitutions : Map[String, String], 
   }
 
   def hashedResourcePathFor(name : String) : String = {
+    assert (!name.startsWith("/"))
     resourcePaths.get((resourceFactoryClass, name)) match {
       case null =>
         val (resourcePath, resourceType, bytes) = readHashedResource(name, factory.getResource(name).getOrElse(null), substitutions)
@@ -142,8 +146,8 @@ class Resources(factory : ResourceFactory, substitutions : Map[String, String], 
               else Seq(line.dropRight(debugPostfix2.length()))
             else Seq(line.mkString)
           } 
-          val lines = linesSeq.toSeq.flatten
-          lines.mkString("\n").getBytes("UTF-8");
+          val lines = linesSeq.toSeq.flatten.mkString("\n")
+          lines.getBytes("UTF-8");
         case None =>
           val bis = new BufferedInputStream(is)
           Stream.continually(bis.read).takeWhile(-1 !=).map(_.toByte).toArray

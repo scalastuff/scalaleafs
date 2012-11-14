@@ -41,13 +41,13 @@ object HeadContributions {
             case "link" =>
               val href = XmlHelpers.attr(elem, "href")
               if (!href.startsWith("http:")) {
-                XmlHelpers.setAttr(elem, "href", request.resourceBaseUrl.resolve(request.server.resources.hashedResourcePathFor(href)).toLocalString)
+                XmlHelpers.setAttr(elem, "href", request.resourceBase.resolve(request.server.resources.hashedResourcePathFor(href.stripPrefix("/"))).toLocalString)
               }
               else elem
             case "script" =>
               val src = XmlHelpers.attr(elem, "src")
               if (!src.startsWith("http:")) {
-                XmlHelpers.setAttr(elem, "src", request.resourceBaseUrl.resolve(request.server.resources.hashedResourcePathFor(src)).toLocalString)
+                XmlHelpers.setAttr(elem, "src", request.resourceBase.resolve(request.server.resources.hashedResourcePathFor(src.stripPrefix("/"))).toLocalString)
               }
               else elem
             case _ => elem
@@ -106,7 +106,10 @@ object HeadContributions {
         if (elem.label == "html") {
           processBody(processHead(elem))
         } else elem
-      case Seq(elem : Elem) => render(request, elem)
+      case Seq(elem : Elem) => 
+        if (elem.label == "html") {
+          processBody(processHead(elem))
+        } else elem
       case _ => xml
     }
   }
@@ -130,11 +133,11 @@ class JavaScript(key : String, uri : String) extends HeadContribution(key) {
 class JavaScriptResource(c : Class[_], resource : String) extends HeadContribution(c.getName + "/" + resource) {
   def render(request : Request) = {
     var name = request.server.resources.hashedResourcePathFor(c, resource)
-    <script type="text/javascript" src={request.resourceBaseUrl.resolve(name).toLocalString} />
+    <script type="text/javascript" src={request.resourceBase.resolve(name).toLocalString} />
   }
   override def renderAdditional(request : Request) = {
     var name = request.server.resources.hashedResourcePathFor(c, resource)
-    LoadJavaScript(request.resourceBaseUrl.resolve(name).toLocalString)
+    LoadJavaScript(request.resourceBase.resolve(name).toLocalString)
   }
 }
 
