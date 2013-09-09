@@ -5,9 +5,9 @@ name := "scalaleafs"
 
 version := "0.2-SNAPSHOT"
 
-crossScalaVersions := Seq("2.8.0", "2.8.1", "2.9.0", "2.9.1", "2.9.2", "2.10.0-M7")
+crossScalaVersions := Seq("2.8.0", "2.8.1", "2.9.0", "2.9.1", "2.9.2", "2.10.1")
 
-scalaVersion := "2.10.0-M7"
+scalaVersion := "2.10.1"
 
 EclipseKeys.createSrc := EclipseCreateSrc.Default + EclipseCreateSrc.Resource
 
@@ -23,7 +23,7 @@ libraryDependencies ++= Seq (
   "org.slf4j" % "slf4j-log4j12" % "1.6.4",
   "javax.servlet" % "servlet-api" % "2.5" withSources(),
   "nu.validator.htmlparser" % "htmlparser" % "1.2.1",
-  "org.clapper" % "grizzled-slf4j_2.9.2" % "0.6.9",
+  "org.clapper" %% "grizzled-slf4j" % "1.0.1" withSources(),
   "junit" % "junit" % "4.8" % "test")
   
 publishMavenStyle := true
