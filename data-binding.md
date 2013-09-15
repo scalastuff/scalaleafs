@@ -1,6 +1,7 @@
 ---
 title: Data Binding
 layout: default
+published: true
 ---
 
 This example shows how to use templates and css selectors to serve up some data. Specifically, it shows how to iterate over collections of data.
@@ -31,7 +32,7 @@ class Sample2 extends Template {
     Album("Are you gonna go my way", "Lenny Kravitz", "http://ecx.images-amazon.com/images/I/51QbegkJVkL._AA115_.jpg") :: Nil
 
   def bind = 
-    "#albums" #> fetchAlbums.map { album =>
+    "#albums tr" #> fetchAlbums.map { album =>
       ".image" #> setAttr("src", album.image) &
       ".title" #> album.title &
       ".artist" #> album.artist 
@@ -44,4 +45,3 @@ The expression `users.map {...}` results in a list of XML transformations, which
 implicitly converted to a transformation that concatenates the results of the individual transformations. The end-result is a natural way to loop over data.
 
 The `setAttr` function is one of the predefined XML transformations in [Xml](http://scalaleafs.net/api/index.html#net.scalaleafs.Xml$).
-
