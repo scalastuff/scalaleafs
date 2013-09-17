@@ -20,11 +20,11 @@ EclipseKeys.createSrc := EclipseCreateSrc.Default + EclipseCreateSrc.Resource
 //git.remoteRepo := "git@github.com:scalastuff/scalaleafs.git"
 
 libraryDependencies ++= Seq (
-  "org.slf4j" % "slf4j-log4j12" % "1.6.4",
+  //"org.slf4j" % "slf4j-log4j12" % "1.6.4",
   "javax.servlet" % "servlet-api" % "2.5" withSources(),
   "nu.validator.htmlparser" % "htmlparser" % "1.2.1",
   "org.clapper" %% "grizzled-slf4j" % "1.0.1" withSources(),
-  "com.typesafe.akka" %% "akka-actor" % "2.2.0-RC2" withSources(),
+  "com.typesafe.akka" %% "akka-actor" % "2.2.1" withSources(),
   //"io.spray" % "spray-can" % sprayVersion withSources(),
   //"io.spray" % "spray-client" % sprayVersion withSources(),
   //"io.spray" %%  "spray-json" % "1.2.5" withSources(),

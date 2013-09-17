@@ -1,20 +1,29 @@
 package net.scalaleafs
 
-import spray.routing.Route
 import spray.routing.Directives
+import spray.routing.Route
 import spray.routing.PathMatcher
 import shapeless.HNil
 import spray.http.MediaType
 import scala.xml.NodeSeq
+import java.util.UUID
+import spray.http.HttpCookie
+import scala.collection.concurrent.TrieMap
+import grizzled.slf4j.Logging
 
-class ScalaLeafsSprayRoute(server : Server)(render : UrlTrail => NodeSeq) extends Route with Directives {
+
+abstract class AbstractSprayServer(configuration : Configuration) 
+  extends Server(Nil, configuration) with Route with Directives with Logging {
   
   private val nilMatcher : PathMatcher[HNil] = ""
-  private val contextMatcher  = matcherOf(server.contextPath)
-  private val callbackMatcher = matcherOf(server.ajaxCallbackPath)
-  private val formPostMatcher = matcherOf(server.ajaxFormPostPath)
-  private val resourceMatcher = matcherOf(server.resourcePath)
-  private val session : Session = null
+  private val contextMatcher  = matcherOf(contextPath)
+  private val callbackMatcher = matcherOf(ajaxCallbackPath)
+  private val formPostMatcher = matcherOf(ajaxFormPostPath)
+  private val resourceMatcher = matcherOf(resourcePath)
+  private val sessions = TrieMap[String, Session]()  
+  private val session: Session = null  
+
+  private val cookieName = "scalaleafs"
   
   def matcherOf(path : Seq[String]) = path.foldLeft(nilMatcher)((x, y) => x / y)
   def matcherOf(path : String) : PathMatcher[HNil] = matcherOf(path.split("/").toSeq)
@@ -23,15 +32,24 @@ class ScalaLeafsSprayRoute(server : Server)(render : UrlTrail => NodeSeq) extend
 
   def apply(v1: spray.routing.RequestContext): Unit = 
     route(v1)
+    
+  val myroute = 
+    pathPrefix("ui") {
+      route
+    }
  
-  val route = pathPrefix(contextMatcher) {
+  val route = pathPrefix("") {
     get {
       path(callbackMatcher / Rest) { callbackId =>
-        complete {
-          session.handleAjaxCallback(callbackId, Map.empty)
+      println("GET")
+        cookie(cookieName) { cookie =>
+          complete {
+            session.handleAjaxCallback(callbackId, Map.empty)
+          }
         }
       } ~
       path(resourceMatcher / Rest) { resource =>
+      println("RES")
         session.handleResource(resource) match {
           case Some((bytes, resourceType)) =>
             respondWithMediaType(MediaType.custom(resourceType.contentType)) {
@@ -42,12 +60,23 @@ class ScalaLeafsSprayRoute(server : Server)(render : UrlTrail => NodeSeq) extend
         }
       } ~
       path(Rest) { path =>
-        extract(_.request.uri) { uri =>
-        val url = new Url(UrlContext(uri.scheme, uri.authority.host.address, uri.authority.port.toString, server.contextPath), path :: Nil, Map.empty)
-          complete {
-            session.handleRequest(url) { 
-              request: Request =>
-                postProcess(request, render(UrlTrail(url, Url.parsePath(path))))
+        println("path:"+path)
+        optionalCookie(cookieName) { someCookie =>
+          val cookie = someCookie.getOrElse(HttpCookie(cookieName, UUID.randomUUID.toString))
+          val session = sessions.getOrElseUpdate(cookie.value, {
+            debug(s"Created session: ${cookie.value}")
+            new Session(this, configuration)
+          })
+          setCookie(cookie) {
+            extract(_.request.uri) { uri =>
+            val url = new Url(UrlContext(uri.scheme, uri.authority.host.address, uri.authority.port.toString, contextPath), path :: Nil, Map.empty)
+            println("url:" + url)
+              complete {
+                session.handleRequest(url) { 
+                  request: Request =>
+                    postProcess(request, render(UrlTrail(url, Url.parsePath(path))))
+                }
+              }
             }
           }
         }
@@ -59,5 +88,7 @@ class ScalaLeafsSprayRoute(server : Server)(render : UrlTrail => NodeSeq) extend
       }
     }
   }
+    
+  protected def render : UrlTrail => NodeSeq
 }
 
