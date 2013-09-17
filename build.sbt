@@ -24,6 +24,14 @@ libraryDependencies ++= Seq (
   "javax.servlet" % "servlet-api" % "2.5" withSources(),
   "nu.validator.htmlparser" % "htmlparser" % "1.2.1",
   "org.clapper" %% "grizzled-slf4j" % "1.0.1" withSources(),
+  "com.typesafe.akka" %% "akka-actor" % "2.2.0-RC2" withSources(),
+  //"io.spray" % "spray-can" % sprayVersion withSources(),
+  //"io.spray" % "spray-client" % sprayVersion withSources(),
+  //"io.spray" %%  "spray-json" % "1.2.5" withSources(),
+ // "io.spray" % "spray-servlet" % sprayVersion withSources(),
+  "io.spray" % "spray-routing" % "1.2-20130719" withSources(),
+  //"io.spray" % "spray-testkit" % sprayVersion % "test" withSources(),
+  //"io.spray" % "spray-caching" % sprayVersion withSources(),
   "junit" % "junit" % "4.8" % "test")
   
 publishMavenStyle := true

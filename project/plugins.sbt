@@ -1,7 +1,7 @@
 //addSbtPlugin("com.jsuereth" % "xsbt-gpg-plugin" % "0.6")
 addSbtPlugin("com.typesafe.sbt" % "sbt-pgp" % "0.8")
 
-addSbtPlugin("com.typesafe.sbteclipse" % "sbteclipse-plugin" % "2.3.0")
+addSbtPlugin("com.typesafe.sbteclipse" % "sbteclipse-plugin" % "2.2.0")
 
 //addSbtPlugin("com.jsuereth" % "sbt-ghpages-plugin" % "0.4.0")
 

@@ -61,21 +61,22 @@ class Session(val server : Server, val configuration : Configuration) {
     mkPostRequestJsString(processAjaxCallback(callbackId, parameters).toSeq)
   }
   
-  def handleRequest(url : Url, f : Request => Unit) {
+  def handleRequest[A](url : Url)(f : Request => A) : A = {
     try {
       val initialRequest = new InitialRequest(this, configuration, url)
       val request = new Request(initialRequest, true)
       R.set(request)
       initialRequest.synchronized {
-        f(request)
+        val result = f(request)
         initialRequest._headContributionKeys ++= request._headContributionKeys
+        result
       }
     } finally {
       R.set(null)
     }
   }
 
-  def processAjaxCallback(callbackId : String, parameters : Map[String, Seq[String]]) : JSCmd = {
+  private def processAjaxCallback(callbackId : String, parameters : Map[String, Seq[String]]) : JSCmd = {
     ajaxCallbacks.get(callbackId) match {
       case null => 
         throw new ExpiredException("Callback expired: " + callbackId)

@@ -89,13 +89,13 @@ trait LeafsServletProcessor extends Logging {
         val urlContext = UrlContext(request.getScheme(), request.getServerName(), Integer.toString(request.getLocalPort), Url.parsePath(request.getContextPath))
         val ps = Url.parsePath(path)
         val url = new Url(urlContext, ps, parameters)
-        session.handleRequest(url, { request =>
+        session.handleRequest(url) { request =>
           val xml = postProcess(request, render(UrlTrail(url, ps)))
           val outputString = xml.toString
           response.setContentType("text/html")
           response.getWriter.append(outputString);
           response.flushBuffer;
-        })
+        }
       }
       else {
         chain.doFilter(request, response)
