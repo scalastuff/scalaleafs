@@ -133,7 +133,7 @@ class JavaScript(key : String, uri : String) extends HeadContribution(key) {
 class JavaScriptResource(c : Class[_], resource : String) extends HeadContribution(c.getName + "/" + resource) {
   def render(request : Request) = {
     var name = request.server.resources.hashedResourcePathFor(c, resource)
-    <script type="text/javascript" src={request.resourceBase.resolve(name).toLocalString} />
+    <script type="text/javascript" src={request.resourceBase.resolve(name).toLocalString}></script>
   }
   override def renderAdditional(request : Request) = {
     var name = request.server.resources.hashedResourcePathFor(c, resource)
@@ -151,7 +151,7 @@ object JQueryUrl extends ConfigVar[String]("http://ajax.googleapis.com/ajax/libs
 
 object JQuery extends HeadContribution("JQuery") {
   def render(request : Request) = {
-    <script type="text/javascript" src={request.configuration(JQueryUrl)} />
+    <script type="text/javascript" src={request.configuration(JQueryUrl)}></script>
   }
 }
 

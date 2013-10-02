@@ -10,6 +10,10 @@
  */
 package net.scalaleafs
 
+import net.scalaleafs.JsReturnFalse;
+import net.scalaleafs.R;
+import net.scalaleafs.Xml;
+import net.scalaleafs.XmlHelpers;
 import scala.xml.Elem
 import scala.xml.NodeSeq
 import implicits._
@@ -29,5 +33,16 @@ trait Html {
   def select[A](values : Seq[A])(f : A => JSCmd) = {
     Xml.setAttr("onchange", R.callback(JSExp("this.selectedIndex"))(s => f(values(Integer.parseInt(s))))) & 
     Xml.setContent(content_ => values.map(v => <option>{v}</option>))
+  }
+  
+  def linkup = new ElemTransformation { 
+    def apply(elem : Elem) = {
+      XmlHelpers.attr(elem, "href") match {
+        case "" => elem
+        case href =>
+          //XmlHelpers.setAttr(XmlHelpers.setAttr(elem, href, "CTX/" + href), "onclick", R.callback(_ => R.changeUrl(href)).toString)
+          XmlHelpers.setAttr(elem, href, "CTX/" + href)
+      }          
+    }
   }
 }

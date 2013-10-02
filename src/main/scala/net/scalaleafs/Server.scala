@@ -13,10 +13,26 @@ package net.scalaleafs
 import java.util.concurrent.ConcurrentHashMap
 import java.util.UUID
 import java.util.LinkedList
+
 import scala.collection.mutable
+
 import java.util.concurrent.atomic.AtomicLong
+
 import scala.xml.NodeSeq
+
 import java.net.URI
+
+import net.scalaleafs.AjaxCallbackPath;
+import net.scalaleafs.AjaxFormPostPath;
+import net.scalaleafs.ContextPath;
+import net.scalaleafs.DebugClassLoaderInstantiator;
+import net.scalaleafs.DebugMode;
+import net.scalaleafs.HeadContributions;
+import net.scalaleafs.ResourceFactory;
+import net.scalaleafs.ResourcePath;
+import net.scalaleafs.Resources;
+import net.scalaleafs.Url;
+import grizzled.slf4j.Logging
 
 case class AjaxCallback(request : InitialRequest, f : Map[String, Seq[String]] => Unit)
 
@@ -25,9 +41,12 @@ object DebugMode extends ConfigVar[Boolean](false)
 object AjaxCallbackPath extends ConfigVar[String]("leafs/ajaxCallback")
 object AjaxFormPostPath extends ConfigVar[String]("leafs/ajaxFormPost")
 object ResourcePath extends ConfigVar[String]("leafs/")
+object ContextPath extends ConfigVar[List[String]](Nil)
 
-class Server(val contextPath : List[String], val configuration : Configuration) {
+class Server(root : Class[_ <: Template], val configuration : Configuration) extends Logging {
 
+  val contextPath = configuration(ContextPath)
+  
   val substitutions = Map[String, String] (
       "CONTEXT_PATH" -> contextPath.mkString("/"),
       "AJAX_CALLBACK_PATH" -> (contextPath :+ configuration(AjaxCallbackPath)).mkString("/"),
@@ -35,105 +54,33 @@ class Server(val contextPath : List[String], val configuration : Configuration) 
       "RESOURCE_PATH" -> (contextPath :+ configuration(ResourcePath)).mkString("/"))
 
   val debugMode = configuration(DebugMode) || System.getProperty("leafsDebugMode") != null
-
+  
   val resources = new Resources(configuration(ResourceFactory), substitutions, debugMode)
   
   val ajaxCallbackPath = Url.parsePath(configuration(AjaxCallbackPath))
   val ajaxFormPostPath = Url.parsePath(configuration(AjaxFormPostPath))
   val resourcePath = Url.parsePath(configuration(ResourcePath))
-}
 
-class ExpiredException(message : String) extends Exception(message)
-class InvalidUrlException(url : Url) extends Exception("Invalid url: " + url)
+  def handleResource(resource : String) : Option[(Array[Byte], ResourceType)] = 
+    resources.resourceContent(resource)   
+  
 
-/**
- * Contains session data.
- */
-class Session(val server : Server, val configuration : Configuration) {
+  protected def postProcess(request : Request, xml : NodeSeq) = 
+    HeadContributions.render(request, xml)
 
-  private[scalaleafs] val ajaxCallbacks = new ConcurrentHashMap[String, AjaxCallback]()
- 
-  private[scalaleafs] val callbackIDGenerator = new Object {
-    def generate : String = "cb" + UUID.randomUUID
+  private lazy val instantiator = 
+    new DebugClassLoaderInstantiator(root.getPackage.getName)
+  
+  if (debugMode) {
+    debug("Enabled dynamic classloading for package " + root.getPackage.getName)
   }
   
-  def handleAjaxCallback(callbackId : String, parameters : Map[String, Seq[String]]) : String = {
-    mkPostRequestJsString(processAjaxCallback(callbackId, parameters).toSeq)
+  protected def processRoot(request : Request) = {
+    val template = 
+      if (debugMode) instantiator.instantiate(root)
+      else root.newInstance
+      val pre = template.render
+      postProcess(request, pre)
   }
-  
-  def handleRequest[A](url : Url)(f : Request => A) : A = {
-    try {
-      val initialRequest = new InitialRequest(this, configuration, url)
-      val request = new Request(initialRequest, true)
-      R.set(request)
-      initialRequest.synchronized {
-        val result = f(request)
-        initialRequest._headContributionKeys ++= request._headContributionKeys
-        result
-      }
-    } finally {
-      R.set(null)
-    }
-  }
-
-  private def processAjaxCallback(callbackId : String, parameters : Map[String, Seq[String]]) : JSCmd = {
-    ajaxCallbacks.get(callbackId) match {
-      case null => 
-        throw new ExpiredException("Callback expired: " + callbackId)
-      case ajaxCallback => 
-        try {
-          val initialRequest = ajaxCallback.request
-          val request = new Request(initialRequest, false)
-          R.set(request)
-          ajaxCallback.request.synchronized {
-            // Call the callback.
-            ajaxCallback.f(parameters)
-            // Render additional head contributions.
-            request._headContributions.foreach(c => request.addEagerPostRequestJs(c.renderAdditional(request)))
-            // Store all current head contributions in the initial request. 
-            initialRequest._headContributionKeys ++= request._headContributionKeys
-          }
-          // Process eager JS first, normal JS later
-          request.eagerPostRequestJs & request.postRequestJs 
-        } finally {
-          R.set(null)
-        }
-    }
-  } 
-
-  def handleAjaxFormPost(parameters : Map[String, Seq[String]]) : String = {
-    
-    // Separate normal fields from actions.
-    val (fields, actions) = parameters.toSeq.partition(_._1 != "action")
-        
-    // Call callbacks for fields and actions, in order.
-    val JSCmds : Seq[JSCmd] =
-      // Fields go first that have a single, nameless parameter value.
-      fields.map {
-        case (callbackId, values) =>
-          processAjaxCallback(callbackId, Map("" -> values))
-      } ++
-      // Actions are executed next, they have no parameters.
-      actions.map {
-        case (_, Seq(callbackId)) =>
-          processAjaxCallback(callbackId, Map.empty)
-        case (_, Nil) =>
-          Noop
-      }
-
-    // Make a result string.
-    mkPostRequestJsString(JSCmds)
-  } 
-
-  def handleResource(resource : String) : Option[(Array[Byte], ResourceType)] = server.resources.resourceContent(resource)   
-  
-  def mkPostRequestJsString(JSCmds : Seq[JSCmd]) = 
-    JSCmds match {
-      case Seq() => ""
-      case cmds => cmds.map { cmd => 
-        val logCmd = if (server.debugMode) "console.log(\"Callback result command: " + cmd.toString.replace("\"", "'") + "\");\n" else ""
-        logCmd + " try { " + cmd + "} catch (e) { console.log(e); };\n"
-      }.mkString
-    }
 }
 

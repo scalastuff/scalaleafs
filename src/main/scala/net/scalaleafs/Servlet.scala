@@ -11,9 +11,11 @@
 package net.scalaleafs
 
 import java.net.URI
+
 import scala.collection.JavaConversions._
 import scala.xml.NodeSeq
 import grizzled.slf4j.Logging
+
 import javax.servlet.http.HttpServlet
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
@@ -23,8 +25,18 @@ import javax.servlet.FilterConfig
 import javax.servlet.ServletConfig
 import javax.servlet.ServletRequest
 import javax.servlet.ServletResponse
+
 import java.io.InputStream
+
 import javax.servlet.ServletContext
+
+import net.scalaleafs.Configuration;
+import net.scalaleafs.ContextPath;
+import net.scalaleafs.HeadContributions;
+import net.scalaleafs.ResourceFactory;
+import net.scalaleafs.Server;
+import net.scalaleafs.Session;
+import net.scalaleafs.Url;
 
 trait LeafsServletProcessor extends Logging {
 
@@ -34,7 +46,7 @@ trait LeafsServletProcessor extends Logging {
   private var ajaxFormPostPrefix = ""
   private var resourcePrefix = ""
   protected val configuration : Configuration
-  protected def render(trail : UrlTrail) : NodeSeq
+  protected def render(tail : UrlTail) : NodeSeq
   protected def postProcess(request : Request, xml : NodeSeq) = HeadContributions.render(request, xml)
 
   def initialize(context : ServletContext) {
@@ -49,7 +61,7 @@ trait LeafsServletProcessor extends Logging {
           }
       }
       val contextPath = Url.parsePath(request.getContextPath)
-      server = new Server(contextPath, configuration.withDefaults(ResourceFactory -> webAppResourceFactory))
+      server = new Server(null/*TODO*/, configuration.withDefaults(ResourceFactory -> webAppResourceFactory, ContextPath -> contextPath))
       ajaxCallbackPrefix = server.ajaxCallbackPath.mkString("/", "/", "/")
       ajaxFormPostPrefix = server.ajaxFormPostPath.mkString("/", "/", "")
       resourcePrefix = server.resourcePath.mkString("/", "/", "/")
@@ -76,7 +88,7 @@ trait LeafsServletProcessor extends Logging {
             response.flushBuffer
       } 
       else if (request.getMethod == "GET" && path.startsWith(resourcePrefix)) {
-        session.handleResource(path.substring(resourcePrefix.length)) match {
+        server.handleResource(path.substring(resourcePrefix.length)) match {
           case Some((bytes, resourceType)) =>
             response.setContentType(resourceType.contentType)
             response.getOutputStream.write(bytes)
@@ -90,7 +102,7 @@ trait LeafsServletProcessor extends Logging {
         val ps = Url.parsePath(path)
         val url = new Url(urlContext, ps, parameters)
         session.handleRequest(url) { request =>
-          val xml = postProcess(request, render(UrlTrail(url, ps)))
+          val xml = postProcess(request, render(UrlTail(url)))
           val outputString = xml.toString
           response.setContentType("text/html")
           response.getWriter.append(outputString);

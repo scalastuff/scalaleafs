@@ -1,19 +1,22 @@
 package net.scalaleafs
 
-import spray.routing.Directives
 import spray.routing.Route
+import spray.routing.Directives
 import spray.routing.PathMatcher
 import shapeless.HNil
-import spray.http.MediaType
 import scala.xml.NodeSeq
+
 import java.util.UUID
+
 import spray.http.HttpCookie
 import scala.collection.concurrent.TrieMap
 import grizzled.slf4j.Logging
+import spray.http.MediaTypes
+import spray.http.MediaType
+import spray.routing.RequestContext
 
-
-abstract class AbstractSprayServer(configuration : Configuration) 
-  extends Server(Nil, configuration) with Route with Directives with Logging {
+class AbstractSprayServer[R <: Template](root : Class[R], configuration : Configuration) 
+  extends Server(root, configuration) with Route with Directives with Logging {
   
   private val nilMatcher : PathMatcher[HNil] = ""
   private val contextMatcher  = matcherOf(contextPath)
@@ -24,33 +27,31 @@ abstract class AbstractSprayServer(configuration : Configuration)
   private val session: Session = null  
 
   private val cookieName = "scalaleafs"
-  
+    
   def matcherOf(path : Seq[String]) = path.foldLeft(nilMatcher)((x, y) => x / y)
   def matcherOf(path : String) : PathMatcher[HNil] = matcherOf(path.split("/").toSeq)
   
-  protected def postProcess(request : Request, xml : NodeSeq) = HeadContributions.render(request, xml)
-
   def apply(v1: spray.routing.RequestContext): Unit = 
     route(v1)
     
-  val myroute = 
+  val route = 
     pathPrefix("ui") {
-      route
+      route2
     }
- 
-  val route = pathPrefix("") {
+
+  def route2 = {
     get {
-      path(callbackMatcher / Rest) { callbackId =>
       println("GET")
+      path("kk"/callbackMatcher / Rest) { callbackId =>
         cookie(cookieName) { cookie =>
           complete {
             session.handleAjaxCallback(callbackId, Map.empty)
           }
         }
       } ~
-      path(resourceMatcher / Rest) { resource =>
+      path("qqleafs" / Rest) { resource =>
       println("RES")
-        session.handleResource(resource) match {
+        handleResource(resource) match {
           case Some((bytes, resourceType)) =>
             respondWithMediaType(MediaType.custom(resourceType.contentType)) {
               complete {
@@ -60,7 +61,12 @@ abstract class AbstractSprayServer(configuration : Configuration)
         }
       } ~
       path(Rest) { path =>
-        println("path:"+path)
+         val (ext, isResource) = extension(path) match {
+          case "" => ("", false)
+          case "html" => ("html", false)
+          case ext => (ext, true)
+        }
+        val start = System.currentTimeMillis()
         optionalCookie(cookieName) { someCookie =>
           val cookie = someCookie.getOrElse(HttpCookie(cookieName, UUID.randomUUID.toString))
           val session = sessions.getOrElseUpdate(cookie.value, {
@@ -68,13 +74,34 @@ abstract class AbstractSprayServer(configuration : Configuration)
             new Session(this, configuration)
           })
           setCookie(cookie) {
-            extract(_.request.uri) { uri =>
-            val url = new Url(UrlContext(uri.scheme, uri.authority.host.address, uri.authority.port.toString, contextPath), path :: Nil, Map.empty)
-            println("url:" + url)
-              complete {
-                session.handleRequest(url) { 
-                  request: Request =>
-                    postProcess(request, render(UrlTrail(url, Url.parsePath(path))))
+            if (isResource) {
+              val resource = if (path.startsWith("leafs/")) path.substring(6) else path
+              handleResource(resource) match {
+                case Some((bytes, resourceType)) =>
+                  respondWithMediaType(MediaType.custom(resourceType.contentType)) {
+                    complete {
+                      println("Resource: " + path + " (" + (System.currentTimeMillis - start) + " ms)")
+                      bytes
+                    }
+                  }
+                case None =>
+                  println("Resource not found: " + path + " (" + (System.currentTimeMillis - start) + " ms)")
+                  reject
+              }
+            }
+            else {
+              extract(_.request.uri) { uri =>
+                val url = new Url(UrlContext(uri.scheme, uri.authority.host.address, uri.authority.port.toString, contextPath), Url.parsePath(path), Map.empty)
+                println("url:" + url)
+                respondWithMediaType(MediaTypes.`text/html`) {
+                  complete {
+                    session.handleRequest(url) { 
+                      request: Request =>
+                        val xml = processRoot(request)
+                        println("Processed: " + path + " (" + (System.currentTimeMillis - start) + " ms)")
+                        xml
+                    } 
+                  }
                 }
               }
             }
@@ -88,7 +115,14 @@ abstract class AbstractSprayServer(configuration : Configuration)
       }
     }
   }
-    
-  protected def render : UrlTrail => NodeSeq
+
+  def extension(path: String): String =
+    path.lastIndexOf('.') match {
+      case -1 => ""
+      case i => path.indexOf('/', i) match {
+        case -1 => path.substring(i + 1)
+        case i => ""
+      }
+    }
 }
 

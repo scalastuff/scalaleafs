@@ -51,7 +51,7 @@ package net {
       
       implicit def toVar[A](initialValue : A) = new Object {
         def toVar = Var(initialValue)
-      }  
+      }
     }
     
     package object implicits extends Implicits

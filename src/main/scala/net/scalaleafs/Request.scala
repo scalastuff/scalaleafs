@@ -11,16 +11,6 @@
 package net.scalaleafs
 
 /**
- * An initial request is created for each http request but shared for each subsequent callback.
- */
-class InitialRequest(val session : Session, val configuration : Configuration, private[scalaleafs] var _url : Url) {
-  private[scalaleafs] var _headContributionKeys : Set[String] = Set.empty
-  private[scalaleafs] val urlManager = new UrlManager
-  
-  lazy val resourceBase = _url.context.copy(path = _url.context.path ++ session.server.resourcePath)
-}
-
-/**
  * A request is created for each http request, including both the initial page request and the subsequent callback calls.
  */
 class Request(val initialRequest : InitialRequest, val isInitialRequest : Boolean) {
@@ -40,10 +30,13 @@ class Request(val initialRequest : InitialRequest, val isInitialRequest : Boolea
    */
   def url = initialRequest._url
   
+  def tail = UrlTail(url)
+  
   /**
    * Changes the browser url without a page refresh.
    */
-  def changeUrl(uri : String) : Unit = changeUrl(initialRequest._url.resolve(uri))
+  def changeUrl(uri : String) : Unit = 
+    changeUrl(initialRequest._url.resolve(uri))
 
   /**
    * Changes the browser url without a page refresh.
