@@ -14,6 +14,7 @@ import scala.xml.NodeSeq
 import scala.xml.Elem
 import java.util.UUID
 import java.lang.ref.WeakReference
+import scala.collection.mutable.ArrayBuffer
 
 /**
  * A Var is a wrapper for a mutable value. One can listen for changes, or map a Var to other Vars that become
@@ -21,8 +22,9 @@ import java.lang.ref.WeakReference
  * the Var changes (or one of the Vars it depends on), the transformation is performed again. The piece of 
  * XML that was created by the transformation is sent to the browser using a ReplaceHtml JavaScript command.
  */
-trait Var[A] { thisVar =>
-  private[this] val listeners = new DisposableList[VarListener[A]]
+trait Var[A] extends Disposable { thisVar =>
+  class VarListener(val notifyChanged : A => Unit) extends Disposable 
+  private[this] val listeners = new DisposableList[VarListener]
   protected[this] var value : A 
   
   /**
@@ -52,88 +54,77 @@ trait Var[A] { thisVar =>
   /**
    * Registers a change listener for this var.
    */
-  def onChange(f : A => Unit) : VarListener[A] = 
-    listeners.add(new VarListener[A](f))
+  private[scalaleafs2] def onChange(f : A => Unit) : Disposable = 
+    listeners.add(new VarListener(f))
   
+  private[scalaleafs2] def dispose = 
+    listeners.clear
+    
   /**
    * Maps this var to another one.
+   * Support both explicit and implicit disposals.
    */
   def map[B](f : A => B) : Var[B] = {
-    val targetVar = new Var[B] {  
+    val targetVar : Var[B] = new Var[B] {  
       var value = f(thisVar.get)
+      override def dispose = {
+        super.dispose
+        listener.dispose
+      }
     }
-    listeners.add(new VarListener[A](a => targetVar.set(f(a))) {
+    val listener = listeners.add(new VarListener(a => targetVar.set(f(a))) {
       val targetRef = new WeakReference[Any](targetVar)
       override def shouldBeDisposed = targetRef.get == null
     })
     targetVar
   }
-  
-  def bind(f : => Placeholder[A] => RenderNode) = new ExpectElemWithIdRenderNode {
-    var lastElem : Elem = null
-    var lastId : String = null
-    var child : RenderNode = null
-    var dirty : Boolean = false
-    var placeholder : Placeholder[A] = null
-    val listener = onChange(_ => dirty = true)
-    def render(context : Context, elem : Elem, id : String) : NodeSeq = {
-      lastElem = elem
-      lastId = id
-      if (child == null) {
-        placeholder = new Placeholder[A](thisVar)
-        child = f(placeholder)
-      }
-      child.render(context, elem)
-    }
-    override def dispose(context : Context) = {
-      super.dispose(context)
-      listener.dispose
-    }
-    
-    def renderChanges(context : Context) {
-      if (dirty && child != null) context.addEagerPostRequestJs(ReplaceHtml(lastId, child.render(context, lastElem)))
-      else super.renderChanges(context)
-    }
-
-    def children = child match { 
-      case null => Seq.empty
-      case child => Seq(child)
-    }
-  }
 }
 
-class IterableVar[A <: Iterable[A]] extends Var[A] { thisVar =>
+class BoundVar[A, B](theVar : Var[A], getValues : => Iterable[B], f : => Placeholder[B] => RenderNode) extends ExpectElemWithIdRenderNode {
+  var lastElem : Elem = null
+  var lastId : String = null
+  var child : RenderNode = null
+  var dirty : Boolean = false
+  var maxSize : Int = 0
+  var placeholder : Placeholder[A] = null
+  val children = ArrayBuffer[RenderNode]()
+  val vars = ArrayBuffer[Var[B]]()
+  val listener = theVar.onChange(_ => dirty = true)
+  def render(context : Context, elem : Elem, id : String) : NodeSeq = {
+    lastElem = elem
+    lastId = id
+    dirty = false
+    val values = getValues.toSeq
+    while (children.size < values.size) 
+      children += f(new Placeholder[B](values, children.size, mkVar)) // change
+    children.dropRight(children.size - values.size)
+    if (maxSize < children.size)
+      maxSize = children.size
+    children.zipWithIndex.flatMap {
+      case (child, 0) => child.render(context, elem) 
+      case (child, i) => child.render(context, XmlHelpers.setId(elem, id + "-" + i)) 
+    } 
+  }
   
-  def bindAll(f : => Placeholder[A] => RenderNode) = new ExpectElemWithIdRenderNode {
-    var lastElem : Elem = null
-    var lastId : String = null
-    var child : RenderNode = null
-    var dirty : Boolean = false
-    var placeholder : Placeholder[A] = null
-    val listener = onChange(_ => dirty = true)
-    def render(context : Context, elem : Elem, id : String) : NodeSeq = {
-      lastElem = elem
-      lastId = id
-      if (child == null) {
-        placeholder = new Placeholder[A](thisVar)
-        child = f(placeholder)
-      }
-      child.render(context, elem)
-    }
-    override def dispose(context : Context) = {
-      super.dispose(context)
-      listener.dispose
-    }
-    
-    def renderChanges(context : Context) {
-      if (dirty && child != null) context.addEagerPostRequestJs(ReplaceHtml(lastId, child.render(context, lastElem)))
-      else super.renderChanges(context)
-    }
-
-    def children = child match { 
-      case null => Seq.empty
-      case child => Seq(child)
-    }
+  override def dispose(context : Context) = {
+    super.dispose(context)
+    listener.dispose
+    vars.foreach(_.dispose)
+  }
+  
+  def renderChanges(context : Context) {
+    if (dirty && lastElem != null) 
+      context.addEagerPostRequestJs(
+        if (maxSize > 1) RemoveNextSiblings(lastId, lastId) & ReplaceHtml(lastId, render(context, lastElem)) 
+        else ReplaceHtml(lastId, render(context, lastElem)))
+    else 
+      super.renderChanges(context)
+  }
+  
+  def mkVar = { (index : Int) =>
+    val newVar = theVar.map(_ => getValues.toSeq(index)) 
+    vars += newVar
+    newVar
   }
 }
 
@@ -141,7 +132,22 @@ object Var {
 
   def apply[A](initialValue : A) = new Var[A] {
     var value = initialValue
-  } 
+  }
+  
+  implicit class RichVar[A](val theVar : Var[A]) extends AnyVal {
+    def bind(f : => Placeholder[A] => RenderNode) = 
+      new BoundVar[A, A](theVar, Iterable(theVar.get), f)
+  }
+  
+  implicit class RichOptionVar[A](val theVar : Var[_ <: Option[A]]) extends AnyVal {
+    def bindAll(f : => Placeholder[A] => RenderNode) = 
+      new BoundVar(theVar, theVar.get, f)
+  }
+  
+  implicit class RichIterableVar[A](val theVar : Var[_ <: Iterable[A]]) extends AnyVal {
+    def bindAll(f : => Placeholder[A] => RenderNode) = 
+      new BoundVar(theVar, theVar.get, f)
+  }
 }
 
-class VarListener[A](val notifyChanged : A => Unit) extends Disposable 
+

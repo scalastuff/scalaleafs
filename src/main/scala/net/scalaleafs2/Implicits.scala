@@ -18,7 +18,8 @@ trait Implicits {
   implicit class RichAny[A](a : => A) {
     def bind(f : => Placeholder[A] => RenderNode) : RenderNode = {
       new RenderNode {
-        val placeholder = new Placeholder[A]
+        val values = ArrayBuffer[A]()
+        val placeholder = new Placeholder[A](values, 0)
         var child : RenderNode = null
         override def apply(context : Context, xml : NodeSeq) : NodeSeq = {
           placeholder.set(a)

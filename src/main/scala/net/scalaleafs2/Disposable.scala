@@ -28,6 +28,11 @@ class DisposableList[A <: Disposable] extends Disposable {
     a
   }
   
+  def clear {
+    next = None
+    prev = None
+  }
+  
   def foreach(f : A => Unit) = {
     var a = next
     while (a.isDefined) {

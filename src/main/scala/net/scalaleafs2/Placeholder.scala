@@ -4,17 +4,12 @@ import implicits._
 import scala.xml.NodeSeq
 
 object Placeholder {
-  implicit def toA[A](e : Placeholder[A]) = e.v.get
+  implicit def toA[A](e : Placeholder[A]) : A = e.get
+  implicit def toVar[A](e : Placeholder[A]) : Var[A] = e.toVar
 }
 
-class Placeholder[A](val v : Var[A]) 
-
-object Main extends App {
-  val x = "X"
-  val t = x.bind { e => 
-    println("Running Transformation")
-    new RenderNode {
-      override def apply(context : Context, xml : NodeSeq) = xml
-    }
-  }
+class Placeholder[A](values : => Seq[A], index : Int, mkVar : Int => Var[A]) {
+  def get = values(index)
+  lazy val toVar = mkVar(index)
 }
+
