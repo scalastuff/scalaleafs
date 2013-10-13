@@ -25,7 +25,7 @@ object JSExp {
 
 trait JSExp {
   def toCmd = toString match {
-    case "" => Noop
+    case "" => JsNoop
     case s => new JSRawCmd(s + ";")
   }
 }
@@ -37,11 +37,12 @@ object JsConst {
 
 object JSCmd {
   def apply(cmd : String) = new JSRawCmd(cmd)
-  implicit def toNoop(unit : Unit) : JSCmd = Noop
+  implicit def toNoop(unit : Unit) : JSCmd = JsNoop
   implicit def toText(cmd : JSCmd) = Text(cmd.toString)
 }
 
 trait JSCmd {
+  def & (cmd : JsNoop) : JSCmd = this
   def & (cmd : JSCmd) : JSCmd = new JSCmdSeq(toSeq ++ cmd.toSeq)
   def toSeq = Seq(this)
 }
@@ -63,10 +64,13 @@ case class JsReturn(value : JSExp) extends JSRawCmd("return " + value + ";")
 object JsReturnFalse extends JsReturn(JsConst(false))
 object JsReturnTrue extends JsReturn(JsConst(true))
 
-case object Noop extends JSRawCmd("") {
+
+class JsNoop extends JSRawCmd("") {
   override def & (cmd : JSCmd) : JSCmd = cmd
   override def toSeq = Seq.empty
 }
+
+case object JsNoop extends JsNoop
 
 case class ReplaceHtml(id : String, xml : NodeSeq) extends JSRawCmd("leafs.replaceHtml('" + id + "', \"" + XmlHelpers.escape(xml.toString) + "\");")
 case class RemoveNextSiblings(id : String, idBase : String) extends JSRawCmd("leafs.removeNextSiblings(\"" + id + "\", \"" + idBase + "\");")

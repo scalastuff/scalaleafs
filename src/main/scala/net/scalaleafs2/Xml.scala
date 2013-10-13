@@ -12,27 +12,30 @@ package net.scalaleafs2
 
 import scala.xml.NodeSeq
 import scala.xml.Elem
+import scala.xml.Text
+import scala.concurrent.Future
 
 object Xml extends Xml
 
 trait Xml {
   
-  def mkElem(cssConstructor : CssConstructor) = new ElemRenderNode with RenderLeaf {
+  def mkElem(cssConstructor : CssConstructor) = new SyncRenderNode {
     def render(context : Context, xml : NodeSeq) = 
       cssConstructor(xml)
   }
   
-  def mkElem(cssConstructor : CssConstructor, condition : => Boolean) = new RenderLeaf {
+  def mkElem(cssConstructor : CssConstructor, condition : => Boolean) = new RenderNode {
     def render(context : Context, xml : NodeSeq) = 
       if (condition) cssConstructor(xml)
       else xml
+    def children = Nil
   }
 
-  def mkElem(cssConstructor : CssConstructor, modifier : ElemModifier) = new ElemRenderNode {
+  def mkElem(cssConstructor : CssConstructor, modifier : ElemModifier) = new RenderNode {
     def render(context : Context, xml : NodeSeq) = 
       modifier.render(context, cssConstructor(xml))
       
-    def children = Seq(modifier)
+    def children = Iterable(modifier)
   }
 
   def mkElem(cssConstructor : CssConstructor, modifier : ElemModifier, condition : => Boolean) = new RenderNode {
@@ -40,7 +43,21 @@ trait Xml {
       if (condition) modifier.render(context, cssConstructor(xml))
       else xml
       
-    def children = Seq(modifier)
+    def children = Iterable(modifier)
+  }
+  
+  /**
+   * Transformation that replaces the input xml with some static text.
+   */
+  def replaceWith(text : String) : RenderNode = 
+    replaceWith(Text(text))
+
+  /**
+   * Transformation that replaces the input xml with some static xml.
+   */
+  def replaceWith(xml : NodeSeq) : RenderNode = new RenderNode {
+    def render(context : Context, xml : NodeSeq) = xml
+    def children = Nil
   }
   
   /**
@@ -49,15 +66,15 @@ trait Xml {
    * @see CssConstructor
    */
   def replaceElem(cssConstructor : CssConstructor) : ElemModifier =  
-    new ElemModifier((context, elem) => cssConstructor(elem.child), true) 
+    new ConditionalElemModifier((context, elem) => cssConstructor(elem.child), true) 
   
   def replaceElem(cssConstructor : CssConstructor, condition : => Boolean) : ElemModifier = 
-    new ElemModifier((context, elem) => cssConstructor(elem.child), condition) 
+    new ConditionalElemModifier((context, elem) => cssConstructor(elem.child), condition) 
   
-  def replaceElem(cssConstructor : CssConstructor, modifier : ElemModifier) : ElemRenderNode = 
-    new ElemModifier((context, elem) => cssConstructor(elem.child), true) & modifier 
+  def replaceElem(cssConstructor : CssConstructor, modifier : ElemModifier) : RenderNode = 
+    new ConditionalElemModifier((context, elem) => cssConstructor(elem.child), true) & modifier 
   
-  def replaceElem(cssConstructor : CssConstructor, modifier : ElemModifier, condition : => Boolean) = new ExpectElemRenderNode with ElemRenderNode {
+  def replaceElem(cssConstructor : CssConstructor, modifier : ElemModifier, condition : => Boolean) = new ExpectElemRenderNode {
     def render(context : Context, elem : Elem) : Elem = {
       if (condition) modifier.render(context, cssConstructor(elem.child))
       else elem
@@ -69,75 +86,76 @@ trait Xml {
   /**
    * Transformation that removes the root element of some input xml.
    */
-  def children(condition : => Boolean = true) : ElemRenderNode = new ElemRenderNode {
-    def apply(context : Context, elem : Elem) : NodeSeq = 
+  def children(condition : => Boolean = true) = new ExpectElemRenderNode {
+    def render(context : Context, elem : Elem) : NodeSeq = 
       if (condition) elem.child
       else elem
+    def children = Nil
   }
   
   /**
    * Transformation that transforms child nodes of some input element.
    */
   def setContent(content : NodeSeq => NodeSeq, condition : => Boolean = true) = 
-    new ElemModifier((context, elem) => XmlHelpers.setContent(elem, content(elem.child)), condition) 
+    new ConditionalElemModifier((context, elem) => XmlHelpers.setContent(elem, content(elem.child)), condition) 
   
   /**
    * Transformation that sets an attribute of some input element.
    */
   def setAttr(attr : String, value : String) : ElemModifier = 
-    new ElemModifier((context, elem) => XmlHelpers.setAttr(elem, attr, value), true) 
+    new ConditionalElemModifier((context, elem) => XmlHelpers.setAttr(elem, attr, value), true) 
   
   def setAttr(attr : String, value : String, condition : => Boolean) : ElemModifier = 
-    new ElemModifier((context, elem) => XmlHelpers.setAttr(elem, attr, value), condition) 
+    new ConditionalElemModifier((context, elem) => XmlHelpers.setAttr(elem, attr, value), condition) 
   
   def setAttr(attr : String, value : JSCmd) : ElemModifier = 
-    new ElemModifier((context, elem) => XmlHelpers.setAttr(elem, attr, value.toString), true) 
+    new ConditionalElemModifier((context, elem) => XmlHelpers.setAttr(elem, attr, value.toString), true) 
   
   /**
    * Transformation that replaces child nodes of some input element with a text node.
    */
   def setText(value : String, condition : => Boolean = true) = 
-    new ElemModifier((context, elem) => XmlHelpers.setText(elem, value), condition) 
+    new ConditionalElemModifier((context, elem) => XmlHelpers.setText(elem, value), condition) 
   
   /**
    * Transformation that removes an attribute from some input element.
    */
   def removeAttr(attr : String, value : String, condition : => Boolean = true) = 
-    new ElemModifier((context, elem) => XmlHelpers.removeAttr(elem, attr), condition) 
+    new ConditionalElemModifier((context, elem) => XmlHelpers.removeAttr(elem, attr), condition) 
   
   /**
    * Transformation that adds a value to an attribute of some input element.
    */
   def addAttrValue(attr : String, value : String, condition : => Boolean = true) = 
-    new ElemModifier((context, elem) => XmlHelpers.addAttrValue(elem, attr, value), condition) 
+    new ConditionalElemModifier((context, elem) => XmlHelpers.addAttrValue(elem, attr, value), condition) 
   
   /**
    * Transformation that removes a value from an attribute of some input element.
    */
   def removeAttrValue(attr : String, value : String, condition : => Boolean = true) = 
-    new ElemModifier((context, elem) => XmlHelpers.removeAttrValue(elem, attr, value), condition) 
+    new ConditionalElemModifier((context, elem) => XmlHelpers.removeAttrValue(elem, attr, value), condition) 
   
   /**
    * Transformation that adds a value to an attribute of some input element.
    */
   def setId(id : String, condition : => Boolean = true) = 
-    new ElemModifier((context, elem) => XmlHelpers.setId(elem, id), condition) 
+    new ConditionalElemModifier((context, elem) => XmlHelpers.setId(elem, id), condition) 
   
   /**
    * Transformation that sets the class attribute of some input element.
    */
   def setClass(className : String, condition : => Boolean = true) = 
-    new ElemModifier((context, elem) => XmlHelpers.setClass(elem, className), condition) 
+    new ConditionalElemModifier((context, elem) => XmlHelpers.setClass(elem, className), condition) 
   
   /**
    * Transformation that adds a class to some input element.
    */
   def addClass(className : String, condition : => Boolean = true) = 
-    new ElemModifier((context, elem) => XmlHelpers.addClass(elem, className), condition) 
+    new ConditionalElemModifier((context, elem) => XmlHelpers.addClass(elem, className), condition) 
   
   /**
    * Transformation that removes a class from some input element.
    */
   def removeClass(className : String, condition : => Boolean = true) = 
-    new ElemModifier((context, elem) => XmlHelpers.removeClass(elem, className), condition) 
+    new ConditionalElemModifier((context, elem) => XmlHelpers.removeClass(elem, className), condition) 
 }

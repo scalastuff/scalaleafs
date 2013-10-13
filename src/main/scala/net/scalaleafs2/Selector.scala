@@ -2,6 +2,9 @@ package net.scalaleafs2
 
 import scala.xml.NodeSeq
 import scala.xml.Elem
+import scala.concurrent.Future
+import scala.collection.mutable.ArrayBuffer
+import scala.xml.Node
 
 
 /**
@@ -10,17 +13,6 @@ import scala.xml.Elem
  * a matched element are searched using the nested selector.
  */
 class Selector(val matches : Elem => Boolean, val recursive : Boolean = false, val nested : Option[Selector] = None) 
-
-/**
- * Render node that uses a selector to transform xml.
- */
-class SelectorRenderNode(selector : Selector, child : RenderNode) {
-  override def apply(context : Context, xml : NodeSeq) = 
-    Selector.transform(context, xml, selector, child.render)
-    
-  override def children = 
-    Seq(child)
-} 
 
 object Selector {
   /**
@@ -62,5 +54,101 @@ object Selector {
     if (changed) builder.result
     else xml
   }
+
+  val changed = <h1>Changed</h1>
+  val unchanged = <h1>Unchanged</h1>
   
+}
+
+class SynchronousSelectorRenderNode(selector : Selector, child : SyncRenderNode) extends SyncRenderNode {
+  override def render(context : Context, xml : NodeSeq) = 
+    Selector.transform(context, xml, selector, child.render)
+} 
+
+/**
+ * Render node that uses a selector to transform xml.
+ */
+class SelectorRenderNode(selector : Selector, child : RenderNode) extends RenderNode {
+  
+  var elements = ArrayBuffer[Elem]()
+  
+  override def renderAsync(context : Context, xml : NodeSeq) : Future[NodeSeq] = {
+    import context.executionContext
+    
+    elements.clear
+
+    try {
+      def findMatchedElements(xml : NodeSeq, selector : Selector) : Boolean = {
+        xml match {
+          case elem : Elem =>
+            val index = elements.size
+            elements += Selector.unchanged
+            val matches = selector.matches(elem) 
+            if (matches && selector.nested == None) {
+              elements(index) = elem
+              false
+            }
+            else {
+              if (findMatchedElements(elem.child, if (matches) selector.nested.get else selector)) {
+                elements(index) = Selector.changed
+                true
+              } else {
+                elements.remove(index + 1, elements.size - index)
+                false
+              }
+            }
+          case node : Node =>  
+            false
+          case children =>
+            var changed = false
+            children foreach { child =>
+              if (findMatchedElements(child, selector))
+                changed = true
+            }
+            changed
+        }
+      }
+  
+      // Find elements to be replaced
+      if (!findMatchedElements(xml, selector)) {
+        
+        // wait for all futures
+        Future.sequence(elements.filter(elem => (elem ne Selector.changed) && (elem ne Selector.unchanged)).map(child.renderAsync(context, _))).map {
+          replacements =>
+            
+            var elementIndex = 0
+            var replacementIndex = 0
+    
+            def build(xml : NodeSeq) : NodeSeq = {
+              xml match {
+                case elem : Elem =>
+                  val elementAtIndex = elements(elementIndex)
+                  elementIndex += 1
+                  if (elementAtIndex eq elem) {
+                    try replacements(replacementIndex)
+                    finally replacementIndex += 1
+                  } else if (elementAtIndex eq Selector.changed) {
+                    elem.copy(child = build(elem.child))
+                  } else if (elementAtIndex eq Selector.unchanged) {
+                    elem
+                  } else {
+                    throw new IllegalStateException
+                  }
+                case node : Node =>
+                  node
+                case children =>
+                  children.flatMap(build)
+              }
+            }
+            
+            build(xml)
+        }
+      }
+      
+      // No change? Return input.
+      else Future.successful(xml)
+    } finally {
+      elements.clear
+    }
+  }
 }

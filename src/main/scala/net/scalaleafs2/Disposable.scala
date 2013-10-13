@@ -7,13 +7,12 @@ import scala.collection.TraversableLike
 trait Disposable {
   private[scalaleafs2] var next : Option[Disposable] = None
   private[scalaleafs2] var prev : Option[Disposable] = None
-  def dispose = {
+  protected[scalaleafs2] def disposeFromList = {
     if (next.isDefined)
       next.get.prev = prev
     if (prev.isDefined)
       prev.get.next = next
   }
-  protected[scalaleafs2] def shouldBeDisposed : Boolean = false
 }
 
 class DisposableList[A <: Disposable] extends Disposable {
@@ -37,10 +36,7 @@ class DisposableList[A <: Disposable] extends Disposable {
     var a = next
     while (a.isDefined) {
       val v = a.get
-      if (v.shouldBeDisposed) 
-        v.dispose
-      else 
-        f(v.asInstanceOf[A])
+      f(v.asInstanceOf[A])
       a = v.next
     }
   }

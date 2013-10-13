@@ -57,22 +57,24 @@ trait Var[A] extends Disposable { thisVar =>
   private[scalaleafs2] def onChange(f : A => Unit) : Disposable = 
     listeners.add(new VarListener(f))
   
-  private[scalaleafs2] def dispose = 
+  protected[scalaleafs2] override def dispose = {
+    super.dispose
     listeners.clear
+  } 
     
   /**
    * Maps this var to another one.
    * Support both explicit and implicit disposals.
    */
   def map[B](f : A => B) : Var[B] = {
-    val targetVar : Var[B] = new Var[B] {  
+    lazy val targetVar : Var[B] = new Var[B] {  
       var value = f(thisVar.get)
       override def dispose = {
         super.dispose
         listener.dispose
       }
     }
-    val listener = listeners.add(new VarListener(a => targetVar.set(f(a))) {
+    lazy val listener = listeners.add(new VarListener(a => targetVar.set(f(a))) {
       val targetRef = new WeakReference[Any](targetVar)
       override def shouldBeDisposed = targetRef.get == null
     })
@@ -80,13 +82,23 @@ trait Var[A] extends Disposable { thisVar =>
   }
 }
 
-class BoundVar[A, B](theVar : Var[A], getValues : => Iterable[B], f : => Placeholder[B] => RenderNode) extends ExpectElemWithIdRenderNode {
+object VarPlaceholder {
+  implicit def toA[A](e : VarPlaceholder[A]) : A = e.get
+  implicit def toVar[A](p : VarPlaceholder[A]) : Var[A] = p.toVar
+}
+
+class VarPlaceholder[A](initialValue : A, mkVar : => Var[A]) {
+  private[scalaleafs2] var value : A = initialValue
+  def get : A = value
+  lazy val toVar : Var[A] = mkVar
+}
+
+class BoundVar[A, B](theVar : Var[A], getValues : => Iterable[B], f : => VarPlaceholder[B] => RenderNode) extends ExpectElemWithIdRenderNode {
   var lastElem : Elem = null
   var lastId : String = null
-  var child : RenderNode = null
   var dirty : Boolean = false
   var maxSize : Int = 0
-  var placeholder : Placeholder[A] = null
+  val placeholders = ArrayBuffer[VarPlaceholder[B]]()
   val children = ArrayBuffer[RenderNode]()
   val vars = ArrayBuffer[Var[B]]()
   val listener = theVar.onChange(_ => dirty = true)
@@ -95,14 +107,22 @@ class BoundVar[A, B](theVar : Var[A], getValues : => Iterable[B], f : => Placeho
     lastId = id
     dirty = false
     val values = getValues.toSeq
-    while (children.size < values.size) 
-      children += f(new Placeholder[B](values, children.size, mkVar)) // change
+    placeholders.dropRight(placeholders.size - values.size)
     children.dropRight(children.size - values.size)
+    while (children.size < values.size)  {
+      val index = children.size
+      val placeholder = new VarPlaceholder[B](values(index), mkVar(index)) 
+      placeholders += placeholder
+      children += f(placeholder)
+    }
     if (maxSize < children.size)
       maxSize = children.size
     children.zipWithIndex.flatMap {
-      case (child, 0) => child.render(context, elem) 
-      case (child, i) => child.render(context, XmlHelpers.setId(elem, id + "-" + i)) 
+      case (child, index) =>
+        placeholders(index).value = values(index)
+        child.render(context, 
+          if (index == 0) elem 
+          else XmlHelpers.setId(elem, id + "-" + index)) 
     } 
   }
   
@@ -112,16 +132,15 @@ class BoundVar[A, B](theVar : Var[A], getValues : => Iterable[B], f : => Placeho
     vars.foreach(_.dispose)
   }
   
-  def renderChanges(context : Context) {
+  override def renderChanges(context : Context) : JSCmd = {
     if (dirty && lastElem != null) 
-      context.addEagerPostRequestJs(
         if (maxSize > 1) RemoveNextSiblings(lastId, lastId) & ReplaceHtml(lastId, render(context, lastElem)) 
-        else ReplaceHtml(lastId, render(context, lastElem)))
+        else ReplaceHtml(lastId, render(context, lastElem))
     else 
       super.renderChanges(context)
   }
   
-  def mkVar = { (index : Int) =>
+  def mkVar(index : Int) = {
     val newVar = theVar.map(_ => getValues.toSeq(index)) 
     vars += newVar
     newVar
@@ -135,17 +154,17 @@ object Var {
   }
   
   implicit class RichVar[A](val theVar : Var[A]) extends AnyVal {
-    def bind(f : => Placeholder[A] => RenderNode) = 
+    def bind(f : => VarPlaceholder[A] => RenderNode) = 
       new BoundVar[A, A](theVar, Iterable(theVar.get), f)
   }
   
   implicit class RichOptionVar[A](val theVar : Var[_ <: Option[A]]) extends AnyVal {
-    def bindAll(f : => Placeholder[A] => RenderNode) = 
+    def bindAll(f : => VarPlaceholder[A] => RenderNode) = 
       new BoundVar(theVar, theVar.get, f)
   }
   
   implicit class RichIterableVar[A](val theVar : Var[_ <: Iterable[A]]) extends AnyVal {
-    def bindAll(f : => Placeholder[A] => RenderNode) = 
+    def bindAll(f : => VarPlaceholder[A] => RenderNode) = 
       new BoundVar(theVar, theVar.get, f)
   }
 }

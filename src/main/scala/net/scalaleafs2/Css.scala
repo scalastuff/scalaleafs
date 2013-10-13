@@ -54,13 +54,8 @@ object CssSelector {
   }
 }
 
-class UnparsedCssSelector(val s : String) {
-  def #> (text : String) = new SelectorRenderNode(CssSelector.getOrParse(s), new ElemRenderNode {
-    def render(context : Context, elem : Elem) = Text(text)
-  })
-  def #> (xml : NodeSeq) = new SelectorRenderNode(CssSelector.getOrParse(s), new ElemRenderNode {
-    def render(context : Context, elem : Elem) = xml
-  })
+class UnparsedCssSelector(val s : String) extends AnyVal {
+  def #> (node : SyncRenderNode) = new SynchronousSelectorRenderNode(CssSelector.getOrParse(s), node) 
   def #> (node : RenderNode) = new SelectorRenderNode(CssSelector.getOrParse(s), node) 
 }
 

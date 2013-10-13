@@ -1,8 +1,9 @@
 package net.scalaleafs2
 
+import scala.concurrent.ExecutionContext
+
 class Context {
 
   def debugMode = true
-  
-  def addEagerPostRequestJs(js : JSCmd)
+  implicit def executionContext : ExecutionContext = null
 }
