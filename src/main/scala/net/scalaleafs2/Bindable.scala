@@ -87,68 +87,69 @@ class AsyncBoundRenderNode[A](bindable : AsyncBindable[A], f : Placeholder[A] =>
   var version : Int = -1
   
   def renderAsync(context : Context, elem : Elem, id : String) : Future[NodeSeq] = {
+    import context.executionContext
     lastElem = elem
     lastId = id
     version = bindable.version
-    child.renderAsync(context, lastElem)
+    bindable.get(context).flatMap { value =>
+      placeholder.value = value
+      child.renderAsync(context, elem)
+    }
   }
   
   def renderChangesAsync(context : Context) : Future[JSCmd] = {
     import context.executionContext
     if (version != bindable.version)
-      bindable.get(context).flatMap { value =>
-        placeholder.value = value
-        renderAsync(context, lastElem).map { xml =>
-          ReplaceHtml(lastId, xml)
-        }
-    } else {
+      renderAsync(context, lastElem).map { xml =>
+        ReplaceHtml(lastId, xml)
+      }
+    else
       child.renderChangesAsync(context)
-    }
   }
 }
 
 class AsyncBoundAllRenderNode[B, A <: Iterable[B]](bindable : AsyncBindable[A], f : Placeholder[B] => RenderNode) extends ExpectElemWithIdAsyncRenderNode {
   
-  val placeholders = ArrayBuffer[Placeholder[A]]()
+  val placeholders = ArrayBuffer[Placeholder[B]]()
   val children = ArrayBuffer[RenderNode]()
   var lastElem : Elem = null
   var lastId : String = ""
   var version : Int = -1
   
   def renderAsync(context : Context, elem : Elem, id : String) : Future[NodeSeq] = {
+    import context.executionContext
     lastElem = elem
     lastId = id
     version = bindable.version
-    placeholders.dropRight(placeholders.size - values.size)
-    children.dropRight(children.size - values.size)
-    while (children.size < values.size)  {
-      val index = children.size
-      val placeholder = new Placeholder[B](values(index)) 
-      placeholders += placeholder
-      children += f(placeholder)
+    bindable.get(context).flatMap {
+      values : Iterable[B] =>
+	    placeholders.remove(children.size, placeholders.size - values.size)
+	    children.remove(children.size, children.size - values.size)
+	    while (children.size < values.size)  {
+	      val placeholder = new Placeholder[B](null.asInstanceOf[B]) 
+	      val child = f(placeholder)
+	      placeholders += placeholder
+	      children += child
+	    }
+	    Future.sequence (
+	      children.zip(values).zipWithIndex.map {
+  	      case ((child, value), index) =>
+  	        placeholders(index).value = value
+  	        child.renderAsync(context, 
+  	          if (index == 0) elem 
+  	          else XmlHelpers.setId(elem, id + "-" + index)) 
+  	    } 
+	    ).map(_.flatten)
     }
-    if (maxSize < children.size)
-      maxSize = children.size
-    children.zipWithIndex.flatMap {
-      case (child, index) =>
-        placeholders(index).value = values(index)
-        child.render(context, 
-          if (index == 0) elem 
-          else XmlHelpers.setId(elem, id + "-" + index)) 
-    } 
-    child.renderAsync(context, lastElem)
   }
   
   def renderChangesAsync(context : Context) : Future[JSCmd] = {
       import context.executionContext
       if (version != bindable.version)
-        bindable.get(context).flatMap { value =>
-        placeholder.value = value
         renderAsync(context, lastElem).map { xml =>
-        ReplaceHtml(lastId, xml)
+          ReplaceHtml(lastId, xml)
         }
-      } else {
-        child.renderChangesAsync(context)
-      }
+      else
+        Future.fold(children.map(_.renderChangesAsync(context)))(JsNoop.asInstanceOf[JSCmd])(_ & _)
   }
 }
