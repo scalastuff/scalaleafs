@@ -13,19 +13,13 @@ import scala.annotation.tailrec
  */
 trait RenderNode {
 
-  def isAsync : Boolean
-  
-  def render(context : Context, xml : NodeSeq) : NodeSeq
-  
-  def renderChanges(context : Context) : JSCmd
-
   def renderAsync(context : Context, xml : NodeSeq) : Future[NodeSeq]
   
   def renderChangesAsync(context : Context) : Future[JSCmd]
   
-  def show(context : Context)
+  def show(context : Context) : Unit
   
-  def hide(context : Context)
+  def hide(context : Context) : Unit
   
   def dispose(context : Context) : Unit
   
@@ -33,17 +27,19 @@ trait RenderNode {
    * Compose with a nested transformation.
    * Nested transformations are applied before this transformation.
    */
-  def apply(node : RenderNode) : RenderNode
+  def apply(node : RenderNode) : RenderNode =
+    new CompoundRenderNode(node :: this :: Nil)
   
   /**
    * Compose with a concatenated transformation.
    * Concatenated transformations are applied after this transformation.
    */
-  def & (node : RenderNode) : RenderNode
+  def & (node : RenderNode) : RenderNode =
+    new CompoundRenderNode(this :: node :: Nil)  
 }
 
 object RenderNode {
-  @tailrec
+  
   def renderAsync(context : Context, xml : NodeSeq, nodes : List[RenderNode]) : Future[NodeSeq] =  
     nodes match {
       case Nil => Future.successful(xml)
@@ -59,26 +55,28 @@ object RenderNode {
     }  
 }
 
-trait AsyncRenderNode extends RenderNode {
-  
-  final def isAsync = true;
-  
-  final def render(context : Context, xml : NodeSeq) : NodeSeq = ???
-  
-  final def renderChanges(context : Context) : JSCmd = ???
-  
-  def apply(node : RenderNode) : RenderNode =
-    new CompoundAsyncRenderNode(node :: this :: Nil)
-  
-  /**
-   * Compose with a concatenated transformation.
-   * Concatenated transformations are applied after this transformation.
-   */
-  def & (node : RenderNode) : RenderNode =
-    new CompoundAsyncRenderNode(this :: node :: Nil)
+trait NoChildRenderNode {
+  def dispose(context : Context) : Unit = Unit
+  def show(context : Context) : Unit = Unit
+  def hide(context : Context) : Unit = Unit
 }
 
-final class CompoundAsyncRenderNode(val children: List[RenderNode]) extends AsyncRenderNode {
+trait SingleChildRenderNode {
+  def child : RenderNode
+  def dispose(context : Context) = child.dispose(context)
+  def show(context : Context) = child.show(context)
+  def hide(context : Context) = child.hide(context)
+}
+
+trait MultiChildrenRenderNode {
+  def children : Iterable[_ <: RenderNode]
+  def dispose(context : Context) = children.foreach(_.dispose(context))
+  def show(context : Context) = children.foreach(_.show(context))
+  def hide(context : Context) = children.foreach(_.hide(context))
+}
+
+
+final class CompoundRenderNode(val children: List[RenderNode]) extends RenderNode with MultiChildrenRenderNode {
   def renderAsync(context : Context, xml : NodeSeq) = 
     RenderNode.renderAsync(context, xml, children)
 
@@ -86,19 +84,14 @@ final class CompoundAsyncRenderNode(val children: List[RenderNode]) extends Asyn
     RenderNode.renderChangesAsync(context, children)
     
   override def apply(node : RenderNode) : RenderNode = 
-    new CompoundAsyncRenderNode(node :: children)
+    new CompoundRenderNode(node :: children)
 
   override def & (node : RenderNode) : RenderNode =
-    new CompoundAsyncRenderNode(children ++ List(node))
-  
-  def dispose(context : Context) =
-    children.foreach(_.dispose(context))
+    new CompoundRenderNode(children ++ List(node))
 }
 
 trait SyncRenderNode extends RenderNode {
 
-  final def isAsync = false;
-  
   final def renderAsync(context : Context, xml : NodeSeq) : Future[NodeSeq] = 
     Future.successful(render(context, xml)) 
     
@@ -109,16 +102,24 @@ trait SyncRenderNode extends RenderNode {
   
   def renderChanges(context : Context) : JSCmd
   
-  def apply(node : RenderNode) : RenderNode =
-    if (node.isAsync) new CompoundAsyncRenderNode(node :: this :: Nil)
-    else new CompoundSyncRenderNode(node :: this :: Nil)
-
-  def & (node : RenderNode) : RenderNode =
-    if (node.isAsync) new CompoundAsyncRenderNode(this :: node :: Nil)
-    else new CompoundSyncRenderNode(this :: node :: Nil)
+  override def apply(node : RenderNode) : RenderNode = node match {
+    case node : SyncRenderNode => new CompoundSyncRenderNode(node :: this :: Nil)
+    case node => new CompoundRenderNode(node :: this :: Nil)
+  }
+  
+  override def & (node : RenderNode) : RenderNode = node match {
+    case node : SyncRenderNode => new CompoundSyncRenderNode(this :: node :: Nil)
+    case node => new CompoundRenderNode(this :: node :: Nil)
+  }
+  
+  def apply(node : SyncRenderNode) : RenderNode = 
+    new CompoundSyncRenderNode(node :: this :: Nil)
+  
+  def & (node : SyncRenderNode) : RenderNode = 
+    new CompoundSyncRenderNode(this :: node :: Nil)
 }
 
-final class CompoundSyncRenderNode(val children: List[RenderNode]) extends SyncRenderNode {
+final class CompoundSyncRenderNode(val children: List[SyncRenderNode]) extends SyncRenderNode with MultiChildrenRenderNode {
   def render(context : Context, xml : NodeSeq) =
     children.foldLeft(xml)((xml, node) => node.render(context, xml))
 
@@ -130,17 +131,22 @@ final class CompoundSyncRenderNode(val children: List[RenderNode]) extends SyncR
 
   override def & (node : SyncRenderNode) : RenderNode =
     new CompoundSyncRenderNode(children ++ List(node))
-  
-  def dispose(context : Context) =
-    children.foreach(_.dispose(context))
+
+  override def apply(node : RenderNode) : RenderNode =
+    super.apply(node)
+
+  override def & (node : RenderNode) : RenderNode =
+    super.&(node)
 }
 
-object IdentRenderNode extends ElemModifier {
-  override def render(context : Context, xml : NodeSeq) = xml
+object IdentRenderNode extends ElemModifier with NoChildRenderNode {
+  def render(context : Context, elem : Elem) = elem
+  def renderChanges(context: net.scalaleafs2.Context): net.scalaleafs2.JSCmd = JsNoop
   override def & (modifier : ElemModifier) = modifier 
   override def & (node : RenderNode) = node 
   override def apply (modifier : ElemModifier) = modifier
   override def apply (node : RenderNode) = node
+  val modify = (context : Context, elem : Elem) => elem  
 }
 
 /**
@@ -165,7 +171,7 @@ trait HasRenderNode extends RenderNode {
  * If the elem is not an elem, the identity transformation is used.
  * Implementations should override render(context, elem).
  */
-trait ExpectElemAsyncRenderNode extends RenderNode {
+trait ExpectElemRenderNode extends RenderNode {
   def renderAsync(context : Context, xml : NodeSeq) : Future[NodeSeq] = xml match {
     case elem : Elem => renderAsync(context, elem)
     case Seq(elem : Elem) => renderAsync(context, elem)
@@ -174,11 +180,11 @@ trait ExpectElemAsyncRenderNode extends RenderNode {
   def renderAsync(context : Context, elem : Elem) : Future[NodeSeq]
 }
 
-trait ExpectElemSyncRenderNode extends RenderNode {
+trait ExpectElemSyncRenderNode extends SyncRenderNode {
   def render(context : Context, xml : NodeSeq) : NodeSeq = xml match {
-  case elem : Elem => render(context, elem)
-  case Seq(elem : Elem) => render(context, elem)
-  case xml => xml
+    case elem : Elem => render(context, elem)
+    case Seq(elem : Elem) => render(context, elem)
+    case xml => xml
   }
   def render(context : Context, elem : Elem) : NodeSeq
 }
@@ -189,7 +195,7 @@ trait ExpectElemSyncRenderNode extends RenderNode {
  * id, the output element will contain a generated UUID id. 
  * Implementations should override render(context, elem, id).
  */
-trait ExpectElemWithIdAsyncRenderNode extends ExpectElemAsyncRenderNode {
+trait ExpectElemWithIdRenderNode extends ExpectElemRenderNode {
   lazy val generatedId = UUID.randomUUID().toString()
   def renderAsync(context : Context, elem : Elem) : Future[NodeSeq] = 
     XmlHelpers.getId(elem).trim match {
@@ -226,17 +232,24 @@ trait ElemModifier extends ExpectElemSyncRenderNode {
     new CompoundElemModifier(modifier :: this :: Nil)
 }
 
-final class ConditionalElemModifier(val modify : (Context, Elem) => Elem, condition : => Boolean) extends ElemModifier  {
+final class ConditionalElemModifier(val modify : (Context, Elem) => Elem, condition : => Boolean) extends ElemModifier with NoChildRenderNode {
   
   def render(context : Context, elem : Elem) : Elem = 
     if (condition) modify(context, elem) 
     else elem
+    
+  def renderChanges(context : Context) = JsNoop
 }
 
-final class CompoundElemModifier(children : List[ElemModifier]) extends ElemModifier {
-  override def render(context : Context, elem : Elem) : Future[Elem] =
-    Future.successful(children.foldLeft(elem)((elem, child) => child.modify(context, elem)))
+final class CompoundElemModifier(val children : List[ElemModifier]) extends ElemModifier with MultiChildrenRenderNode {
+  val modify = (context : Context, elem : Elem) => elem
 
+  def render(context : Context, elem : Elem) : Elem =
+    children.foldLeft(elem)((elem, child) => child.modify(context, elem))
+
+  def renderChanges(context : Context) =
+    children.foldLeft[JSCmd](JsNoop)((cmd, node) => node.renderChanges(context))
+    
   override def &(modifier : ElemModifier) : ElemModifier = 
     new CompoundElemModifier(children ++ List(modifier))
   

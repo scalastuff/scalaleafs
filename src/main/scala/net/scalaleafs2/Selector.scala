@@ -60,15 +60,18 @@ object Selector {
   
 }
 
-class SynchronousSelectorRenderNode(selector : Selector, child : SyncRenderNode) extends SyncRenderNode {
+class SelectorSyncRenderNode(selector : Selector, val child : SyncRenderNode) extends SyncRenderNode with SingleChildRenderNode {
   override def render(context : Context, xml : NodeSeq) = 
     Selector.transform(context, xml, selector, child.render)
+    
+  override def renderChanges(context : Context) = 
+    child.renderChanges(context)
 } 
 
 /**
  * Render node that uses a selector to transform xml.
  */
-class SelectorRenderNode(selector : Selector, child : RenderNode) extends RenderNode {
+class SelectorRenderNode(selector : Selector, val child : RenderNode) extends RenderNode with SingleChildRenderNode {
   
   var elements = ArrayBuffer[Elem]()
   
@@ -151,4 +154,7 @@ class SelectorRenderNode(selector : Selector, child : RenderNode) extends Render
       elements.clear
     }
   }
+  
+  def renderChangesAsync(context : Context) = 
+    child.renderChangesAsync(context)
 }

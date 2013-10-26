@@ -22,8 +22,8 @@ import org.xml.sax.SAXParseException
  * a bind hook to transform this input to some output.
  * Class-path resources are cached (when not in debug mode) in a JVM-global cache.
  */
-trait Template extends RenderNode {
-  def bind : (Context, NodeSeq) => NodeSeq
+trait Template extends Xml {
+  def render : RenderNode
   def readInput(context : Context) : NodeSeq = 
     Template.template(context, getClass) 
   private var _input : NodeSeq = null
@@ -33,11 +33,17 @@ trait Template extends RenderNode {
     }
     _input
   }
-  def render(context : Context) : NodeSeq = render(context, input(context))
-  abstract override def render(context : Context, xml : NodeSeq) = bind(context, input(context))
+  def renderAsync(context : Context) = 
+    render.renderAsync(context, input(context))
+    
+  def renderChangesAsync(context : Context) = 
+    render.renderChangesAsync(context)
 }
 
 object Template {
+  
+  implicit def toRenderNode(template : {def render : SyncRenderNode; def input(context : Context) : NodeSeq}) : SyncRenderNode = IdentRenderNode
+
   val templateCache = new ConcurrentHashMap[Class[_], NodeSeq]
   def template(context : Context, c : Class[_]) : NodeSeq = {
     var xml = templateCache.get(c)
