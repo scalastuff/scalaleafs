@@ -68,19 +68,19 @@ class AsyncBindableMagnet[A, B](val apply: AsyncBindable[A] => AsyncBindable[B])
 object AsyncBindableMagnet {
   implicit def magnet1[A, B](f : A => Future[B]) = 
     new AsyncBindableMagnet((bindable : AsyncBindable[A]) =>
-      new MappedAsyncDef(bindable, (context:Context) => bindable.getAsync(context).flatMap(f)(context.executionContext)))
+      new MappedAsyncDef(bindable, (context: Context) => bindable.getAsync(context).flatMap(f)(context.executionContext)))
   
   implicit def magnet2[A, B](f : A => B) = 
     new AsyncBindableMagnet((bindable : AsyncBindable[A]) =>
-      new MappedAsyncDef(bindable, (context:Context) => bindable.getAsync(context).map(f)(context.executionContext)))
+      new MappedAsyncDef(bindable, (context: Context) => bindable.getAsync(context).map(f)(context.executionContext)))
   
   implicit def magnet3[A, B](f : Context => A => Future[B]) = 
     new AsyncBindableMagnet((bindable : AsyncBindable[A]) =>
-      new MappedAsyncDef(bindable, (context:Context) => bindable.getAsync(context).flatMap(f(context))(context.executionContext)))
+      new MappedAsyncDef(bindable, (context: Context) => bindable.getAsync(context).flatMap(f(context))(context.executionContext)))
   
   implicit def magnet4[A, B](f : Context => A => B) = 
     new AsyncBindableMagnet((bindable : AsyncBindable[A]) =>
-      new MappedAsyncDef(bindable, (context:Context) => bindable.getAsync(context).map(f(context))(context.executionContext)))
+      new MappedAsyncDef(bindable, (context: Context) => bindable.getAsync(context).map(f(context))(context.executionContext)))
 } 
 
 trait AsyncBindable[A] extends Bindable {

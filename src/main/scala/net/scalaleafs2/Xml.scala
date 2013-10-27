@@ -59,7 +59,7 @@ trait Xml {
    * Transformation that replaces the input xml with some static xml.
    */
   def replaceWith(xml : NodeSeq) = new SyncRenderNode with NoChildRenderNode {
-    def render(context : Context, xml : NodeSeq) = xml
+    def render(context : Context, ignore : NodeSeq) = xml
     def renderChanges(context : Context) = JsNoop
   }
   

@@ -12,12 +12,8 @@ package net.scalaleafs2
 
 class Configuration (assignments : ConfigVar.Assignment[_]*) {
   
-  private val values : Map[ConfigVar[_], Any] = assignments.toMap
+  private[scalaleafs2] val values : Map[ConfigVar[_], Any] = assignments.toMap
   
-  // Get the configuration value for given configVar. 
-  def apply[A](configVar : ConfigVar[A]) = 
-    values.get(configVar).map(_.asInstanceOf[A]).getOrElse(configVar.defaultValue)
-    
   def withDefaults(defaults : ConfigVar.Assignment[_]*) = {
     new Configuration(assignments ++ defaults.filterNot(a => values.contains(a._1)):_*)
   }
@@ -27,10 +23,27 @@ class Configuration (assignments : ConfigVar.Assignment[_]*) {
   }
 }
 
-abstract class ConfigVar[A](val defaultValue : A) 
+abstract class ConfigVar[A](val defaultValue : A) {
+  
+  def apply(context : Context) : A =
+    apply(context.site.configuration)
+    
+  def apply(configuration : Configuration) : A = 
+    configuration.values.get(this).map(_.asInstanceOf[A]).getOrElse(defaultValue)
+    
+  def get(implicit configuration : Configuration) : A = 
+    configuration.values.get(this).map(_.asInstanceOf[A]).getOrElse(defaultValue)
+}
 
 object ConfigVar {
   
   // Type def to make sure each individual tuple has matching types for var and value.
   type Assignment[A] = Tuple2[ConfigVar[A], A]
+  
+  // Implicitly convert a configVar value to its value. 
+  implicit def getFromConfig[A](configVar : ConfigVar[A])(implicit configuration : Configuration) = configVar.apply (configuration)
+  
+  // Implicitly convert a configVar value to its value. 
+//?  implicit def getfromContext[A](configVar : ConfigVar[A])(implicit context : Context) = configVar.apply (context)
+
 }

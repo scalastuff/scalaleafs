@@ -61,6 +61,7 @@ object Selector {
 }
 
 class SelectorSyncRenderNode(selector : Selector, val child : SyncRenderNode) extends SyncRenderNode with SingleChildRenderNode {
+
   override def render(context : Context, xml : NodeSeq) = 
     Selector.transform(context, xml, selector, child.render)
     

@@ -31,25 +31,25 @@ object AjaxFormPostPath extends ConfigVar[String]("leafs/ajaxFormPost")
 object ResourcePath extends ConfigVar[String]("leafs/")
 object CallbackIDGenerator extends ConfigVar[Function0[String]](() => "cb" + UUID.randomUUID)
 
-class Site(rootTemplateClass : Class[_ <: Template], val contextPath : List[String], val configuration : Configuration)(implicit val executionContext : ExecutionContext) extends Logging {
+class Site(rootTemplateClass : Class[_ <: Template], val contextPath : List[String])(implicit val executionContext : ExecutionContext, val configuration : Configuration) extends Logging {
 
   private[scalaleafs2] val windows = TrieMap[String, Window]()
   
-  private val callbackIdGenerator = configuration(CallbackIDGenerator)
+  private val callbackIdGenerator : () => String = CallbackIDGenerator(configuration)
   
   val substitutions = Map[String, String] (
       "CONTEXT_PATH" -> contextPath.mkString("/"),
-      "AJAX_CALLBACK_PATH" -> (contextPath :+ configuration(AjaxCallbackPath)).mkString("/"),
-      "AJAX_FORMPOST_PATH" -> (contextPath :+ configuration(AjaxFormPostPath)).mkString("/"),
-      "RESOURCE_PATH" -> (contextPath :+ configuration(ResourcePath)).mkString("/"))
+      "AJAX_CALLBACK_PATH" -> (contextPath :+ AjaxCallbackPath).mkString("/"),
+      "AJAX_FORMPOST_PATH" -> (contextPath :+ AjaxFormPostPath).mkString("/"),
+      "RESOURCE_PATH" -> (contextPath :+ ResourcePath).mkString("/"))
 
-  val debugMode = configuration(DebugMode) || System.getProperty("leafsDebugMode") != null
+  val debugMode = DebugMode || System.getProperty("leafsDebugMode") != null
   
-  val resources = new Resources(configuration(ResourceFactory), substitutions, debugMode)
+  val resources = new Resources(ResourceFactory, substitutions, debugMode)
   
-  val ajaxCallbackPath = Url.parsePath(configuration(AjaxCallbackPath))
-  val ajaxFormPostPath = Url.parsePath(configuration(AjaxFormPostPath))
-  val resourcePath = Url.parsePath(configuration(ResourcePath))
+  val ajaxCallbackPath = Url.parsePath(AjaxCallbackPath)
+  val ajaxFormPostPath = Url.parsePath(AjaxFormPostPath)
+  val resourcePath = Url.parsePath(ResourcePath)
 
   def handleRequest[A](url : Url): Future[NodeSeq] = {
     val window = new Window(this, url)

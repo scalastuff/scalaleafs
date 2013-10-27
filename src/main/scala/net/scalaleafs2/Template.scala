@@ -23,7 +23,8 @@ import org.xml.sax.SAXParseException
  * Class-path resources are cached (when not in debug mode) in a JVM-global cache.
  */
 trait Template extends Xml {
-  def render : RenderNode
+  private var _window : Window = null
+  val render : RenderNode
   def readInput(context : Context) : NodeSeq = 
     Template.template(context, getClass) 
   private var _input : NodeSeq = null
@@ -33,6 +34,9 @@ trait Template extends Xml {
     }
     _input
   }
+  
+  def window : Window = _window
+  
   def renderAsync(context : Context) = 
     render.renderAsync(context, input(context))
     

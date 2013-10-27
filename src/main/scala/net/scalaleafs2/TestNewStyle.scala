@@ -1,7 +1,7 @@
 package net.scalaleafs2
 
 import net.scalaleafs2.implicits._
-
+ 
 class X
 
 trait T {
@@ -22,11 +22,12 @@ object TestNewStyle {
 
   class BooksPage(urlTail : Var[List[String]]) extends Template {
 
-    def render = new BooksHeader()
+    val render : RenderNode = new BooksHeader()
   }
   
   class BooksHeader extends Template {
     
+    val render2 = ".hi"  #> mkElem("div")
     val render = ".hi"  #> mkElem("div")
   }
   
@@ -36,7 +37,7 @@ object TestNewStyle {
     
     val render : RenderNode = {
       ".hi" #> <hi></hi> &
-      ".hi" #> new BooksPage(items) &
+//      ".hi" #> new BooksPage(items) &
       ".selected" #> items.bind { item =>
         "@href" #> item.toString 
 //        & 

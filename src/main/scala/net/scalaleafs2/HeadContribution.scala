@@ -70,7 +70,7 @@ object HeadContributions {
             case h : Elem if h eq head => addHeadContributions(head) 
             case h => h
           })
-        case None => 
+        case _ => 
           html.copy(child = addHeadContributions(<head/>) ++ html.child)
       }
     }
@@ -154,7 +154,7 @@ object JQueryUrl extends ConfigVar[String]("http://ajax.googleapis.com/ajax/libs
 
 object JQuery extends HeadContribution("JQuery") {
   def render(context : Context) = {
-    <script type="text/javascript" src={context.site.configuration(JQueryUrl)}></script>
+    <script type="text/javascript" src={JQueryUrl(context)}></script>
   }
 }
 
