@@ -52,13 +52,13 @@ trait Xml {
   /**
    * Transformation that replaces the input xml with some static text.
    */
-  def replaceWith(text : String) : SyncRenderNode = 
+  def replaceWithString(text : => String) : SyncRenderNode = 
     replaceWith(Text(text))
 
   /**
    * Transformation that replaces the input xml with some static xml.
    */
-  def replaceWith(xml : NodeSeq) = new SyncRenderNode with NoChildRenderNode {
+  def replaceWith(xml : => NodeSeq) = new SyncRenderNode with NoChildRenderNode {
     def render(context : Context, ignore : NodeSeq) = xml
     def renderChanges(context : Context) = JsNoop
   }
@@ -107,20 +107,14 @@ trait Xml {
   /**
    * Transformation that sets an attribute of some input element.
    */
-  def setAttr(attr : String, value : String) : ElemModifier = 
-    new ConditionalElemModifier((context, elem) => XmlHelpers.setAttr(elem, attr, value), true) 
-  
-  def setAttr(attr : String, value : String, condition : => Boolean) : ElemModifier = 
-    new ConditionalElemModifier((context, elem) => XmlHelpers.setAttr(elem, attr, value), condition) 
-  
-  def setAttr(attr : String, value : JSCmd) : ElemModifier = 
-    new ConditionalElemModifier((context, elem) => XmlHelpers.setAttr(elem, attr, value.toString), true) 
-  
+  def setAttr(attr : String, f : Context => String, condition : => Boolean = true) : ElemModifier = 
+    new ConditionalElemModifier((context, elem) => XmlHelpers.setAttr(elem, attr, f(context).toString), true) 
+
   /**
-   * Transformation that replaces child nodes of some input element with a text node.
+   * Transformation that replaces child nodes of some element with a text node.
    */
-  def setText(value : String, condition : => Boolean = true) = 
-    new ConditionalElemModifier((context, elem) => XmlHelpers.setText(elem, value), condition) 
+  def setText(f : Context => String, condition : => Boolean = true) = 
+    new ConditionalElemModifier((context, elem) => XmlHelpers.setText(elem, f(context)), condition) 
   
   /**
    * Transformation that removes an attribute from some input element.

@@ -63,9 +63,12 @@ class Context(val site : Site, window : Window)(implicit val executionContext : 
   def callback(parameter : JSExp)(f : String => Future[Unit]) = 
     JSCmd("leafs.callback('" + callbackId(m => f(m.get("value").flatMap(_.headOption).getOrElse(""))) + "?value=' + encodeURIComponent(" + parameter.toString + "));")
   
+  def callback(f : => Future[Unit]) : JSCmd = 
+    callback()(_ => f)
+  
   def callback(f : Map[String, Seq[String]] => Future[Unit]) : JSCmd = 
     callback()(f)
-  
+    
   def callback(parameters : (String, JSExp)*)(f : Map[String, Seq[String]] => Future[Unit]) : JSCmd = 
     if (parameters.isEmpty)
       JSCmd("leafs.callback('" + callbackId(f) + "');")

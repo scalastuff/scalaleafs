@@ -11,10 +11,8 @@
 package net.scalaleafs2
 
 import java.util.concurrent.ConcurrentHashMap
-
 import scala.xml.NodeSeq.seqToNodeSeq
 import scala.xml.{XML, NodeSeq, Elem}
-
 import org.xml.sax.SAXParseException
 
 /**
@@ -22,8 +20,7 @@ import org.xml.sax.SAXParseException
  * a bind hook to transform this input to some output.
  * Class-path resources are cached (when not in debug mode) in a JVM-global cache.
  */
-trait Template extends Xml {
-  private var _window : Window = null
+trait Template extends Xml with Html {
   val render : RenderNode
   def readInput(context : Context) : NodeSeq = 
     Template.template(context, getClass) 
@@ -35,7 +32,9 @@ trait Template extends Xml {
     _input
   }
   
-  def window : Window = _window
+  val currentUrl : SyncBindable[Url] =
+    Def((context : Context) => context.url.get)
+    
   
   def renderAsync(context : Context) = 
     render.renderAsync(context, input(context))

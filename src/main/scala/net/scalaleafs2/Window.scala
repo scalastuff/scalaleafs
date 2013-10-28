@@ -9,24 +9,24 @@ import scala.xml.NodeSeq
 /**
  * Encapsulates a browser window
  */
-class Window(site : Site, url : Url) {
+class Window(site : Site, url : Url, rootTemplateInstantiator : RootTemplateInstantiator) {
 
   import site.executionContext
   private val synchronizedFuture = new SynchronizedFuture
-
+  private val rootTemplate = rootTemplateInstantiator(this)
+  
   private[scalaleafs2] val ajaxCallbacks = mutable.HashMap[String, AjaxCallback]()
   private[scalaleafs2] var _headContributionKeys : Set[String] = Set.empty
   private[scalaleafs2] var _currentUrl : Var[Url] = Var(url)
   
-  private val rootTemplate = site.rootTemplate
-  
+  def url : SyncBindable[Url] = _currentUrl
   val id : String = "leafs-" + UUID.randomUUID.toString
   
   def handleRequest[A](url : Url): Future[NodeSeq] = {
     import site.executionContext
     synchronizedFuture {
       val context = new Context(site, this)
-      rootTemplate().renderAsync(context).andThen {
+      rootTemplate().renderAsync(context).map(xml => HeadContributions.render(context, xml)).andThen {
         case _ =>
           _headContributionKeys ++= context._headContributionKeys
       }
@@ -58,3 +58,4 @@ class Window(site : Site, url : Url) {
     }
   } 
 }
+

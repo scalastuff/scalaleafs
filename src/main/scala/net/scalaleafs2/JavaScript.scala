@@ -39,6 +39,7 @@ object JSCmd {
   def apply(cmd : String) = new JSRawCmd(cmd)
   implicit def toNoop(unit : Unit) : JSCmd = JsNoop
   implicit def toText(cmd : JSCmd) = Text(cmd.toString)
+  implicit def toString(cmd : JSCmd) = cmd.toString
 }
 
 trait JSCmd {
@@ -46,6 +47,19 @@ trait JSCmd {
   def & (cmd : JSCmd) : JSCmd = new JSCmdSeq(toSeq ++ cmd.toSeq)
   def toSeq = Seq(this)
 }
+
+class JSCmdFun(f : Context => JSCmd) extends Function[Context, JSCmd] { outer =>
+  def apply(context : Context) = f(context)
+  def &(other : JsNoop) = this
+  def &(other : JSCmd) = new JSCmdFun(context => f(context) & other)
+  def &(other : Context => JSCmd) = new JSCmdFun(context => f(context) & other(context))
+}
+
+object JSCmdFun {
+  implicit def toString(f : JSCmdFun) : Context => String = context => f(context).toString
+  implicit def toJSCmdFun(cmd : JSCmd) : JSCmdFun = new JSCmdFun(_ => cmd)
+}
+
 
 protected class JSCmdSeq(seq : Seq[JSCmd]) extends JSCmd {
   override def toSeq = seq

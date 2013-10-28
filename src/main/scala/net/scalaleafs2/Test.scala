@@ -1,9 +1,9 @@
-package net.scalaleafs2
+package net.scalaleafs2.test
 
 import spray.routing.Directives
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
-import implicits._
+import net.scalaleafs2._
 import akka.actor.ActorSystem
 
 object Test extends App {
@@ -17,18 +17,23 @@ object Test extends App {
 }
 
 
-class PageFrame extends Template {
+class PageFrame(window : Window) extends Template {
   
-  val url = window.currentUrl
+  val url = window.url
   
-  val render = 
-    ".name" #> "Ruud" &
+  val render = url.bind { u =>
+    ".name" #> ("url:" + u) &
+    "#clickme" #> setAttr("href", "println") & 
+    "#clickme" #> setText("click me not") & 
+    "#clickme" #> onclick(println("I HAVE BEEN CLICKED")) & 
     ".content" #> url.bind { url =>
       ""
     }
+  }
   
   override def readInput(context : Context) = 
     <html>
       <h1>Hi there, <span class="name"/>!</h1>
+      <a id="clickme">click me</a>
     </html>
 }

@@ -86,18 +86,19 @@ class SelectorRenderNode(selector : Selector, val child : RenderNode) extends Re
         xml match {
           case elem : Elem =>
             val index = elements.size
-            elements += Selector.unchanged
             val matches = selector.matches(elem) 
             if (matches && selector.nested == None) {
-              elements(index) = elem
+              elements += elem
               false
             }
             else {
+              elements += Selector.unchanged
               if (findMatchedElements(elem.child, if (matches) selector.nested.get else selector)) {
                 elements(index) = Selector.changed
                 true
               } else {
-                elements.remove(index + 1, elements.size - index)
+                if (elements.size > index + 1)
+                  elements.remove(index + 1, elements.size - index - 1)
                 false
               }
             }
@@ -145,14 +146,19 @@ class SelectorRenderNode(selector : Selector, val child : RenderNode) extends Re
               }
             }
             
-            build(xml)
+            try {
+              build(xml)
+            } finally {
+              elements.clear
+            }
         }
       }
       
       // No change? Return input.
-      else Future.successful(xml)
-    } finally {
-      elements.clear
+      else {
+        elements.clear
+        Future.successful(xml)
+      }
     }
   }
   

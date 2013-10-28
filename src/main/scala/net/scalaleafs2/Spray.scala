@@ -41,7 +41,7 @@ class SprayRoute(site : Site) extends Route with Directives with Logging {
   def route = {
     get {
       println("GET")
-      path("kk"/callbackMatcher / Rest) { callbackId =>
+      path("leafs" / "ajaxCallback" / Rest) { callbackId =>
         cookie(cookieName) { cookie =>
           respondWithMediaType(MediaTypes.`application/json`) {
             complete {
@@ -50,7 +50,7 @@ class SprayRoute(site : Site) extends Route with Directives with Logging {
           }
         }
       } ~
-      path("qqleafs" / Rest) { resource =>
+      path("leafs" / Rest) { resource =>
       println("RES")
         site.handleResource(resource) match {
           case Some((bytes, resourceType)) =>

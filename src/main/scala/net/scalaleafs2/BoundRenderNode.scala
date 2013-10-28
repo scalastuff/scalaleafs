@@ -48,6 +48,7 @@ class BoundSyncRenderNode[A](bindable : Bindable, get : Context => A, f : Placeh
     lastElem = elem
     lastId = id
     version = bindable.version
+    println("Setting value " + get(context) + " to placeholder " + placeholder)
     placeholder.value = get(context)
     child.render(context, elem)
   }

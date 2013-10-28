@@ -43,13 +43,13 @@ object HeadContributions {
             case "link" =>
               val href = XmlHelpers.attr(elem, "href")
               if (!href.startsWith("http:")) {
-                XmlHelpers.setAttr(elem, "href", context.site.contextPath.mkString("/", "/", "/" + context.site.resources.hashedResourcePathFor(href.stripPrefix("/"))))
+                XmlHelpers.setAttr(elem, "href", context.site.resourcePath.mkString("/", "/", "/" + context.site.resources.hashedResourcePathFor(href.stripPrefix("/"))))
               }
               else elem
             case "script" =>
               val src = XmlHelpers.attr(elem, "src")
               if (!src.startsWith("http:")) {
-                XmlHelpers.setAttr(elem, "src", context.site.contextPath.mkString("/", "/", "/" + context.site.resources.hashedResourcePathFor(src.stripPrefix("/"))))
+                XmlHelpers.setAttr(elem, "src", context.site.resourcePath.mkString("/", "/", "/" + context.site.resources.hashedResourcePathFor(src.stripPrefix("/"))))
               }
               else elem
             case _ => elem
@@ -136,11 +136,11 @@ class JavaScript(key : String, uri : String) extends HeadContribution(key) {
 class JavaScriptResource(c : Class[_], resource : String) extends HeadContribution(c.getName + "/" + resource) {
   def render(context : Context) = {
     var name = context.site.resources.hashedResourcePathFor(c, resource)
-    <script type="text/javascript" src={context.site.contextPath.mkString("/", "/", "/" + name)}></script>
+    <script type="text/javascript" src={context.site.resourcePath.mkString("/", "/", "/" + name)}></script>
   }
   override def renderAdditional(context : Context) = {
     var name = context.site.resources.hashedResourcePathFor(c, resource)
-    LoadJavaScript(context.site.contextPath.mkString("/", "/", "/" + name))
+    LoadJavaScript(context.site.resourcePath.mkString("/", "/", "/" + name))
   }
 }
 

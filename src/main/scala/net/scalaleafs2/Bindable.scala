@@ -23,7 +23,12 @@ object Placeholder {
 
 class Placeholder[A] {
   private[scalaleafs2] var value : A = null.asInstanceOf[A]
-  def get : A = value
+  def get : A = {
+   println("Reading placeholder " + this)
+    value
+  }
+  override def toString = 
+    if (value != null) value.toString else "(undefined)"
 }
 
 /**
@@ -112,37 +117,54 @@ object AsyncBindable {
   }
 }
 
-class SyncBindableMagnet[A, B, S](val apply: SyncBindable[A] => S) extends AnyVal
+class SyncBindableMapMagnet[A, B, S](val apply: SyncBindable[A] => S) extends AnyVal
 
-object SyncBindableMagnet {
+object SyncBindableMapMagnet {
   implicit def magnet1[A, B](f : A => Future[B]) = 
-    new SyncBindableMagnet((bindable : SyncBindable[A]) => 
+    new SyncBindableMapMagnet((bindable : SyncBindable[A]) => 
       new MappedAsyncDef(bindable, context => f(bindable.get(context))))
 
   implicit def magnet2[A, B](f : A => B) = 
-    new SyncBindableMagnet((bindable : SyncBindable[A]) => 
+    new SyncBindableMapMagnet((bindable : SyncBindable[A]) => 
       new MappedSyncDef(bindable, context => f(bindable.get(context))))
 
   implicit def magnet3[A, B](f : Context => A => Future[B]) = 
-    new SyncBindableMagnet((bindable : SyncBindable[A]) => 
+    new SyncBindableMapMagnet((bindable : SyncBindable[A]) => 
       new MappedAsyncDef(bindable, context => f(context)(bindable.get(context))))
 
   implicit def magnet4[A, B](f : Context => A => Future[B]) = 
-    new SyncBindableMagnet((bindable : SyncBindable[A]) => 
+    new SyncBindableMapMagnet((bindable : SyncBindable[A]) => 
       new MappedAsyncDef(bindable, context => f(context)(bindable.get(context))))
 } 
+
+class SyncBindableBindMagnet[A, R](val apply : SyncBindable[A] => R)
+object SyncBindableBindMagnet {
+//  implicit def magnet1[A, B](f : Placeholder[A] => SyncRenderNode) = 
+//    new SyncBindableBindMagnet((bindable : SyncBindable[A]) =>
+//      new BoundSyncRenderNode(bindable, bindable.get, f))
+
+  implicit def magnet2[A, B](f : Placeholder[A] => RenderNode) = 
+    new SyncBindableBindMagnet((bindable : SyncBindable[A]) => 
+      new BoundRenderNode(bindable, context => Future.successful(bindable.get(context)), f))
+} 
+
 
 trait SyncBindable[A] extends Bindable {
   protected[scalaleafs2] def get(context : Context) : A
   
-  def map[B, S](magnet : SyncBindableMagnet[A, B, S]) = 
+  def map[B, S](magnet : SyncBindableMapMagnet[A, B, S]) = 
     magnet.apply(this)
+    
+//  def bind[R](magnet : SyncBindableBindMagnet[A, R]) : R = 
+//    magnet.apply(this)
 } 
 
 object SyncBindable {
   implicit class RichSyncBindable[A](val bindable : SyncBindable[A]) extends AnyVal {
-    def bind(f : Placeholder[A] => SyncRenderNode) = 
-      new BoundSyncRenderNode(bindable, bindable.get, f)
+//    def bind(f : Placeholder[A] => SyncRenderNode) = 
+//      new BoundSyncRenderNode(bindable, bindable.get, f)
+    def bind(f : Placeholder[A] => RenderNode) = 
+      new BoundRenderNode(bindable, context => Future.successful(bindable.get(context)), f)
   }
   implicit class OptionDelegate[A](val bindable : SyncBindable[Option[A]]) extends SyncBindable[Iterable[A]] {
     override def version = bindable.version
