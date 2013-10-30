@@ -10,9 +10,11 @@ object Test extends App {
   
   
   implicit val actorSystem = ActorSystem("test")
-  implicit val config = new Configuration
+  implicit val config = new Configuration(
+    SprayServerContextPath -> List("bla")
+  )
 //  val site = new Site(classOf[PageFrame])
-  val server = new SprayServer(classOf[PageFrame])
+  val server = new SprayServer(classOf[PageFrame], config, actorSystem)
   server.start
 }
 

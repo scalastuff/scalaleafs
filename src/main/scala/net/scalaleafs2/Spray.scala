@@ -1,8 +1,12 @@
 package net.scalaleafs2
 
 import spray.routing.Route
+import spray.routing.Directive
+import spray.routing.Directive1
 import spray.routing.Directives
 import spray.routing.PathMatcher
+import spray.routing.PathMatcher1
+import spray.routing.PathMatchers
 import shapeless.HNil
 import scala.xml.NodeSeq
 import java.util.UUID
@@ -16,9 +20,33 @@ import scala.concurrent.Future
 
 class SprayRoute(site : Site) extends Route with Directives with Logging {
   
-  private val nilMatcher : PathMatcher[HNil] = ""
-  private val contextMatcher  = matcherOf(site.contextPath)
-  private val callbackMatcher = matcherOf(site.ajaxCallbackPath)
+  import site.configuration
+  
+  private val contextPrefix : Directive[HNil] = 
+    site.contextPath match {
+      case Nil => Directive.Empty
+      case list => pathPrefix(matcherOf(list))
+    }
+  
+  private val callbackPath : Directive1[String] =
+    AjaxCallbackPath.split("/").toList match {
+      case Nil => path(Rest)
+      case list => path(list.map(PathMatcher(_)).reduce(_ / _) / Rest)
+    }
+
+  private val formPostPath : Directive1[String] =
+      AjaxFormPostPath.split("/").toList match {
+      case Nil => path(Rest)
+      case list => path(list.map(PathMatcher(_)).reduce(_ / _) / Rest)
+  }
+  
+  private val resourcePath : Directive1[String] =
+      ResourcePath.split("/").toList match {
+      case Nil => path(Rest)
+      case list => path(list.map(PathMatcher(_)).reduce(_ / _) / Rest)
+  }
+//    path((AjaxCallbackPath.split("/").map(PathMatcher(_)) Seq(Rest)).reduce(_ / _))
+    
   private val formPostMatcher = matcherOf(site.ajaxFormPostPath)
   private val resourceMatcher = matcherOf(site.resourcePath)
   private val sessions = TrieMap[String, Session]()  
@@ -26,8 +54,10 @@ class SprayRoute(site : Site) extends Route with Directives with Logging {
 
   private val cookieName = "scalaleafs"
     
-  def matcherOf(path : Seq[String]) = path.foldLeft(nilMatcher)((x, y) => x / y)
-  def matcherOf(path : String) : PathMatcher[HNil] = matcherOf(path.split("/").toSeq)
+    
+  def matchersOf(path : String) = path.split("/").map(PathMatcher(_))
+  def matcherOf(path : Seq[String]) : PathMatcher[HNil] = path.map(PathMatcher(_)).reduce(_ / _)
+//  def matcherOf(path : String) : PathMatcher[HNil] = matcherOf(path.split("/").toSeq)
   
   def apply(v1: spray.routing.RequestContext): Unit = 
     route(v1)
@@ -38,10 +68,9 @@ class SprayRoute(site : Site) extends Route with Directives with Logging {
     }
 
   import site.executionContext
-  def route = {
+  def route = contextPrefix {
     get {
-      println("GET")
-      path("leafs" / "ajaxCallback" / Rest) { callbackId =>
+      callbackPath { callbackId =>
         cookie(cookieName) { cookie =>
           respondWithMediaType(MediaTypes.`application/json`) {
             complete {
@@ -50,8 +79,7 @@ class SprayRoute(site : Site) extends Route with Directives with Logging {
           }
         }
       } ~
-      path("leafs" / Rest) { resource =>
-      println("RES")
+      resourcePath { resource =>
         site.handleResource(resource) match {
           case Some((bytes, resourceType)) =>
             respondWithMediaType(MediaType.custom(resourceType.contentType)) {
@@ -149,11 +177,13 @@ object SprayServerPort extends ConfigVar[Int](80)
 object SprayServerInterface extends ConfigVar[String]("0.0.0.0")
 object SprayServerContextPath extends ConfigVar[List[String]](Nil)
 
-class SprayServer(val site : Site)(implicit actorSystem : ActorSystem, configuration : Configuration) extends HttpService with Logging {
+class SprayServer(val site : Site, val configuration : Configuration, val actorSystem : ActorSystem) extends HttpService with Logging {
 
-  def this(rootTemplateClass : Class[_ <: Template])(implicit actorSystem : ActorSystem, configuration : Configuration) = 
-    this(new Site(rootTemplateClass, SprayServerContextPath)(actorSystem.dispatcher, configuration))
+  def this(rootTemplateClass : Class[_ <: Template], configuration : Configuration, actorSystem : ActorSystem) = 
+    this(new Site(rootTemplateClass, SprayServerContextPath(configuration), configuration)(actorSystem.dispatcher), configuration, actorSystem)
   
+  implicit def actorSys = actorSystem 
+  implicit def config = configuration 
   val exceptionHandler : ExceptionHandler = ExceptionHandler.default
   def rejectionHandler : RejectionHandler = RejectionHandler.Default
   val routingSettings = RoutingSettings(actorSystem)
