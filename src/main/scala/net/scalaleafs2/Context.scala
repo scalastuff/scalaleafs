@@ -3,7 +3,7 @@ package net.scalaleafs2
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 
-class Context(val site : Site, window : Window)(implicit val executionContext : ExecutionContext) {
+class Context(val site : Site, val window : Window)(implicit val executionContext : ExecutionContext) {
 
   private[scalaleafs2] var _headContributionKeys : Set[String] = Set.empty
   private[scalaleafs2] var _headContributions : Seq[HeadContribution] = Seq.empty
@@ -42,7 +42,7 @@ class Context(val site : Site, window : Window)(implicit val executionContext : 
     }
   }
   
-  def url : Var[Url] = window._currentUrl
+  def url : Val[Url] = window._currentUrl
   
     /**
    * Changes the browser url without a page refresh.

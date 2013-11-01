@@ -27,8 +27,10 @@ object TestNewStyle {
   
   class BooksHeader extends Template {
     
-    val render2 = ".hi"  #> mkElem("div")
+    val url = Var("")
     val render = ".hi"  #> mkElem("div")
+    val render2 = ".hi"  #> mkElem("div") & 
+    "#hi" #> url.bind {url => ""} 
   }
   
   
@@ -38,7 +40,7 @@ object TestNewStyle {
     val render : RenderNode = {
       ".hi" #> <hi></hi> &
 //      ".hi" #> new BooksPage(items) &
-      ".selected" #> items.bind { item =>
+      ".selected" #> items.bind { (item : Placeholder[List[String]]) =>
         "@href" #> item.toString 
 //        & 
 //        ".menu" #> new Menu(Var(item + ".")).bind

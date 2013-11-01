@@ -134,7 +134,7 @@ class JavaScript(key : String, uri : String) extends HeadContribution(key) {
 }
 
 class JavaScriptResource(c : Class[_], resource : String) extends HeadContribution(c.getName + "/" + resource) {
-  def render(context : Context) = {
+  def render(context : Context) : NodeSeq = {
     var name = context.site.resources.hashedResourcePathFor(c, resource)
     <script type="text/javascript" src={context.site.resourcePath.mkString("/", "/", "/" + name)}></script>
   }
@@ -148,7 +148,15 @@ class JavaScriptResource(c : Class[_], resource : String) extends HeadContributi
  * Use JQuery as default JavaScript library.
  */
 
-object LeafsJavaScriptResource extends JavaScriptResource(classOf[JavaScript], "leafs.js")
+object LeafsJavaScriptResource extends JavaScriptResource(classOf[JavaScript], "leafs.js") {
+  override def render(context : Context) = {
+    super.render(context) ++ 
+    <script type="text/javascript">
+      window.id = '{context.window.id}'; 
+      leafs.onPageUnload('{context.callbackId(_ => println("DELETE WINDOW"))}');
+    </script>
+  }
+}
 
 object JQueryUrl extends ConfigVar[String]("http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js")
 

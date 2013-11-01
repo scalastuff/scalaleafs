@@ -47,11 +47,11 @@ object RenderNode {
       case node :: rest => renderAsync(context, xml, rest).flatMap(xml => node.renderAsync(context, xml))(context.executionContext)
     }
   
-  def renderChangesAsync(context : Context, nodes : List[RenderNode]) : Future[JSCmd] =  
-    nodes match {
-      case Nil => Future.successful(JsNoop)
-      case node :: Nil => node.renderChangesAsync(context)
-      case nodes => Future.fold(nodes.map(_.renderChangesAsync(context)))(JsNoop.asInstanceOf[JSCmd])(_ & _)(context.executionContext)
+  def renderChangesAsync(context : Context, nodes : Seq[RenderNode]) : Future[JSCmd] =
+    nodes.size match {
+      case 0 => Future.successful(JsNoop)
+      case 1 => nodes.head.renderChangesAsync(context)
+      case n => Future.fold(nodes.map(_.renderChangesAsync(context)))(JsNoop.asInstanceOf[JSCmd])(_ & _)(context.executionContext)
     }  
 }
 

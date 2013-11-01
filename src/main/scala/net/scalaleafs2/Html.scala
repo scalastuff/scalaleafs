@@ -49,15 +49,15 @@ object OperationMagnet {
 
 trait Html {
  
-  def callback(f : => Unit) : Context => JSCmd = _.callback(Future.successful(f))
+//  def callback(f : => Unit) : Context => JSCmd = _.callback(Future.successful(f))
 
 //  def onclick(f : => JSCmd) : ElemModifier = {
 //    Xml.setAttr("onclick", context => context.callback(_ => Future.successful(context.addPostRequestJs(f))) & JsReturnFalse)
 //  }
 //  
   def onclick(f : OperationMagnet[JSCmd]) : ElemModifier = {
-    Xml.setAttr("onclick", { context => 
-      import context.executionContext 
+    Xml.setAttr("onclick", { context =>
+      import context.executionContext
       context.callback(_ => f(context).map(context.addPostRequestJs(_))) & JsReturnFalse
       })
   }

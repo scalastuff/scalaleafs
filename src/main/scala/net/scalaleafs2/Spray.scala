@@ -17,6 +17,7 @@ import spray.http.MediaTypes
 import spray.http.MediaType
 import spray.routing.RequestContext
 import scala.concurrent.Future
+import shapeless.::
 
 class SprayRoute(site : Site) extends Route with Directives with Logging {
   
@@ -28,10 +29,10 @@ class SprayRoute(site : Site) extends Route with Directives with Logging {
       case list => pathPrefix(matcherOf(list))
     }
   
-  private val callbackPath : Directive1[String] =
+  private val callbackPath : Directive[String :: String :: HNil] =
     AjaxCallbackPath.split("/").toList match {
-      case Nil => path(Rest)
-      case list => path(list.map(PathMatcher(_)).reduce(_ / _) / Rest)
+      case Nil => path(Segment / Segment)
+      case list => path(list.map(PathMatcher(_)).reduce(_ / _) / Segment / Segment)
     }
 
   private val formPostPath : Directive1[String] =
@@ -68,18 +69,21 @@ class SprayRoute(site : Site) extends Route with Directives with Logging {
     }
 
   import site.executionContext
+  
   def route = contextPrefix {
     get {
-      callbackPath { callbackId =>
+      callbackPath { (callbackId, windowId) =>
+        println("Handling callback: " + callbackId)
         cookie(cookieName) { cookie =>
           respondWithMediaType(MediaTypes.`application/json`) {
             complete {
-              site.handleAjaxCallback("windowId", callbackId, Map.empty)
+              site.handleAjaxCallback(windowId, callbackId, Map.empty)
             }
           }
         }
       } ~
       resourcePath { resource =>
+        println("Handling resource: " + resource)
         site.handleResource(resource) match {
           case Some((bytes, resourceType)) =>
             respondWithMediaType(MediaType.custom(resourceType.contentType)) {
@@ -90,6 +94,7 @@ class SprayRoute(site : Site) extends Route with Directives with Logging {
         }
       } ~
       path(Rest) { path =>
+        println("REST: " + path)
          val (ext, isResource) = extension(path) match {
           case "" => ("", false)
           case "html" => ("html", false)
@@ -173,7 +178,7 @@ import spray.routing.ExceptionHandler
 import spray.routing.HttpService
 import spray.routing.RejectionHandler
 
-object SprayServerPort extends ConfigVar[Int](80)
+object SprayServerPort extends ConfigVar[Int](8080)
 object SprayServerInterface extends ConfigVar[String]("0.0.0.0")
 object SprayServerContextPath extends ConfigVar[List[String]](Nil)
 

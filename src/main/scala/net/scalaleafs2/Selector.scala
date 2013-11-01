@@ -72,96 +72,87 @@ class SelectorSyncRenderNode(selector : Selector, val child : SyncRenderNode) ex
 /**
  * Render node that uses a selector to transform xml.
  */
-class SelectorRenderNode(selector : Selector, val child : RenderNode) extends RenderNode with SingleChildRenderNode {
+class SelectorRenderNode(selector : Selector, mkchild : => RenderNode) extends RenderNode with MultiChildrenRenderNode {
   
-  var elements = ArrayBuffer[Elem]()
+  val elements = ArrayBuffer[(Elem, Option[RenderNode])]()
+  val children = ArrayBuffer[RenderNode]()
   
   override def renderAsync(context : Context, xml : NodeSeq) : Future[NodeSeq] = {
     import context.executionContext
     
     elements.clear
-
-    try {
-      def findMatchedElements(xml : NodeSeq, selector : Selector) : Boolean = {
-        xml match {
-          case elem : Elem =>
-            val index = elements.size
-            val matches = selector.matches(elem) 
-            if (matches && selector.nested == None) {
-              elements += elem
-              false
-            }
-            else {
-              elements += Selector.unchanged
-              if (findMatchedElements(elem.child, if (matches) selector.nested.get else selector)) {
-                elements(index) = Selector.changed
-                true
-              } else {
-                if (elements.size > index + 1)
-                  elements.remove(index + 1, elements.size - index - 1)
-                false
-              }
-            }
-          case node : Node =>  
-            false
-          case children =>
-            var changed = false
-            children foreach { child =>
-              if (findMatchedElements(child, selector))
-                changed = true
-            }
-            changed
-        }
-      }
-  
-      // Find elements to be replaced
-      if (!findMatchedElements(xml, selector)) {
-        
-        // wait for all futures
-        Future.sequence(elements.filter(elem => (elem ne Selector.changed) && (elem ne Selector.unchanged)).map(child.renderAsync(context, _))).map {
-          replacements =>
-            
-            var elementIndex = 0
-            var replacementIndex = 0
+    var childIndex = 0
     
-            def build(xml : NodeSeq) : NodeSeq = {
-              xml match {
-                case elem : Elem =>
-                  val elementAtIndex = elements(elementIndex)
-                  elementIndex += 1
-                  if (elementAtIndex eq elem) {
-                    try replacements(replacementIndex)
-                    finally replacementIndex += 1
-                  } else if (elementAtIndex eq Selector.changed) {
-                    elem.copy(child = build(elem.child))
-                  } else if (elementAtIndex eq Selector.unchanged) {
-                    elem
-                  } else {
-                    throw new IllegalStateException
-                  }
-                case node : Node =>
-                  node
-                case children =>
-                  children.flatMap(build)
-              }
+    def getOrCreateChild = { 
+      if (children.size <= childIndex) 
+        children += mkchild
+      childIndex += 1
+      children(childIndex - 1)
+    } 
+    
+    def findMatchedElements(xml : NodeSeq, selector : Selector) {
+      xml match {
+        case elem : Elem =>
+          val index = elements.size
+          val matches = selector.matches(elem) 
+          if (matches && selector.nested == None) {
+            elements += elem -> Some(getOrCreateChild)
+          }
+          else {
+            elements += elem -> None
+            val curChildIndex = childIndex
+            findMatchedElements(elem.child, if (matches) selector.nested.get else selector) 
+            if (curChildIndex == childIndex) {
+              elements.remove(elements.size - 1)
             }
-            
-            try {
-              build(xml)
-            } finally {
-              elements.clear
-            }
+          }
+        case node : Node =>  
+        case children =>
+          children foreach(findMatchedElements(_, selector))
+      }
+    }
+
+    findMatchedElements(xml, selector)
+    
+    // Dispose unused children
+    for (i <- childIndex until children.size)
+      children(i).dispose(context)
+    
+    
+    // Render all child nodes
+    val renderAll = Future.sequence(elements.collect {
+      case (elem, Some(renderNode)) => renderNode.renderAsync(context, elem)
+    })
+    renderAll.map { replacements =>
+        
+        var elementIndex = 0
+        var replacementIndex = 0
+
+        def build(xml : NodeSeq) : NodeSeq = {
+          xml match {
+            case elem : Elem if elementIndex < elements.size =>
+              val (e, n) = elements(elementIndex) 
+              if (e eq elem) {
+                elementIndex += 1
+                if (n.isDefined) 
+                  try replacements(replacementIndex)
+                  finally replacementIndex += 1
+                else
+                  elem.copy(child = build(elem.child))
+              } else 
+                elem
+            case node : Node =>
+              node
+            case children =>
+              children.flatMap(build)
+          }
         }
-      }
-      
-      // No change? Return input.
-      else {
-        elements.clear
-        Future.successful(xml)
-      }
+        
+        try build(xml)
+        finally elements.clear
     }
   }
   
-  def renderChangesAsync(context : Context) = 
-    child.renderChangesAsync(context)
+  def renderChangesAsync(context : Context) =
+    RenderNode.renderChangesAsync(context, children)
 }

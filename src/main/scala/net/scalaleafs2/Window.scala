@@ -19,7 +19,7 @@ class Window(site : Site, url : Url, rootTemplateInstantiator : RootTemplateInst
   private[scalaleafs2] var _headContributionKeys : Set[String] = Set.empty
   private[scalaleafs2] var _currentUrl : Var[Url] = Var(url)
   
-  def url : SyncBindable[Url] = _currentUrl
+  def url : SyncVal[Url] = _currentUrl
   val id : String = "leafs-" + UUID.randomUUID.toString
   
   def handleRequest[A](url : Url): Future[NodeSeq] = {

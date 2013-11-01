@@ -12,9 +12,11 @@ class BoundRenderNode[A](bindable : Bindable, get : Context => Future[A], f : Pl
   var lastElem : Elem = null
   var lastId : String = ""
   var version : Int = -1
+    println("CREATED " + this)
   
   def renderAsync(context : Context, elem : Elem, id : String) : Future[NodeSeq] = {
     import context.executionContext
+    println("RENDER FIRST TIME: " + version + " new " + bindable.version + " " + this)
     lastElem = elem
     lastId = id
     version = bindable.version
@@ -26,10 +28,12 @@ class BoundRenderNode[A](bindable : Bindable, get : Context => Future[A], f : Pl
   
   def renderChangesAsync(context : Context) : Future[JSCmd] = {
     import context.executionContext
-    if (version != bindable.version)
-      renderAsync(context, lastElem).map { xml =>
+    if (version != bindable.version) {
+      println("Changed: " + version + " new " + bindable.version + " " + this)
+      renderAsync(context, lastElem, lastId).map { xml =>
         ReplaceHtml(lastId, xml)
       }
+    }
     else
       child.renderChangesAsync(context)
   }
@@ -62,7 +66,7 @@ class BoundSyncRenderNode[A](bindable : Bindable, get : Context => A, f : Placeh
   }
 }
 
-class BoundAllRenderNode[A](bindable : AsyncBindable[_ <: Iterable[A]], f : Placeholder[A] => RenderNode) extends ExpectElemWithIdRenderNode with MultiChildrenRenderNode {
+class BoundAllRenderNode[A](bindable : AsyncVal[_ <: Iterable[A]], f : Placeholder[A] => RenderNode) extends ExpectElemWithIdRenderNode with MultiChildrenRenderNode {
   
   val placeholders = ArrayBuffer[Placeholder[A]]()
   val children = ArrayBuffer[RenderNode]()
@@ -77,7 +81,8 @@ class BoundAllRenderNode[A](bindable : AsyncBindable[_ <: Iterable[A]], f : Plac
     version = bindable.version
     bindable.getAsync(context).flatMap {
       values =>
-      placeholders.remove(children.size, placeholders.size - values.size)
+      for (i <- values.size.until(children.size)) children(i).dispose(context)
+      placeholders.remove(placeholders.size, placeholders.size - values.size)
       children.remove(children.size, children.size - values.size)
       while (children.size < values.size)  {
         val placeholder = new Placeholder[A] 
@@ -108,7 +113,7 @@ class BoundAllRenderNode[A](bindable : AsyncBindable[_ <: Iterable[A]], f : Plac
   }
 }
 
-class BoundAllSyncRenderNode[A](bindable : SyncBindable[_ <: Iterable[A]], f : Placeholder[A] => SyncRenderNode) extends ExpectElemWithIdSyncRenderNode with MultiChildrenRenderNode {
+class BoundAllSyncRenderNode[A](bindable : SyncVal[_ <: Iterable[A]], f : Placeholder[A] => SyncRenderNode) extends ExpectElemWithIdSyncRenderNode with MultiChildrenRenderNode {
   
   val placeholders = ArrayBuffer[Placeholder[A]]()
   val children = ArrayBuffer[SyncRenderNode]()
@@ -122,7 +127,8 @@ class BoundAllSyncRenderNode[A](bindable : SyncBindable[_ <: Iterable[A]], f : P
     lastId = id
     version = bindable.version
     val values = bindable.get(context)
-    placeholders.remove(children.size, placeholders.size - values.size)
+    for (i <- values.size.until(children.size)) children(i).dispose(context)
+    placeholders.remove(placeholders.size, placeholders.size - values.size)
     children.remove(children.size, children.size - values.size)
     while (children.size < values.size)  {
       val placeholder = new Placeholder[A] 

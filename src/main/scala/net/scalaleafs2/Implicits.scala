@@ -1,4 +1,6 @@
 package net 
+
+import scala.concurrent.Future
 package scalaleafs2 {
   import scala.xml.NodeSeq
   import scala.xml.Text
@@ -10,6 +12,8 @@ package scalaleafs2 {
     implicit def xmlToRenderNode(xml : => NodeSeq) = Xml.replaceWith(xml)
     implicit def toContextFun[A](f : => A) : Context => A = _ => f
     implicit def toJSCmdFun(f : Context => JSCmd) : JSCmdFun = new JSCmdFun(f)
+    implicit def toFuture[A](a : A) : Future[A] = Future.successful(a)
+    implicit def toExecutionContext(implicit context : Context) = context.executionContext
   }
   
   package object implicits extends Implicits

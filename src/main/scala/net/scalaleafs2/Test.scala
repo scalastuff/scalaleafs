@@ -2,18 +2,43 @@ package net.scalaleafs2.test
 
 import spray.routing.Directives
 import scala.concurrent.Future
-import scala.concurrent.ExecutionContext.Implicits.global
 import net.scalaleafs2._
 import akka.actor.ActorSystem
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Await
+import scala.concurrent.duration._
 
 object Test extends App {
-  
+
   
   implicit val actorSystem = ActorSystem("test")
   implicit val config = new Configuration(
     SprayServerContextPath -> List("bla")
   )
-//  val site = new Site(classOf[PageFrame])
+
+  implicit val ec = actorSystem.dispatcher
+  for (i <- 0 to 10000000) {
+    val f = Future.successful(i)
+    val g = f.map(_ * 2)
+
+    result += 2
+  }
+  Thread.sleep(1000)
+  val start = System.currentTimeMillis
+  var result = 0
+  for (i <- 0 to 1000000) {
+    val f = Future.successful(i)
+    val g = f.map(_ * 2)
+
+    result += 2
+  }
+  
+  println("G: " + result + " " + (System.currentTimeMillis - start) + " ms")
+  
+  
+
+  
+  //  val site = new Site(classOf[PageFrame])
   val server = new SprayServer(classOf[PageFrame], config, actorSystem)
   server.start
 }
@@ -22,6 +47,12 @@ object Test extends App {
 class PageFrame(window : Window) extends Template {
   
   val url = window.url
+  
+  val url2 = url.map(implicit context => x => XX)
+  
+  val url3 = Var()
+  
+  def XX(implicit executionContext : ExecutionContext) = "XX"
   
   val render = url.bind { u =>
     ".name" #> ("url:" + u) &
@@ -33,7 +64,7 @@ class PageFrame(window : Window) extends Template {
     }
   }
   
-  override def readInput(context : Context) = 
+  override val input = 
     <html>
       <h1>Hi there, <span class="name"/>!</h1>
       <a id="clickme">click me</a>

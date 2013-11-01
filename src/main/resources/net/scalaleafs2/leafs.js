@@ -32,8 +32,8 @@ var leafs = new function() {
   } 
   
   this.callback = function(callbackId) {
-    console.log('Callback invoked: /$$AJAX_CALLBACK_PATH/' + callbackId); // DEBUG MODE
-    $.getScript('/$$AJAX_CALLBACK_PATH/' + callbackId);
+    console.log('Callback invoked: /$$AJAX_CALLBACK_PATH/' + callbackId + '/' + window.id); // DEBUG MODE
+    $.getScript('/$$AJAX_CALLBACK_PATH/' + callbackId + '/' + window.id);
   };
   
   this.postCallback = function(callbackId, data) {
@@ -59,6 +59,19 @@ var leafs = new function() {
   
   this.onPageLoad = function(f) {
     $(document).ready(f)  
+  };
+  
+  this.onPageUnload = function(callbackId) {
+    console.log("UNLOAD:" + window.onunload);
+    window.onunload = function() {
+        $.ajax({
+      url: '/$$AJAX_CALLBACK_PATH/' + callbackId + '/' + window.id,
+      dataType: 'script',
+      async: false
+      });
+    window.onunload = function() {};
+    }; 
+    console.log("UNLOAD:" + window.onunload);
   };
   
   this.addClass = function(elt, cls) {

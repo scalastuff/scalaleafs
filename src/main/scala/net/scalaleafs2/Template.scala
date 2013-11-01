@@ -14,6 +14,7 @@ import java.util.concurrent.ConcurrentHashMap
 import scala.xml.NodeSeq.seqToNodeSeq
 import scala.xml.{XML, NodeSeq, Elem}
 import org.xml.sax.SAXParseException
+import scala.concurrent.Future
 
 /**
  * A template is an XmlTransformation that reads its input, by default, from a class-path resource, and provides
@@ -21,19 +22,24 @@ import org.xml.sax.SAXParseException
  * Class-path resources are cached (when not in debug mode) in a JVM-global cache.
  */
 trait Template extends Xml with Html {
-  val render : RenderNode
+  var context : Context = null
+  val renderNode : RenderNode = render
+  def render : RenderNode
   def readInput(context : Context) : NodeSeq = 
     Template.template(context, getClass) 
   private var _input : NodeSeq = null
-  def input(context : Context) = {
+  val input : NodeSeq = NodeSeq.Empty
+  def input(context : Context) : NodeSeq = {
     if (_input == null) {
-      _input = readInput(context)
+      _input = input
+      if (_input == NodeSeq.Empty)
+        _input = readInput(context)
     }
     _input
   }
   
-  val currentUrl : SyncBindable[Url] =
-    Def((context : Context) => context.url.get)
+//  val currentUrl : Val[Url] =
+//    Def((context : Context) => context.url)
     
   
   def renderAsync(context : Context) = 
@@ -45,7 +51,23 @@ trait Template extends Xml with Html {
 
 object Template {
   
-  implicit def toRenderNode(template : {def render : SyncRenderNode; def input(context : Context) : NodeSeq}) : SyncRenderNode = IdentRenderNode
+//  implicit def toRenderNode(template : => {def render : SyncRenderNode; def input(context : Context) : NodeSeq}) : SyncRenderNode = 
+//    IdentRenderNode
+
+  implicit def toRenderNode(createTemplate : => Template) : RenderNode = 
+    new RenderNode with SingleChildRenderNode  {
+      lazy val template = createTemplate
+      def child = template.renderNode
+      def renderAsync(context : Context, xml : NodeSeq) : Future[NodeSeq] = {
+        template.context = context
+        template.renderNode.renderAsync(context, xml)
+      }
+      
+      def renderChangesAsync(context : Context) : Future[JSCmd] = {
+        template.context = context
+        template.renderNode.renderChangesAsync(context)
+      }
+  }
 
   val templateCache = new ConcurrentHashMap[Class[_], NodeSeq]
   def template(context : Context, c : Class[_]) : NodeSeq = {
