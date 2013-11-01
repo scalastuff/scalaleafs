@@ -53,8 +53,7 @@ trait Bindable {
     _version
 }
 
-trait MappedBindable extends Bindable {
-  def origin : Bindable
+class MappedBindable(origin : Bindable) extends Bindable {
   private var _originVersion : Int = 0
   override def version = {
     if (_originVersion != origin.version) {
@@ -68,122 +67,77 @@ trait MappedBindable extends Bindable {
 trait Trigger extends Bindable {
 }
 
-trait Val[A] extends Bindable
-
-class AsyncValMagnet[A, B](val apply: AsyncVal[A] => AsyncVal[B]) extends AnyVal
-
-object AsyncValMagnet {
-  implicit def magnet1[A, B](f : A => Future[B]) = 
-    new AsyncValMagnet((bindable : AsyncVal[A]) =>
-      new MappedAsyncDef(bindable, (context: Context) => bindable.getAsync(context).flatMap(f)(context.executionContext)))
-  
-  implicit def magnet2[A, B](f : A => B) = 
-    new AsyncValMagnet((bindable : AsyncVal[A]) =>
-      new MappedAsyncDef(bindable, (context: Context) => bindable.getAsync(context).map(f)(context.executionContext)))
-  
-  implicit def magnet3[A, B](f : Context => A => Future[B]) = 
-    new AsyncValMagnet((bindable : AsyncVal[A]) =>
-      new MappedAsyncDef(bindable, (context: Context) => bindable.getAsync(context).flatMap(f(context))(context.executionContext)))
-  
-  implicit def magnet4[A, B](f : Context => A => B) = 
-    new AsyncValMagnet((bindable : AsyncVal[A]) =>
-      new MappedAsyncDef(bindable, (context: Context) => bindable.getAsync(context).map(f(context))(context.executionContext)))
-} 
-
-trait AsyncVal[A] extends Val[A] {
-  protected[scalaleafs2] def getAsync(context : Context) : Future[A]
-
-  def map[B](magnet : AsyncValMagnet[A, B]) =
-    magnet.apply(this)
+trait Val[A] extends Bindable {
+  def map[B](f : Context => A => B) : Val[B]
+  def mapAsync[B](f : Context => A => Future[B]) : Val[B]
 }
 
-object AsyncVal {
-  implicit class RichSyncVal[A](val bindable : AsyncVal[A]) extends AnyVal {
-    def bind(f : Placeholder[A] => SyncRenderNode) = 
-      new BoundRenderNode(bindable, bindable.getAsync, f)
-  }
-  implicit class OptionDelegate[A](val bindable : AsyncVal[Option[A]]) extends AsyncVal[Iterable[A]] {
-    override def version = bindable.version
-    def getAsync(context : Context) = {
-      import context.executionContext
-      bindable.getAsync(context).map(x => x)
-    }
-  }
-  implicit class RichOptionSyncVal[A](val bindable : AsyncVal[Option[A]]) extends AnyVal {
-    def bindAll(f : Placeholder[A] => SyncRenderNode) = 
-      new BoundAllRenderNode(bindable, f)
-  }
-  implicit class RichIterableSyncVal[A](val bindable : AsyncVal[_ <: Iterable[A]]) extends AnyVal {
-    def bindAll(f : Placeholder[A] => SyncRenderNode) = 
-      new BoundAllRenderNode(bindable, f)
-  }
-}
-
-class SyncValMapMagnet[A, B, S](val apply: SyncVal[A] => S) extends AnyVal
-
-object SyncValMapMagnet {
-//  implicit def magnet1[A, B](f : A => Future[B]) = 
-//    new SyncValMapMagnet((bindable : SyncVal[A]) => 
-//      new MappedAsyncDef(bindable, context => f(bindable.get(context))))
-//
-//  implicit def magnet2[A, B](f : A => B) = 
-//    new SyncValMapMagnet((bindable : SyncVal[A]) => 
-//      new MappedSyncDef(bindable, context => f(bindable.get(context))))
-
-  implicit def magnet3[A, B](f : Context => A => Future[B]) = 
-    new SyncValMapMagnet((bindable : SyncVal[A]) => 
-      new MappedAsyncDef(bindable, context => f(context)(bindable.get(context))))
-
-//  implicit def magnet4[A, B](f : Context => A => B) = 
-//    new SyncValMapMagnet((bindable : SyncVal[A]) => 
-//      new MappedSyncDef(bindable, context => f(context)(bindable.get(context))))
-} 
-
-class SyncValBindMagnet[A, R](val apply : SyncVal[A] => R)
-object SyncValBindMagnet {
-//  implicit def magnet1[A, B](f : Placeholder[A] => SyncRenderNode) = 
-//    new SyncValBindMagnet((bindable : SyncVal[A]) =>
-//      new BoundSyncRenderNode(bindable, bindable.get, f))
-
-  implicit def magnet2[A, B](f : Placeholder[A] => RenderNode) = 
-    new SyncValBindMagnet((bindable : SyncVal[A]) => 
-      new BoundRenderNode(bindable, context => Future.successful(bindable.get(context)), f))
-} 
-
-
-trait SyncVal[A] extends Val[A] {
+trait SyncVal[A] extends Val[A] { origin =>
   protected[scalaleafs2] def get(context : Context) : A
   
-  def map[B](f : Context => A => Future[B]) = 
-      new MappedAsyncDef(this, context => f(context)(get(context)))
-      
-//  def map[B, S](magnet : SyncValMapMagnet[A, B, S]) = 
-//    magnet.apply(this)
-    
-//  def bind[R](magnet : SyncValBindMagnet[A, R]) : R = 
-//    magnet.apply(this)
+  def map[B](f : Context => A => B) = 
+    new MappedBindable(origin) with SyncVal[B] {
+      def get(context : Context) : B = f(context)(origin.get(context))  
+    }
+
+  def mapAsync[B](f : Context => A => Future[B]) = 
+    new MappedBindable(origin) with AsyncVal[B] {
+    def get(context : Context) : Future[B] = f(context)(origin.get(context))
+  }
 } 
 
 object SyncVal {
 
-  implicit class RichSyncVal[A](val bindable : SyncVal[A]) extends AnyVal {
-    implicit def b = bindable
-//    def bind(f : Placeholder[A] => SyncRenderNode) = 
-//      new BoundSyncRenderNode(bindable, bindable.get, f)
+  implicit class RichSyncVal[A](val syncVal : SyncVal[A]) extends AnyVal {
     def bind(f : Placeholder[A] => RenderNode) = 
-      new BoundRenderNode(bindable, context => Future.successful(bindable.get(context)), f)
+      new BoundSyncRenderNode(syncVal, context => syncVal.get(context), f)
   }
   implicit class OptionDelegate[A](val bindable : SyncVal[Option[A]]) extends SyncVal[Iterable[A]] {
     override def version = bindable.version
     def get(context : Context) = bindable.get(context)
   }
   implicit class RichOptionSyncVal[A](val bindable : SyncVal[Option[A]]) extends AnyVal {
-    def bindAll(f : Placeholder[A] => SyncRenderNode) = 
+    def bindAll(f : Placeholder[A] => RenderNode) = 
       new BoundAllSyncRenderNode(bindable, f)
   }
   implicit class RichIterableSyncVal[A](val bindable : SyncVal[_ <: Iterable[A]]) extends AnyVal {
-    def bindAll(f : Placeholder[A] => SyncRenderNode) = 
+    def bindAll(f : Placeholder[A] => RenderNode) = 
       new BoundAllSyncRenderNode(bindable, f)
+  }
+}
+
+trait AsyncVal[A] extends Val[A] { origin =>
+  protected[scalaleafs2] def get(context : Context) : Future[A]
+
+  def map[B](f : Context => A => B) : AsyncVal[B] = 
+    new MappedBindable(origin) with AsyncVal[B] {
+      def get(implicit context : Context) : Future[B] = origin.get(context).map(f(context))  
+    }
+
+  def mapAsync[B](f : Context => A => Future[B]) = 
+    new MappedBindable(origin) with AsyncVal[B] {
+      def get(implicit context : Context) : Future[B] = origin.get(context).flatMap(f(context))  
+  }
+}
+
+object AsyncVal {
+  implicit class RichSyncVal[A](val asyncVal : AsyncVal[A]) extends AnyVal {
+    def bind(f : Placeholder[A] => RenderNode) = 
+      new BoundRenderNode(asyncVal, asyncVal.get, f)
+  }
+  implicit class OptionDelegate[A](val asyncVal : AsyncVal[Option[A]]) extends AsyncVal[Iterable[A]] {
+    override def version = asyncVal.version
+    def getAsync(implicit context : Context) = {
+      asyncVal.get(context).map(x => x)
+    }
+  }
+  implicit class RichOptionSyncVal[A](val asyncVal : AsyncVal[Option[A]]) extends AnyVal {
+    def bindAll(f : Placeholder[A] => RenderNode) = 
+      new BoundAllRenderNode(asyncVal, f)
+  }
+  implicit class RichIterableSyncVal[A](val asyncVal : AsyncVal[_ <: Iterable[A]]) extends AnyVal {
+    def bindAll(f : Placeholder[A] => RenderNode) = 
+      new BoundAllRenderNode(asyncVal, f)
   }
 }
 
@@ -207,14 +161,6 @@ object Def {
   
   def apply[A](f : A) = 
     new SyncDef(context => f)
-}
-
-class MappedAsyncDef[A](val origin : Bindable, f : Context => Future[A]) extends AsyncVal[A] with MappedBindable {
-  protected[scalaleafs2] def getAsync(context : Context) : Future[A] = f(context)
-}
-
-class MappedSyncDef[A](val origin : Bindable, f : Context => A) extends SyncVal[A] with MappedBindable {
-  protected[scalaleafs2] def get(context : Context) : A = f(context)
 }
 
 class Var[A](initialValue : A) extends SyncVal[A] {

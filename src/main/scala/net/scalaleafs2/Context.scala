@@ -2,6 +2,8 @@ package net.scalaleafs2
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
+import scala.xml.Elem
+import scala.xml.NodeSeq
 
 class Context(val site : Site, val window : Window)(implicit val executionContext : ExecutionContext) {
 
@@ -90,7 +92,14 @@ class Context(val site : Site, val window : Window)(implicit val executionContex
     addHeadContribution(LeafsJavaScriptResource)
     uid
   }
+
+  case class PostponedRendering[A](elem : Elem, f : Future[A], render : A => NodeSeq)
+  private var pendingRenderings : List[PostponedRendering[_]] = Nil
   
+  private[scalaleafs2] def postponeRender[A](elem : Elem, f : Future[A], render : A => NodeSeq) : Elem = elem
+  private[scalaleafs2] def postponeRenderChanges[A](id : String, f : Future[A], render : A => NodeSeq, jsCmd : NodeSeq => JSCmd) : JSCmd = JsNoop {
+    assert(pendingRenderings.isEmpty)
+  }
 }
 
 trait ContextAnnotationFactory extends Function[Context, Any]
