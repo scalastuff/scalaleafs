@@ -28,10 +28,10 @@ object OperationMagnet {
   implicit def magnet3[A](f : => Future[A]) = new OperationMagnet[A](context => f)
   implicit def magnet4[A](f : => A) = new OperationMagnet[A](context => Future.successful(f))
   
-  implicit def JSNoopMagnet1(f : Context => Future[Unit]) = new OperationMagnet[JSCmd](context => f(context).map(_ => JsNoop)(context.executionContext))
-  implicit def JSNoopMagnet2(f : Context => Unit) = new OperationMagnet[JSCmd](context => { f(context); Future.successful(JsNoop) })
-  implicit def JSNoopMagnet3(f : => Future[Unit]) = new OperationMagnet[JSCmd](context => f.map(_ => JsNoop)(context.executionContext))
-  implicit def JSNoopMagnet4(f : => Unit) = new OperationMagnet[JSCmd](context => { f; Future.successful(JsNoop) })
+  implicit def JSNoopMagnet1(f : Context => Future[Unit]) = new OperationMagnet[JSCmd](context => f(context).map(_ => JSNoop)(context.executionContext))
+  implicit def JSNoopMagnet2(f : Context => Unit) = new OperationMagnet[JSCmd](context => { f(context); Future.successful(JSNoop) })
+  implicit def JSNoopMagnet3(f : => Future[Unit]) = new OperationMagnet[JSCmd](context => f.map(_ => JSNoop)(context.executionContext))
+  implicit def JSNoopMagnet4(f : => Unit) = new OperationMagnet[JSCmd](context => { f; Future.successful(JSNoop) })
 }
 
 //class SyncOperationMagnet[A](val magnetFunction : Context => A) extends Function[Context, A] {
@@ -43,8 +43,8 @@ object OperationMagnet {
 //  implicit def magnet2[A](f : Context => A) = new SyncOperationMagnet[A](context => f(context))
 ////  implicit def magnet4[A](f : => A) = new SyncOperationMagnet[A](context => f)
 //  
-////  implicit def JSNoopMagnet2(f : Context => Unit) = new SyncOperationMagnet[JSCmd](context => { f(context); JsNoop })
-////  implicit def JSNoopMagnet4(f : => Unit) = new SyncOperationMagnet[JSCmd](context => { f; JsNoop })
+////  implicit def JSNoopMagnet2(f : Context => Unit) = new SyncOperationMagnet[JSCmd](context => { f(context); JSNoop })
+////  implicit def JSNoopMagnet4(f : => Unit) = new SyncOperationMagnet[JSCmd](context => { f; JSNoop })
 //}
 
 trait Html {

@@ -5,41 +5,21 @@ import scala.concurrent.Future
 import scala.xml.Elem
 import scala.xml.NodeSeq
 
-class Context(val site : Site, val window : Window)(implicit val executionContext : ExecutionContext) {
+class Context(val site : Site, val window : Window)(implicit val executionContext : ExecutionContext) 
+    extends RenderAsync with Callbacks with HeadContributions {
 
-  private[scalaleafs2] var _headContributionKeys : Set[String] = Set.empty
-  private[scalaleafs2] var _headContributions : Seq[HeadContribution] = Seq.empty
-  private[scalaleafs2] var _postRequestJs : JSCmd = JsNoop
+  private[scalaleafs2] var _postRequestJs : JSCmd = JSNoop
 
   def debugMode = true
   
   def annotation : Any = null
   
-  def headContributions = 
-    _headContributions
-    
-  def addHeadContribution(contribution : HeadContribution) {
-    val key = contribution.key
-    if (!window._headContributionKeys.contains(key)) {
-      if (!_headContributionKeys.contains(key)) {
-        
-        // Add key first to prevent cyclic behavior.
-        _headContributionKeys += key
-        
-        // Add dependencies before actual contribution.
-        contribution.dependsOn.foreach(dep => addHeadContribution(dep))
-        
-        // Now add actual contribution.
-        _headContributions :+= contribution
-      }
-    }
-  }
   
   /**
    * Sends the javascript command to the browser upon completion of the current request
    */
   def addPostRequestJs(jsCmd : JSCmd) {
-    if (jsCmd != JsNoop) {
+    if (jsCmd != JSNoop) {
       _postRequestJs &= jsCmd
     }
   }
@@ -62,48 +42,10 @@ class Context(val site : Site, val window : Window)(implicit val executionContex
     }
   }
 
-  def callback(parameter : JSExp)(f : String => Future[Unit]) = 
-    JSCmd("leafs.callback('" + callbackId(m => f(m.get("value").flatMap(_.headOption).getOrElse(""))) + "?value=' + encodeURIComponent(" + parameter.toString + "));")
-  
-  def callback(f : => Future[Unit]) : JSCmd = 
-    callback()(_ => f)
-  
-  def callback(f : Map[String, Seq[String]] => Future[Unit]) : JSCmd = 
-    callback()(f)
-    
-  def callback(parameters : (String, JSExp)*)(f : Map[String, Seq[String]] => Future[Unit]) : JSCmd = 
-    if (parameters.isEmpty)
-      JSCmd("leafs.callback('" + callbackId(f) + "');")
-    else 
-      JSCmd("leafs.callback('" + callbackId(f) + "?" + parameters.map(x => x._1.toString + "=' + encodeURIComponent(" + x._2.toString + ")").mkString(" + '&") + ");")
-  
-  
   private[scalaleafs2] def popUrl(uri : String) = {
     val url = window._currentUrl.get.resolve(uri)
     if (window._currentUrl.get != url) {
       window._currentUrl.set(url)
-    }
-  }
-  
-  private[scalaleafs2] def callbackId(f : Map[String, Seq[String]] => Future[Unit]) : String = {
-    val uid = site.generateCallbackID
-    window.ajaxCallbacks.put(uid, AjaxCallback(f))
-    addHeadContribution(JQuery)
-    addHeadContribution(LeafsJavaScriptResource)
-    uid
-  }
-
-  type PostponedRendering[A] = Future[(Elem, A, A => NodeSeq)]
-  private var postponedRenderings : List[PostponedRendering[_]] = Nil
-  
-  private[scalaleafs2] def postponeRender[A](elem : Elem, f : Future[A], render : A => NodeSeq) : Elem = elem
-  private[scalaleafs2] def postponeRenderChanges[A](id : String, f : Future[A], render : A => NodeSeq, jsCmd : NodeSeq => JSCmd) : JSCmd = JsNoop {
-    assert(postponedRenderings.isEmpty)
-  }
-  
-  private def processPostponedRenderings = {
-    Future.sequence(postponedRenderings.map(_.f)).map { values =>
-    
     }
   }
 }

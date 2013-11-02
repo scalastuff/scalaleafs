@@ -11,5 +11,5 @@
 </listAttribute>
 <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="net.scalaleafs2.test.Test"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="scalaleafs"/>
-<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-DleafsDebugMode=true"/>
+<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-DleafsDebugMode=true -server"/>
 </launchConfiguration>

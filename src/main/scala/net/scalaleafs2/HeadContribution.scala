@@ -24,10 +24,28 @@ import scala.xml.PCData
  * HeadContributions expects the whole page (HTML tag) as input.
  * Usually, an application's main frame class extends this trait.  
  */
-// TODO don't make this a render node, just call it in window
-trait HeadContributions extends SyncRenderNode {
-  abstract override def render(context : Context, xml : NodeSeq) : NodeSeq = {
-   HeadContributions.render(context, super.render(context, xml)) 
+trait HeadContributions { this : Context =>
+  private[scalaleafs2] var _headContributionKeys : Set[String] = Set.empty
+  private[scalaleafs2] var _headContributions : Seq[HeadContribution] = Seq.empty
+  
+  def headContributions = 
+    _headContributions
+    
+  def addHeadContribution(contribution : HeadContribution) {
+    val key = contribution.key
+    if (!window._headContributionKeys.contains(key)) {
+      if (!_headContributionKeys.contains(key)) {
+        
+        // Add key first to prevent cyclic behavior.
+        _headContributionKeys += key
+        
+        // Add dependencies before actual contribution.
+        contribution.dependsOn.foreach(dep => addHeadContribution(dep))
+        
+        // Now add actual contribution.
+        _headContributions :+= contribution
+      }
+    }
   }
 }
 
@@ -121,7 +139,7 @@ object HeadContributions {
 abstract class HeadContribution(val key : String) {
   def dependsOn : List[HeadContribution] = Nil
   def render(context : Context) : NodeSeq
-  def renderAdditional(context : Context) : JSCmd = JsNoop
+  def renderAdditional(context : Context) : JSCmd = JSNoop
 }
 
 class JavaScript(key : String, uri : String) extends HeadContribution(key) {

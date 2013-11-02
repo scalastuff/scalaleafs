@@ -26,7 +26,8 @@ class Window(site : Site, url : Url, rootTemplateInstantiator : RootTemplateInst
     import site.executionContext
     synchronizedFuture {
       val context = new Context(site, this)
-      rootTemplate().renderAsync(context).map(xml => HeadContributions.render(context, xml)).andThen {
+      val initialXml = rootTemplate().render(context, NodeSeq.Empty)
+      context.processAsyncRender(initialXml).map(xml => HeadContributions.render(context, xml)).andThen {
         case _ =>
           _headContributionKeys ++= context._headContributionKeys
       }
@@ -44,12 +45,14 @@ class Window(site : Site, url : Url, rootTemplateInstantiator : RootTemplateInst
           // Call the callback.
           ajaxCallback.f(parameters).flatMap { _ =>
             // Then query the render tree for changes
-            rootTemplate().renderChangesAsync(context).map  { jsChanges =>
+            val initialChangesJSCmd = rootTemplate().renderChanges(context)
+            // Process all asynchronous render changes
+            context.processAsyncRenderChanges(initialChangesJSCmd).map { changesJSCmd =>
               // Store all current head contributions in the initial request. 
               _headContributionKeys ++= context._headContributionKeys
               // Render additional head contributions.
-              val jsHeadContrib = context._headContributions.foldLeft(JsNoop.asInstanceOf[JSCmd])(_ & _.renderAdditional(context))
-              jsHeadContrib & jsChanges & context._postRequestJs
+              val jsHeadContrib = context._headContributions.foldLeft(JSNoop.asInstanceOf[JSCmd])(_ & _.renderAdditional(context))
+              jsHeadContrib & changesJSCmd & context._postRequestJs
             }
           }
         case None => 

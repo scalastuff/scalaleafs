@@ -7,9 +7,9 @@ import scala.concurrent.Future
 import scala.annotation.tailrec
 
 /**
- * An xml transformation is a composable NodeSeq => NodeSeq function. 
- * Transformations are composed using apply(Transformation) and &(Transformation).
- * The Transformation trait is used for many operations in ScalaLeafs.
+ * A render node is in essence a NodeSeq => NodeSeq transformation. Render-nodes
+ * form a render tree, which is persisted per window. Each rendering can cause
+ * the render tree to change.  
  */
 trait RenderNode {
 
@@ -64,7 +64,7 @@ final class CompoundRenderNode(val children: List[RenderNode]) extends RenderNod
     children.foldLeft(xml)((xml, node) => node.render(context, xml))
 
   def renderChanges(context : Context) =
-    children.foldLeft[JSCmd](JsNoop)((cmd, node) => node.renderChanges(context))
+    children.foldLeft[JSCmd](JSNoop)((cmd, node) => node.renderChanges(context))
     
   override def apply(node : RenderNode) : RenderNode = 
     new CompoundRenderNode(node :: children)
@@ -75,10 +75,8 @@ final class CompoundRenderNode(val children: List[RenderNode]) extends RenderNod
 
 object IdentRenderNode extends ElemModifier with NoChildRenderNode {
   def render(context : Context, elem : Elem) = elem
-  def renderChanges(context: net.scalaleafs2.Context): net.scalaleafs2.JSCmd = JsNoop
-  override def & (modifier : ElemModifier) = modifier 
+  def renderChanges(context: net.scalaleafs2.Context): net.scalaleafs2.JSCmd = JSNoop
   override def & (node : RenderNode) = node 
-  override def apply (modifier : ElemModifier) = modifier
   override def apply (node : RenderNode) = node
   val modify = (context : Context, elem : Elem) => elem  
 }
@@ -148,6 +146,6 @@ final class ConditionalElemModifier(val modify : (Context, Elem) => Elem, condit
     if (condition) modify(context, elem) 
     else elem
     
-  def renderChanges(context : Context) = JsNoop
+  def renderChanges(context : Context) = JSNoop
 }
 

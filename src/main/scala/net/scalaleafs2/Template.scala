@@ -21,15 +21,11 @@ import scala.concurrent.Future
  * a bind hook to transform this input to some output.
  * Class-path resources are cached (when not in debug mode) in a JVM-global cache.
  */
-trait Template extends Xml with Html {
-  var context : Context = null
-  val renderNode : RenderNode = render
-  def render : RenderNode
-  def readInput(context : Context) : NodeSeq = 
-    Template.template(context, getClass) 
+trait Template extends RenderNode with SingleChildRenderNode with Xml with Html {
+  
+  lazy val child : RenderNode = render
   private var _input : NodeSeq = null
-  val input : NodeSeq = NodeSeq.Empty
-  def input(context : Context) : NodeSeq = {
+  private def input(context : Context) : NodeSeq = {
     if (_input == null) {
       _input = input
       if (_input == NodeSeq.Empty)
@@ -37,37 +33,31 @@ trait Template extends Xml with Html {
     }
     _input
   }
+
+  /**
+   * Override to define the render tree.
+   */
+  def render : RenderNode
   
-//  val currentUrl : Val[Url] =
-//    Def((context : Context) => context.url)
+  /**
+   * Initial input value. 
+   * Override this value to prevent reading of input.
+   */  
+  val input : NodeSeq = NodeSeq.Empty
+
+  /**
+   * Reads input of this template.
+   * Default implementation reads a template resource from the classpath
+   * with the same name as the class of this template.
+   */
+  def readInput(context : Context) : NodeSeq = 
+    Template.template(context, getClass) 
     
-  
-  def renderAsync(context : Context) = 
-    render.renderAsync(context, input(context))
-    
-  def renderChangesAsync(context : Context) = 
-    render.renderChangesAsync(context)
+  def render(context : Context, xml : NodeSeq) = child.render(context, input(context))
+  def renderChanges(context : Context) = child.renderChanges(context)
 }
 
 object Template {
-  
-//  implicit def toRenderNode(template : => {def render : SyncRenderNode; def input(context : Context) : NodeSeq}) : SyncRenderNode = 
-//    IdentRenderNode
-
-  implicit def toRenderNode(createTemplate : => Template) : RenderNode = 
-    new RenderNode with SingleChildRenderNode  {
-      lazy val template = createTemplate
-      def child = template.renderNode
-      def renderAsync(context : Context, xml : NodeSeq) : Future[NodeSeq] = {
-        template.context = context
-        template.renderNode.renderAsync(context, xml)
-      }
-      
-      def renderChangesAsync(context : Context) : Future[JSCmd] = {
-        template.context = context
-        template.renderNode.renderChangesAsync(context)
-      }
-  }
 
   val templateCache = new ConcurrentHashMap[Class[_], NodeSeq]
   def template(context : Context, c : Class[_]) : NodeSeq = {

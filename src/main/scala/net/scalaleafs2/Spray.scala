@@ -91,6 +91,7 @@ class SprayRoute(site : Site) extends Route with Directives with Logging {
                 bytes
               }
             }
+          case None => reject
         }
       } ~
       path(Rest) { path =>

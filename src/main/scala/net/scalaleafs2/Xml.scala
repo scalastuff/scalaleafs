@@ -19,20 +19,20 @@ object Xml extends Xml
 
 trait Xml {
   
-  def mkElem(cssConstructor : CssConstructor) = new SyncRenderNode with NoChildRenderNode {
+  def mkElem(cssConstructor : CssConstructor) = new RenderNode with NoChildRenderNode {
     def render(context : Context, xml : NodeSeq) = 
       cssConstructor(xml)
-    def renderChanges(context : Context) = JsNoop 
+    def renderChanges(context : Context) = JSNoop 
   }
   
-  def mkElem(cssConstructor : CssConstructor, condition : => Boolean) = new SyncRenderNode with NoChildRenderNode {
+  def mkElem(cssConstructor : CssConstructor, condition : => Boolean) = new RenderNode with NoChildRenderNode {
     def render(context : Context, xml : NodeSeq) = 
       if (condition) cssConstructor(xml)
       else xml
-    def renderChanges(context : Context) = JsNoop 
+    def renderChanges(context : Context) = JSNoop 
   }
 
-  def mkElem(cssConstructor : CssConstructor, modifier : ElemModifier) = new SyncRenderNode with SingleChildRenderNode {
+  def mkElem(cssConstructor : CssConstructor, modifier : ElemModifier) = new RenderNode with SingleChildRenderNode {
     def child = modifier
     def render(context : Context, xml : NodeSeq) = 
       modifier.render(context, cssConstructor(xml))
@@ -40,7 +40,7 @@ trait Xml {
       child.renderChanges(context)
   }
 
-  def mkElem(cssConstructor : CssConstructor, modifier : ElemModifier, condition : => Boolean) = new SyncRenderNode with SingleChildRenderNode {
+  def mkElem(cssConstructor : CssConstructor, modifier : ElemModifier, condition : => Boolean) = new RenderNode with SingleChildRenderNode {
     def child = modifier
     def render(context : Context, xml : NodeSeq) = 
       if (condition) modifier.render(context, cssConstructor(xml))
@@ -52,15 +52,15 @@ trait Xml {
   /**
    * Transformation that replaces the input xml with some static text.
    */
-  def replaceWithString(text : => String) : SyncRenderNode = 
+  def replaceWithString(text : => String) : RenderNode = 
     replaceWith(Text(text))
 
   /**
    * Transformation that replaces the input xml with some static xml.
    */
-  def replaceWith(xml : => NodeSeq) = new SyncRenderNode with NoChildRenderNode {
+  def replaceWith(xml : => NodeSeq) = new RenderNode with NoChildRenderNode {
     def render(context : Context, ignore : NodeSeq) = xml
-    def renderChanges(context : Context) = JsNoop
+    def renderChanges(context : Context) = JSNoop
   }
   
   /**
@@ -77,7 +77,7 @@ trait Xml {
   def replaceElem(cssConstructor : CssConstructor, modifier : ElemModifier) : RenderNode = 
     new ConditionalElemModifier((context, elem) => cssConstructor(elem.child), true) & modifier 
   
-  def replaceElem(cssConstructor : CssConstructor, modifier : ElemModifier, condition : => Boolean) = new ExpectElemSyncRenderNode with SingleChildRenderNode {
+  def replaceElem(cssConstructor : CssConstructor, modifier : ElemModifier, condition : => Boolean) = new ExpectElemRenderNode with SingleChildRenderNode {
     def child = modifier
     def render(context : Context, elem : Elem) : Elem = {
       if (condition) modifier.render(context, cssConstructor(elem.child))
@@ -91,11 +91,11 @@ trait Xml {
   /**
    * Transformation that removes the root element of some input xml.
    */
-  def children(condition : => Boolean = true) = new ExpectElemSyncRenderNode with NoChildRenderNode {
+  def children(condition : => Boolean = true) = new ExpectElemRenderNode with NoChildRenderNode {
     def render(context : Context, elem : Elem) : NodeSeq = 
       if (condition) elem.child
       else elem
-    def renderChanges(context : Context) = JsNoop
+    def renderChanges(context : Context) = JSNoop
   }
   
   /**

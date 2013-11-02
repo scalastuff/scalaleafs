@@ -16,25 +16,25 @@ object Test extends App {
     SprayServerContextPath -> List("bla")
   )
 
-  implicit val ec = actorSystem.dispatcher
-  for (i <- 0 to 10000000) {
-    val f = Future.successful(i)
-    val g = f.map(_ * 2)
-
-    result += 2
-  }
-  Thread.sleep(1000)
-  val start = System.currentTimeMillis
-  var result = 0
-  for (i <- 0 to 1000000) {
-    val f = Future.successful(i)
-    val g = f.map(_ * 2)
-
-    result += 2
-  }
-  
-  println("G: " + result + " " + (System.currentTimeMillis - start) + " ms")
-  
+//  implicit val ec = actorSystem.dispatcher
+//  for (i <- 0 to 40000000) {
+//    val f = Future.successful(i)
+//    val g = f.map(_ * 2)
+//
+//    result += 2
+//  }
+//  Thread.sleep(3000)
+//  val start = System.currentTimeMillis
+//  var result = 0
+//  for (i <- 0 to 1000000) {
+//    val f = Future.successful(i)
+//    val g = f.map(_ * 2)
+//
+//    result += 2
+//  }
+//  
+//  println("G: " + result + " " + (System.currentTimeMillis - start) + " ms")
+//  
   
 
   

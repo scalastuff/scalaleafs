@@ -55,7 +55,6 @@ object CssSelector {
 }
 
 class UnparsedCssSelector(val s : String) extends AnyVal {
-  def #> (node : SyncRenderNode) = new SelectorSyncRenderNode(CssSelector.getOrParse(s), node) 
   def #> (node : RenderNode) = new SelectorRenderNode(CssSelector.getOrParse(s), node) 
 }
 
