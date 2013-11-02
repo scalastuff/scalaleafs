@@ -1,29 +1,28 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" output="target/scala-2.10/classes" path="src/main/scala"/>
-	<classpathentry kind="src" output="target/scala-2.10/classes" path="src/main/java"/>
-	<classpathentry kind="src" output="target/scala-2.10/classes" path="src/main/resources"/>
-	<classpathentry kind="src" output="target/scala-2.10/test-classes" path="src/test/scala"/>
-	<classpathentry kind="src" output="target/scala-2.10/test-classes" path="src/test/java"/>
-	<classpathentry kind="src" output="target/scala-2.10/test-classes" path="src/test/resources"/>
-	<classpathentry kind="lib" path="C:/Users/Ruud/.ivy2/cache/javax.servlet/servlet-api/jars/servlet-api-2.5.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Ruud/.ivy2/cache/nu.validator.htmlparser/htmlparser/jars/htmlparser-1.2.1.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Ruud/.ivy2/cache/org.clapper/grizzled-slf4j_2.10/jars/grizzled-slf4j_2.10-1.0.1.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Ruud/.ivy2/cache/org.slf4j/slf4j-api/jars/slf4j-api-1.7.1.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Ruud/.ivy2/cache/com.typesafe.akka/akka-actor_2.10/jars/akka-actor_2.10-2.2.3.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Ruud/.ivy2/cache/com.typesafe/config/bundles/config-1.0.2.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Ruud/.ivy2/cache/io.spray/spray-can/jars/spray-can-1.2-RC1.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Ruud/.ivy2/cache/io.spray/spray-io/bundles/spray-io-1.2-RC1.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Ruud/.ivy2/cache/io.spray/spray-util/bundles/spray-util-1.2-RC1.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Ruud/.ivy2/cache/org.scala-lang/scala-library/jars/scala-library-2.10.3.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Ruud/.ivy2/cache/io.spray/spray-http/bundles/spray-http-1.2-RC1.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Ruud/.ivy2/cache/org.parboiled/parboiled-scala_2.10/bundles/parboiled-scala_2.10-1.1.6.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Ruud/.ivy2/cache/org.parboiled/parboiled-core/bundles/parboiled-core-1.1.6.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Ruud/.ivy2/cache/io.spray/spray-routing/jars/spray-routing-1.2-RC1.jar" sourcepath="C:/Users/Ruud/.ivy2/cache/io.spray/spray-routing/srcs/spray-routing-1.2-RC1-sources.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Ruud/.ivy2/cache/io.spray/spray-httpx/bundles/spray-httpx-1.2-RC1.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Ruud/.ivy2/cache/org.jvnet.mimepull/mimepull/jars/mimepull-1.9.3.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Ruud/.ivy2/cache/com.chuusai/shapeless_2.10/jars/shapeless_2.10-1.2.4.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Ruud/.ivy2/cache/junit/junit/jars/junit-4.8.jar"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="output" path="bin"/>
+  <classpathentry kind="src" path="src/main/scala" output="target/scala-2.10/classes"/>
+  <classpathentry kind="src" path="src/main/java" output="target/scala-2.10/classes"/>
+  <classpathentry kind="src" path="src/main/resources" output="target/scala-2.10/classes"/>
+  <classpathentry kind="src" path="src/test/scala" output="target/scala-2.10/test-classes"/>
+  <classpathentry kind="src" path="src/test/java" output="target/scala-2.10/test-classes"/>
+  <classpathentry kind="src" path="src/test/resources" output="target/scala-2.10/test-classes"/>
+  <classpathentry kind="lib" path="/Users/ruud/.ivy2/cache/javax.servlet/servlet-api/jars/servlet-api-2.5.jar"/>
+  <classpathentry kind="lib" path="/Users/ruud/.ivy2/cache/nu.validator.htmlparser/htmlparser/jars/htmlparser-1.2.1.jar"/>
+  <classpathentry kind="lib" path="/Users/ruud/.ivy2/cache/org.clapper/grizzled-slf4j_2.10/jars/grizzled-slf4j_2.10-1.0.1.jar"/>
+  <classpathentry kind="lib" path="/Users/ruud/.ivy2/cache/org.slf4j/slf4j-api/jars/slf4j-api-1.7.1.jar"/>
+  <classpathentry kind="lib" path="/Users/ruud/.ivy2/cache/com.typesafe.akka/akka-actor_2.10/jars/akka-actor_2.10-2.2.3.jar"/>
+  <classpathentry kind="lib" path="/Users/ruud/.ivy2/cache/com.typesafe/config/bundles/config-1.0.2.jar"/>
+  <classpathentry kind="lib" path="/Users/ruud/.ivy2/cache/io.spray/spray-can/jars/spray-can-1.2-RC1.jar"/>
+  <classpathentry kind="lib" path="/Users/ruud/.ivy2/cache/io.spray/spray-io/bundles/spray-io-1.2-RC1.jar"/>
+  <classpathentry kind="lib" path="/Users/ruud/.ivy2/cache/io.spray/spray-util/bundles/spray-util-1.2-RC1.jar"/>
+  <classpathentry kind="lib" path="/Users/ruud/.ivy2/cache/org.scala-lang/scala-library/jars/scala-library-2.10.3.jar"/>
+  <classpathentry kind="lib" path="/Users/ruud/.ivy2/cache/io.spray/spray-http/bundles/spray-http-1.2-RC1.jar"/>
+  <classpathentry kind="lib" path="/Users/ruud/.ivy2/cache/org.parboiled/parboiled-scala_2.10/bundles/parboiled-scala_2.10-1.1.6.jar"/>
+  <classpathentry kind="lib" path="/Users/ruud/.ivy2/cache/org.parboiled/parboiled-core/bundles/parboiled-core-1.1.6.jar"/>
+  <classpathentry kind="lib" path="/Users/ruud/.ivy2/cache/io.spray/spray-routing/jars/spray-routing-1.2-RC1.jar"/>
+  <classpathentry kind="lib" path="/Users/ruud/.ivy2/cache/io.spray/spray-httpx/bundles/spray-httpx-1.2-RC1.jar"/>
+  <classpathentry kind="lib" path="/Users/ruud/.ivy2/cache/org.jvnet.mimepull/mimepull/jars/mimepull-1.9.3.jar"/>
+  <classpathentry kind="lib" path="/Users/ruud/.ivy2/cache/com.chuusai/shapeless_2.10/jars/shapeless_2.10-1.2.4.jar"/>
+  <classpathentry kind="lib" path="/Users/ruud/.ivy2/cache/junit/junit/jars/junit-4.8.jar"/>
+  <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+  <classpathentry kind="output" path="bin"/>
 </classpath>

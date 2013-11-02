@@ -93,12 +93,18 @@ class Context(val site : Site, val window : Window)(implicit val executionContex
     uid
   }
 
-  case class PostponedRendering[A](elem : Elem, f : Future[A], render : A => NodeSeq)
-  private var pendingRenderings : List[PostponedRendering[_]] = Nil
+  type PostponedRendering[A] = Future[(Elem, A, A => NodeSeq)]
+  private var postponedRenderings : List[PostponedRendering[_]] = Nil
   
   private[scalaleafs2] def postponeRender[A](elem : Elem, f : Future[A], render : A => NodeSeq) : Elem = elem
   private[scalaleafs2] def postponeRenderChanges[A](id : String, f : Future[A], render : A => NodeSeq, jsCmd : NodeSeq => JSCmd) : JSCmd = JsNoop {
-    assert(pendingRenderings.isEmpty)
+    assert(postponedRenderings.isEmpty)
+  }
+  
+  private def processPostponedRenderings = {
+    Future.sequence(postponedRenderings.map(_.f)).map { values =>
+    
+    }
   }
 }
 

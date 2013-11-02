@@ -53,11 +53,7 @@ object Selector {
     // Optimization: Make sure the same node list is returned when nothing changed.
     if (changed) builder.result
     else xml
-  }
-
-  val changed = <h1>Changed</h1>
-  val unchanged = <h1>Unchanged</h1>
-  
+  }  
 }
 
 class SelectorSyncRenderNode(selector : Selector, val child : SyncRenderNode) extends SyncRenderNode with SingleChildRenderNode {

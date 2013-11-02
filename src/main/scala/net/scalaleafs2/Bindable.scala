@@ -98,11 +98,11 @@ object SyncVal {
   }
   implicit class RichOptionSyncVal[A](val bindable : SyncVal[Option[A]]) extends AnyVal {
     def bindAll(f : Placeholder[A] => RenderNode) = 
-      new BoundAllSyncRenderNode(bindable, f)
+      new SyncBoundAllRenderNode(bindable, f)
   }
   implicit class RichIterableSyncVal[A](val bindable : SyncVal[_ <: Iterable[A]]) extends AnyVal {
     def bindAll(f : Placeholder[A] => RenderNode) = 
-      new BoundAllSyncRenderNode(bindable, f)
+      new SyncBoundAllRenderNode(bindable, f)
   }
 }
 
