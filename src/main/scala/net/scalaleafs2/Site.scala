@@ -53,7 +53,7 @@ class Site(rootTemplateClass : Class[_ <: Template], val contextPath : List[Stri
 
   val resources = new Resources(ResourceFactory, substitutions, debugMode)
 
-  def handleRequest[A](url : Url): Future[NodeSeq] = {
+  def handleRequest[A](url : Url): Future[String] = {
     val window = new Window(this, url, rootTemplateInstantiator)
     windows += window.id -> window
     window.handleRequest(url)

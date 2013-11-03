@@ -132,7 +132,7 @@ class SprayRoute(site : Site) extends Route with Directives with Logging {
                   complete {
                     import site.executionContext
                     site.handleRequest(url).map { 
-                      xml: NodeSeq =>
+                      xml =>
 //                        val xml = processRoot(request)
                         println("Processed: " + path + " (" + (System.currentTimeMillis - start) + " ms)")
                         xml

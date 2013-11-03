@@ -22,13 +22,13 @@ class Window(site : Site, url : Url, rootTemplateInstantiator : RootTemplateInst
   def url : SyncVal[Url] = _currentUrl
   val id : String = "leafs-" + UUID.randomUUID.toString
   
-  def handleRequest[A](url : Url): Future[NodeSeq] = {
+  def handleRequest[A](url : Url): Future[String] = {
     import site.executionContext
     synchronizedFuture {
       val context = new Context(site, this)
       val initialXml = rootTemplate().render(context, NodeSeq.Empty)
-      context.processAsyncRender(initialXml).map(xml => HeadContributions.render(context, xml)).andThen {
-        case _ =>
+      context.processAsyncRender(initialXml).map(xml => HeadContributions.render(context, xml)).map("<!DOCTYPE html>" + _).andThen {
+        case _ => 
           _headContributionKeys ++= context._headContributionKeys
       }
     }

@@ -1,14 +1,13 @@
 package net.scalaleafs2.test
 
-import spray.routing.Directives
-import scala.concurrent.Future
 import net.scalaleafs2._
 import akka.actor.ActorSystem
 import scala.concurrent.ExecutionContext
-import scala.concurrent.Await
 import scala.concurrent.duration._
+import net.scalaleafs2.OperationMagnet.JSNoopMagnet4
+import net.scalaleafs2.SyncVal.RichSyncVal
 
-object Test extends App {
+object Main extends App {
 
   
   implicit val actorSystem = ActorSystem("test")
@@ -39,7 +38,7 @@ object Test extends App {
 
   
   //  val site = new Site(classOf[PageFrame])
-  val server = new SprayServer(classOf[PageFrame], config, actorSystem)
+  val server = new SprayServer(classOf[Frame], config, actorSystem)
   server.start
 }
 
