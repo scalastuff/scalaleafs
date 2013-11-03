@@ -43,7 +43,7 @@ trait RenderAsync { this : Context =>
    */
   def renderChangesAsync(f : => Future[NodeSeq], jsCmd : NodeSeq => JSCmd) : JSCmd = {
     asyncRenderChangesQueue += (() => f.map(xml => xml -> jsCmd))
-    JSNoop
+    Noop
   }
   
   /**

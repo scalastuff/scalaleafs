@@ -61,12 +61,13 @@ class UnparsedCssSelector(val s : String) extends AnyVal {
 /**
  * A selector that uses a css syntax. 
  */
-class CssSelector(matches : Elem => Boolean, nested : Option[CssSelector] = None) extends Selector(matches, true, nested)
+class CssSelector(matches : Elem => Boolean, recursive : Boolean = true, nested : Option[CssSelector] = None) extends Selector(matches, recursive, nested)
 case class TypeSelector(prefix : Option[String], label : String) extends CssSelector(elem => Option(elem.prefix) == prefix && elem.label == label)
 case class IdSelector(id : String) extends CssSelector(elem => XmlHelpers.attr(elem, "id") == id)
 case class ClassSelector(cl : String) extends CssSelector(elem => XmlHelpers.hasClass(elem, cl))
 case class PseudoSelector(id : String) extends CssSelector(_ => false)
 case class CompoundSelector(sel : List[CssSelector]) extends CssSelector(elem => (true /: sel)(_ && _.matches(elem)))
+case class NotSelector(sel : CssSelector) extends CssSelector(elem => !sel.matches(elem))
 case class AttrExists(name : String) extends CssSelector(elem => XmlHelpers.attrExists(elem, name))
 case class AttrEq(name : String, value : String) extends CssSelector(elem => XmlHelpers.attr(elem, name) == value)
 case class AttrIn(name : String, value : String) extends CssSelector(elem => XmlHelpers.hasAttrValue(elem, name, value))
@@ -77,7 +78,7 @@ case class AttrSubstring(name : String, substring : String) extends CssSelector(
 
 trait AbstractCssParser extends RegexParsers {
   override def skipWhitespace = false
-  val ID = """[a-zA-Z](-|[a-zA-Z0-9]|_[a-zA-Z0-9])*""".r
+  val ID = """[a-zA-Z](-|[a-zA-Z0-9]|[a-zA-Z0-9])*""".r
   def value = quoted | dquoted | plain
   def plain = """([a-zA-Z0-9]|-|_[a-zA-Z0-9])*""".r
   def quoted = "'" ~> """(\"|-|[a-zA-Z0-9]|_[a-zA-Z0-9])*""".r <~ "'"
@@ -85,10 +86,13 @@ trait AbstractCssParser extends RegexParsers {
 }
 
 object CssSelectorParser extends AbstractCssParser {
-  def selectors = repsep(compoundSelector, " ") ^^ (nested(_))
+  def selectors : Parser[CssSelector] = descendantSelectors
+  def descendantSelectors = repsep(childSelectors, " +".r) ^^ (descendant)
+  def childSelectors = repsep(compoundSelector, " *> *".r ) ^^ (s => child(s, true))
   def compoundSelector = rep(selector) ^^ (s => if (s.size == 1) s(0) else CompoundSelector(s)) 
-  def selector = typeSelector | idSelector | classSelector | pseudoSelector | attrSelector 
-  def typeSelector = opt(ID <~ ":") ~ ID ^^ (id => TypeSelector(id._1, id._2))
+  def selector = notSelector | typeSelector | idSelector | classSelector | pseudoSelector | attrSelector  
+  def notSelector = ":not(" ~> classSelector <~ ")" ^^ (s => NotSelector(s))
+  def typeSelector = opt(ID <~ "|") ~ ID ^^ (id => TypeSelector(id._1, id._2))
   def idSelector = "#" ~> ID ^^ (id => IdSelector(id))
   def classSelector = "." ~> ID ^^ (id => ClassSelector(id))
   def pseudoSelector = ":" ~> ID ^^ ((id : String) => PseudoSelector(id))
@@ -101,10 +105,15 @@ object CssSelectorParser extends AbstractCssParser {
   def attrEndsWith = (ID <~ "$=") ~ value ^^ (s => AttrEndsWith(s._1, s._2))
   def attrSubstring = (ID <~ "*=") ~ value ^^ (s => AttrSubstring(s._1, s._2))
   def attrExists = ID ^^ (s => AttrExists(s))
-  def nested(s : List[CssSelector]) : CssSelector = s match {
+  def descendant(s : List[CssSelector]) : CssSelector = s match {
     case Nil => throw new Exception("cannot happen")
     case s :: Nil => s
-    case s :: rest => new CssSelector(s.matches, Some(nested(rest)))
+    case s :: rest => new CssSelector(s.matches, nested = Some(descendant(rest)))
+  }
+  def child(s : List[CssSelector], recursive : Boolean) : CssSelector = s match {
+    case Nil => new CssSelector(_ => false)
+    case s :: Nil => new CssSelector(s.matches, recursive)
+    case s :: rest => new CssSelector(s.matches, recursive, nested = Some(child(rest, false)))
   }
 }
 

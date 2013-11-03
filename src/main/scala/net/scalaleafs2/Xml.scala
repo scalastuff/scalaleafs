@@ -22,14 +22,14 @@ trait Xml {
   def mkElem(cssConstructor : CssConstructor) = new RenderNode with NoChildRenderNode {
     def render(context : Context, xml : NodeSeq) = 
       cssConstructor(xml)
-    def renderChanges(context : Context) = JSNoop 
+    def renderChanges(context : Context) = Noop 
   }
   
   def mkElem(cssConstructor : CssConstructor, condition : => Boolean) = new RenderNode with NoChildRenderNode {
     def render(context : Context, xml : NodeSeq) = 
       if (condition) cssConstructor(xml)
       else xml
-    def renderChanges(context : Context) = JSNoop 
+    def renderChanges(context : Context) = Noop 
   }
 
   def mkElem(cssConstructor : CssConstructor, modifier : ElemModifier) = new RenderNode with SingleChildRenderNode {
@@ -60,7 +60,7 @@ trait Xml {
    */
   def replaceWith(xml : => NodeSeq) = new RenderNode with NoChildRenderNode {
     def render(context : Context, ignore : NodeSeq) = xml
-    def renderChanges(context : Context) = JSNoop
+    def renderChanges(context : Context) = Noop
   }
   
   /**
@@ -95,7 +95,14 @@ trait Xml {
     def render(context : Context, elem : Elem) : NodeSeq = 
       if (condition) elem.child
       else elem
-    def renderChanges(context : Context) = JSNoop
+    def renderChanges(context : Context) = Noop
+  }
+  
+  def replaceContent(_child : RenderNode) = new ExpectElemRenderNode with SingleChildRenderNode {
+    def child = _child
+    def render(context : Context, elem : Elem) : NodeSeq = 
+      elem.copy(child = child.render(context, elem.child))
+    def renderChanges(context : Context) = child.renderChanges(context)
   }
   
   /**

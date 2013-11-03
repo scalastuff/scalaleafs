@@ -76,8 +76,12 @@ object Url {
   }
 }
 
-case class Url(context : UrlContext, path : Seq[String], parameters : Map[String, Seq[String]]) {
-    
+case class Url(context : UrlContext, path : List[String], parameters : Map[String, Seq[String]]) {
+
+  def head = path.head
+  def headOption = path.headOption
+  def tail = path.tail
+  
   def parent =
     Url(context, path.dropRight(1), parameters)
     

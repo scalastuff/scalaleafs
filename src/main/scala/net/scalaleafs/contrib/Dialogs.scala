@@ -9,7 +9,6 @@ object Dialogs {
   } 
 }
 
-
 trait Node
 case class Bin(left : Node, right : Node) extends Node
 case class Tri(one : Node, two : Node, three : Node) extends Node

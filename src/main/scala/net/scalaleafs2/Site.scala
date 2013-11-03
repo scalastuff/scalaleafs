@@ -22,7 +22,7 @@ import scala.collection.concurrent.TrieMap
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext
 
-case class AjaxCallback(f : Map[String, Seq[String]] => Future[Unit])
+case class AjaxCallback(f : Context => Map[String, Seq[String]] => Future[Unit])
 
 object DebugMode extends ConfigVar[Boolean](false)
 
@@ -56,12 +56,18 @@ class Site(rootTemplateClass : Class[_ <: Template], val contextPath : List[Stri
   def handleRequest[A](url : Url): Future[String] = {
     val window = new Window(this, url, rootTemplateInstantiator)
     windows += window.id -> window
-    window.handleRequest(url)
+    val start = System.currentTimeMillis()
+    window.handleRequest(url).andThen {
+      case _ => println("request: " + url.path + " (" + (System.currentTimeMillis - start) + " ms)")
+    }
   }
   
   def handleAjaxCallback(windowId : String, callbackId : String, parameters : Map[String, Seq[String]]) : Future[String] = {
+    val start = System.currentTimeMillis()
     windows.get(windowId) match {
-      case Some(window) => window.handleAjaxCallback(callbackId, parameters)
+      case Some(window) => window.handleAjaxCallback(callbackId, parameters).andThen {
+        case _ => println("callback: " + callbackId+  " (" + (System.currentTimeMillis - start) + " ms)")
+    }
       case None => throw new ExpiredException("Window expired: " + windowId)
     }
   }

@@ -28,10 +28,10 @@ object OperationMagnet {
   implicit def magnet3[A](f : => Future[A]) = new OperationMagnet[A](context => f)
   implicit def magnet4[A](f : => A) = new OperationMagnet[A](context => Future.successful(f))
   
-  implicit def JSNoopMagnet1(f : Context => Future[Unit]) = new OperationMagnet[JSCmd](context => f(context).map(_ => JSNoop)(context.executionContext))
-  implicit def JSNoopMagnet2(f : Context => Unit) = new OperationMagnet[JSCmd](context => { f(context); Future.successful(JSNoop) })
-  implicit def JSNoopMagnet3(f : => Future[Unit]) = new OperationMagnet[JSCmd](context => f.map(_ => JSNoop)(context.executionContext))
-  implicit def JSNoopMagnet4(f : => Unit) = new OperationMagnet[JSCmd](context => { f; Future.successful(JSNoop) })
+  implicit def NoopMagnet1(f : Context => Future[Unit]) = new OperationMagnet[JSCmd](context => f(context).map(_ => Noop)(context.executionContext))
+  implicit def NoopMagnet2(f : Context => Unit) = new OperationMagnet[JSCmd](context => { f(context); Future.successful(Noop) })
+  implicit def NoopMagnet3(f : => Future[Unit]) = new OperationMagnet[JSCmd](context => f.map(_ => Noop)(context.executionContext))
+  implicit def NoopMagnet4(f : => Unit) = new OperationMagnet[JSCmd](context => { f; Future.successful(Noop) })
 }
 
 //class SyncOperationMagnet[A](val magnetFunction : Context => A) extends Function[Context, A] {
@@ -43,8 +43,8 @@ object OperationMagnet {
 //  implicit def magnet2[A](f : Context => A) = new SyncOperationMagnet[A](context => f(context))
 ////  implicit def magnet4[A](f : => A) = new SyncOperationMagnet[A](context => f)
 //  
-////  implicit def JSNoopMagnet2(f : Context => Unit) = new SyncOperationMagnet[JSCmd](context => { f(context); JSNoop })
-////  implicit def JSNoopMagnet4(f : => Unit) = new SyncOperationMagnet[JSCmd](context => { f; JSNoop })
+////  implicit def NoopMagnet2(f : Context => Unit) = new SyncOperationMagnet[JSCmd](context => { f(context); Noop })
+////  implicit def NoopMagnet4(f : => Unit) = new SyncOperationMagnet[JSCmd](context => { f; Noop })
 //}
 
 trait Html {
@@ -55,10 +55,10 @@ trait Html {
 //    Xml.setAttr("onclick", context => context.callback(_ => Future.successful(context.addPostRequestJs(f))) & JsReturnFalse)
 //  }
 //  
-  def onclick(f : OperationMagnet[JSCmd]) : ElemModifier = {
+  def onclick(f : Context => JSCmd) : ElemModifier = {
     Xml.setAttr("onclick", { context =>
       import context.executionContext
-      context.callback(_ => f(context).map(context.addPostRequestJs(_))) & JsReturnFalse
+      context.callback(context => _ => context.addPostRequestJs(f(context))) & JsReturnFalse
       })
   }
   
@@ -71,14 +71,12 @@ trait Html {
 //    Xml.setContent(content_ => values.map(v => <option>{v}</option>))
 //  }
 //  
-//  def linkup = new ElemTransformation { 
-//    def apply(elem : Elem) = {
-//      XmlHelpers.attr(elem, "href") match {
-//        case "" => elem
-//        case href =>
-//          //XmlHelpers.setAttr(XmlHelpers.setAttr(elem, href, "CTX/" + href), "onclick", R.callback(_ => R.changeUrl(href)).toString)
-//          XmlHelpers.setAttr(elem, href, "CTX/" + href)
-//      }          
-//    }
-//  }
+  def linkHref = ElemModifier { 
+    (context, elem) =>
+      XmlHelpers.attr(elem, "href") match {
+        case "" => elem
+        case href =>
+          XmlHelpers.setAttr(XmlHelpers.setAttr(elem, "href", "/" + context.url.resolve(href)), "onclick", (context.callback(context => _ => context.url = href) & JsReturnFalse).toString)
+      }          
+  }
 }

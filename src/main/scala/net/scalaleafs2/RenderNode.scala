@@ -64,7 +64,7 @@ final class CompoundRenderNode(val children: List[RenderNode]) extends RenderNod
     children.foldLeft(xml)((xml, node) => node.render(context, xml))
 
   def renderChanges(context : Context) =
-    children.foldLeft[JSCmd](JSNoop)((cmd, node) => node.renderChanges(context))
+    children.foldLeft[JSCmd](Noop)((cmd, node) => cmd & node.renderChanges(context))
     
   override def apply(node : RenderNode) : RenderNode = 
     new CompoundRenderNode(node :: children)
@@ -75,7 +75,7 @@ final class CompoundRenderNode(val children: List[RenderNode]) extends RenderNod
 
 object IdentRenderNode extends ElemModifier with NoChildRenderNode {
   def render(context : Context, elem : Elem) = elem
-  def renderChanges(context: net.scalaleafs2.Context): net.scalaleafs2.JSCmd = JSNoop
+  def renderChanges(context: net.scalaleafs2.Context): net.scalaleafs2.JSCmd = Noop
   override def & (node : RenderNode) = node 
   override def apply (node : RenderNode) = node
   val modify = (context : Context, elem : Elem) => elem  
@@ -85,17 +85,14 @@ object IdentRenderNode extends ElemModifier with NoChildRenderNode {
  * Render node delegate. Useful for classes that express a render node
  * using CssTransformations, for example.
  */
-trait HasRenderNode extends RenderNode {
-  def delegate : RenderNode
+trait HasRenderNode extends RenderNode with SingleChildRenderNode {
+  def child : RenderNode
 
   def render(context : Context, xml : NodeSeq) = 
-    delegate.render(context, xml)
+    child.render(context, xml)
 
   def renderChanges(context : Context) = 
-    delegate.renderChanges(context)
-    
-  def dispose(context : Context) =
-    delegate.dispose(context)
+    child.renderChanges(context)
 }
 
 /**
@@ -107,7 +104,10 @@ trait ExpectElemRenderNode extends RenderNode {
   def render(context : Context, xml : NodeSeq) : NodeSeq = xml match {
     case elem : Elem => render(context, elem)
     case Seq(elem : Elem) => render(context, elem)
-    case xml => xml
+    case xml => render(context, <dummy>{xml}</dummy>) match {
+      case elem : Elem if elem.label == "dummy" => elem.child
+      case xml => xml
+    }
   }
   def render(context : Context, elem : Elem) : NodeSeq
 }
@@ -140,12 +140,17 @@ trait ElemModifier extends ExpectElemRenderNode {
   def render(context : Context, elem : Elem) : Elem 
 }
 
+object ElemModifier {
+  def apply(modify : (Context, Elem) => Elem, condition : => Boolean = true) = 
+     new ConditionalElemModifier(modify, condition)
+}
+
 final class ConditionalElemModifier(val modify : (Context, Elem) => Elem, condition : => Boolean) extends ElemModifier with NoChildRenderNode {
   
   def render(context : Context, elem : Elem) : Elem = 
     if (condition) modify(context, elem) 
     else elem
     
-  def renderChanges(context : Context) = JSNoop
+  def renderChanges(context : Context) = Noop
 }
 

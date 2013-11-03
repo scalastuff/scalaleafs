@@ -7,7 +7,7 @@ import scala.xml.NodeSeq
 /**
  * Rendernode that handles a binding.
  */
-abstract class BoundRenderNode[A](bindable : Bindable, f : Placeholder[A] => RenderNode) extends ExpectElemWithIdRenderNode with SingleChildRenderNode {
+class BoundRenderNode[A](bindable : Val[A], f : Placeholder[A] => RenderNode) extends ExpectElemWithIdRenderNode with SingleChildRenderNode {
   
   private val placeholder = new Placeholder[A]
   val child = f(placeholder)
@@ -19,12 +19,19 @@ abstract class BoundRenderNode[A](bindable : Bindable, f : Placeholder[A] => Ren
     import context.executionContext
     lastElem = elem
     lastId = id
-    version = bindable.version
-    renderValue0(context, elem, id)
+    version = bindable.version(context)
+    if (bindable.isAsync)
+      context.renderAsync(elem, bindable.getAsync(context).map(renderValue(context, elem, id))(context.executionContext))
+    else
+      renderValue(context, elem, id)(bindable.get(context))
   }
   
-  def renderValue0(context : Context, elem : Elem, id : String) : NodeSeq
-  def renderChanges0(context : Context, elem : Elem, id : String, f : NodeSeq => JSCmd) : JSCmd
+  def renderChanges0(context : Context, elem : Elem, id : String, f : NodeSeq => JSCmd) : JSCmd = 
+    if (bindable.isAsync)
+      context.renderChangesAsync(bindable.getAsync(context).map(renderValue(context, elem, id))(context.executionContext), f)    
+    else
+      f(renderValue(context, elem, id)(bindable.get(context)))
+
 
   protected def renderValue(context : Context, elem : Elem, id : String)(value : A) : NodeSeq = {
     placeholder.value = value
@@ -32,7 +39,8 @@ abstract class BoundRenderNode[A](bindable : Bindable, f : Placeholder[A] => Ren
   }
   
   def renderChanges(context : Context) : JSCmd = {
-      if (version != bindable.version) {
+      if (version != bindable.version(context)) {
+        version = bindable.version(context)
         renderChanges0(context, lastElem, lastId, { xml =>
           ReplaceHtml(lastId, xml)
         })
@@ -42,25 +50,7 @@ abstract class BoundRenderNode[A](bindable : Bindable, f : Placeholder[A] => Ren
   }
 }
 
-class AsyncBoundRenderNode[A](asyncVal : AsyncVal[A], f : Placeholder[A] => RenderNode) extends BoundRenderNode[A](asyncVal, f) {
-  
-  def renderValue0(context : Context, elem : Elem, id : String) : NodeSeq = 
-    context.renderAsync(elem, asyncVal.get(context).map(renderValue(context, elem, id))(context.executionContext))
-
-  def renderChanges0(context : Context, elem : Elem, id : String, f : NodeSeq => JSCmd) : JSCmd = 
-    context.renderChangesAsync(asyncVal.get(context).map(renderValue(context, elem, id))(context.executionContext), f)
-}
-
-class SyncBoundRenderNode[A](syncVal : SyncVal[A], f : Placeholder[A] => RenderNode) extends BoundRenderNode[A](syncVal, f) {
-  
-  def renderValue0(context : Context, elem : Elem, id : String) : NodeSeq = 
-    renderValue(context, elem, id)(syncVal.get(context))
-
-  def renderChanges0(context : Context, elem : Elem, id : String, f : NodeSeq => JSCmd) : JSCmd = 
-    f(renderValue(context, elem, id)(syncVal.get(context)))
-}
-
-abstract class BoundAllRenderNode[A](bindable : Bindable, f : Placeholder[A] => RenderNode) extends ExpectElemWithIdRenderNode with MultiChildrenRenderNode {
+class BoundAllRenderNode[A](bindable : Val[_ <: Iterable[A]], f : Placeholder[A] => RenderNode) extends ExpectElemWithIdRenderNode with MultiChildrenRenderNode {
   
   private val placeholders = ArrayBuffer[Placeholder[A]]()
   val children = ArrayBuffer[RenderNode]()
@@ -72,12 +62,19 @@ abstract class BoundAllRenderNode[A](bindable : Bindable, f : Placeholder[A] => 
     import context.executionContext
     lastElem = elem
     lastId = id
-    version = bindable.version
-    renderValues0(context, elem, id)
+    version = bindable.version(context)
+    if (bindable.isAsync) 
+      context.renderAsync(elem, bindable.getAsync(context).map(renderValues(context, elem, id))(context.executionContext))
+    else 
+      renderValues(context, elem, id)(bindable.get(context))
   }
   
-  def renderValues0(context : Context, elem : Elem, id : String) : NodeSeq
-  def renderChanges0(context : Context, elem : Elem, id : String, f : NodeSeq => JSCmd) : JSCmd
+  def renderChanges0(context : Context, elem : Elem, id : String, f : NodeSeq => JSCmd) : JSCmd = 
+    if (bindable.isAsync) 
+      context.renderChangesAsync(bindable.getAsync(context).map(renderValues(context, elem, id))(context.executionContext), f)
+    else 
+      f(renderValues(context, elem, id)(bindable.get(context)))
+
 
   protected def renderValues(context : Context, elem : Elem, id : String)(values : Iterable[A]) : NodeSeq = {
     for (i <- values.size.until(children.size)) children(i).dispose(context)
@@ -99,30 +96,15 @@ abstract class BoundAllRenderNode[A](bindable : Bindable, f : Placeholder[A] => 
   }
   
   def renderChanges(context : Context) : JSCmd = {
-      if (version != bindable.version) {
+      if (version != bindable.version(context)) {
+        version = bindable.version(context)
         renderChanges0(context, lastElem, lastId, { xml =>
-          RemoveNextSiblings(lastId, lastId) & ReplaceHtml(lastId, xml)
+          if (version != bindable.version(context)) 
+            RemoveNextSiblings(lastId, lastId) & ReplaceHtml(lastId, xml)
+          else Noop
         })
-      }
-      else
-        children.foldLeft(JSNoop.asInstanceOf[JSCmd])(_ & _.renderChanges(context))
+      } else
+        children.foldLeft(Noop.asInstanceOf[JSCmd])(_ & _.renderChanges(context))
   }
 }
 
-class AsyncBoundAllRenderNode[A](asyncVal : AsyncVal[_ <: Iterable[A]], f : Placeholder[A] => RenderNode) extends BoundAllRenderNode[A](asyncVal, f) {
-  
-  def renderValues0(context : Context, elem : Elem, id : String) : NodeSeq = 
-    context.renderAsync(elem, asyncVal.get(context).map(renderValues(context, elem, id))(context.executionContext))
-
-  def renderChanges0(context : Context, elem : Elem, id : String, f : NodeSeq => JSCmd) : JSCmd = 
-    context.renderChangesAsync(asyncVal.get(context).map(renderValues(context, elem, id))(context.executionContext), f)
-}
-
-class SyncBoundAllRenderNode[A](syncVal : SyncVal[_ <: Iterable[A]], f : Placeholder[A] => RenderNode) extends BoundAllRenderNode[A](syncVal, f) {
-  
-  def renderValues0(context : Context, elem : Elem, id : String) : NodeSeq = 
-    renderValues(context, elem, id)(syncVal.get(context))
-
-  def renderChanges0(context : Context, elem : Elem, id : String, f : NodeSeq => JSCmd) : JSCmd = 
-    f(renderValues(context, elem, id)(syncVal.get(context)))
-}

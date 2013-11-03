@@ -8,9 +8,9 @@ import scala.xml.NodeSeq
 class Context(val site : Site, val window : Window)(implicit val executionContext : ExecutionContext) 
     extends RenderAsync with Callbacks with HeadContributions {
 
-  private[scalaleafs2] var _postRequestJs : JSCmd = JSNoop
+  private[scalaleafs2] var _postRequestJs : JSCmd = Noop
 
-  def debugMode = true
+  def debugMode = site.debugMode
   
   def annotation : Any = null
   
@@ -19,12 +19,12 @@ class Context(val site : Site, val window : Window)(implicit val executionContex
    * Sends the javascript command to the browser upon completion of the current request
    */
   def addPostRequestJs(jsCmd : JSCmd) {
-    if (jsCmd != JSNoop) {
+    if (jsCmd != Noop) {
       _postRequestJs &= jsCmd
     }
   }
   
-  def url : Val[Url] = window._currentUrl
+  def url : Url = window._currentUrl.get
   
     /**
    * Changes the browser url without a page refresh.

@@ -43,7 +43,7 @@ class Window(site : Site, url : Url, rootTemplateInstantiator : RootTemplateInst
         case Some(ajaxCallback) => 
           val context = new Context(site, this)
           // Call the callback.
-          ajaxCallback.f(parameters).flatMap { _ =>
+          ajaxCallback.f(context)(parameters).flatMap { _ =>
             // Then query the render tree for changes
             val initialChangesJSCmd = rootTemplate().renderChanges(context)
             // Process all asynchronous render changes
@@ -51,7 +51,7 @@ class Window(site : Site, url : Url, rootTemplateInstantiator : RootTemplateInst
               // Store all current head contributions in the initial request. 
               _headContributionKeys ++= context._headContributionKeys
               // Render additional head contributions.
-              val jsHeadContrib = context._headContributions.foldLeft(JSNoop.asInstanceOf[JSCmd])(_ & _.renderAdditional(context))
+              val jsHeadContrib = context._headContributions.foldLeft(Noop.asInstanceOf[JSCmd])(_ & _.renderAdditional(context))
               jsHeadContrib & changesJSCmd & context._postRequestJs
             }
           }

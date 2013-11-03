@@ -4,8 +4,7 @@ import net.scalaleafs2._
 import akka.actor.ActorSystem
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
-import net.scalaleafs2.OperationMagnet.JSNoopMagnet4
-import net.scalaleafs2.SyncVal.RichSyncVal
+import net.scalaleafs2.OperationMagnet.NoopMagnet4
 
 object Main extends App {
 
@@ -55,9 +54,9 @@ class PageFrame(window : Window) extends Template {
   
   val render = url.bind { u =>
     ".name" #> ("url:" + u) &
-    "#clickme" #> setAttr("href", "println") & 
-    "#clickme" #> setText("click me not") & 
-    "#clickme" #> onclick(println("I HAVE BEEN CLICKED")) & 
+    "#clickme" #> setAttr("href", _ => "println") & 
+    "#clickme" #> setText(_ => "click me not") & 
+    "#clickme" #> onclick(_ => println("I HAVE BEEN CLICKED") & Noop) & 
     ".content" #> url.bind { url =>
       ""
     }

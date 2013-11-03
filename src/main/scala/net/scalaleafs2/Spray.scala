@@ -128,7 +128,7 @@ class SprayRoute(site : Site) extends Route with Directives with Logging {
               extract(_.request.uri) { uri =>
                 val url = new Url(UrlContext(uri.scheme, uri.authority.host.address, uri.authority.port.toString, site.contextPath), Url.parsePath(path), Map.empty)
                 println("url:" + url)
-                respondWithMediaType(MediaTypes.`text/html`) {
+                respondWithMediaType(MediaTypes.`application/xhtml+xml`) {
                   complete {
                     import site.executionContext
                     site.handleRequest(url).map { 

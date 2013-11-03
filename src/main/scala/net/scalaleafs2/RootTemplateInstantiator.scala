@@ -16,7 +16,6 @@ class RootTemplateInstantiator (rootTemplateClass : Class[_ <: Template], packag
     var instance : Template = null
     
     () => {
-      println("Oudated: " + isOutdated)
       if (instance == null || (debugMode && isOutdated)) {
         instantiator = reset
         instance = instantiator(window)

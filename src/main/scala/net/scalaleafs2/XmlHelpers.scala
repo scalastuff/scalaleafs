@@ -166,6 +166,7 @@ object XmlHelpers {
       if ((index == 0 || values.charAt(index - 1) == ' ') &&
       (index + value.length == values.length || values.charAt(index + value.length) == ' '))
         return index;
+      else index = values.indexOf(value, index + 1)
     }
     -1
   }

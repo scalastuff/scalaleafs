@@ -139,7 +139,7 @@ object HeadContributions {
 abstract class HeadContribution(val key : String) {
   def dependsOn : List[HeadContribution] = Nil
   def render(context : Context) : NodeSeq
-  def renderAdditional(context : Context) : JSCmd = JSNoop
+  def renderAdditional(context : Context) : JSCmd = Noop
 }
 
 class JavaScript(key : String, uri : String) extends HeadContribution(key) {
@@ -171,7 +171,7 @@ object LeafsJavaScriptResource extends JavaScriptResource(classOf[JavaScript], "
     super.render(context) ++ 
     <script type="text/javascript">
       window.id = '{context.window.id}'; 
-      leafs.onPageUnload('{context.callbackId(_ => println("DELETE WINDOW"))}');
+      leafs.onPageUnload('{context.callbackId(context => _ => println("DELETE WINDOW"))}');
     </script>
   }
 }
@@ -188,7 +188,7 @@ object OnPopStateHeadContribution extends HeadContribution("OnPopState") {
   override def dependsOn = LeafsJavaScriptResource :: Nil
   def render(context : Context) = {
     <script type="text/javascript"> 
-      window.setLocationCallback = '{ context.callbackId { map => 
+      window.setLocationCallback = '{ context.callbackId { context => map => 
         Future.successful {
           map.get("value").flatMap(_.headOption)  match {
             case Some(url) =>
