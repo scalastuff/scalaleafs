@@ -1,7 +1,7 @@
 package net.scalaleafs2.test
 
 import net.scalaleafs2.Template
-import net.scalaleafs2.IdentRenderNode
+import net.scalaleafs2.Ident
 import net.scalaleafs2.Var
 import net.scalaleafs2.implicits._
 import net.scalaleafs2.Context
@@ -13,13 +13,10 @@ class BootstrapShowcase extends Template {
   
   def render = 
    "#biggest-buttons" #> {
-     isActive bind { isActive =>
+     bind(isActive) { isActive =>
        "button" #> {
-         addClass("active", isActive) &
-         onclick {
-           context => 
-             this.isActive.set(!isActive) 
-         }
+         addClass("active").when(isActive) &
+         onclick(this.isActive.set(!isActive)) 
        }
      }
    }

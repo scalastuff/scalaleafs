@@ -96,27 +96,42 @@ trait Val[A] extends Bindable {
 }
 
 object Val {
-  implicit class RichVal[A](val bindable : Val[A]) extends AnyVal {
-    def bind(f : Placeholder[A] => RenderNode) =
-      new BoundRenderNode(bindable, f)
-  }
-  implicit class OptionDelegate[A](val bindable : Val[Option[A]]) extends SyncVal[Iterable[A]] {
-    override def version(context : Context) = bindable.version(context)
-    def get(context : Context) = bindable.get(context)
-  }
-  implicit class RichOptionVal[A](val bindable : Val[Option[A]]) extends AnyVal {
-    def bindAll(f : Placeholder[A] => RenderNode) = 
-      new BoundAllRenderNode(bindable, f)
-  }
-  implicit class RichIterableVal[A](val bindable : Val[_ <: Iterable[A]]) extends AnyVal {
-    def bindAll(f : Placeholder[A] => RenderNode) = 
-      new BoundAllRenderNode(bindable, f)
-  }
+//  implicit class RichVal[A](val bindable : Val[A]) extends AnyVal {
+//    def bind(f : Placeholder[A] => RenderNode) =
+//      new BoundRenderNode(bindable, f)
+//  }
+//  implicit class OptionDelegate[A](val bindable : Val[Option[A]]) extends SyncVal[Iterable[A]] {
+//    override def version(context : Context) = bindable.version(context)
+//    def get(context : Context) = bindable.get(context)
+//  }
+//  implicit class RichOptionVal[A](val bindable : Val[Option[A]]) extends AnyVal {
+//    def bindAll(f : Placeholder[A] => RenderNode) = 
+//      new BoundAllRenderNode(bindable, f)
+//  }
+//  implicit class RichIterableVal[A](val bindable : Val[_ <: Iterable[A]]) extends AnyVal {
+//    def bindAll(f : Placeholder[A] => RenderNode) = 
+//      new BoundAllRenderNode(bindable, f)
+//  }
   implicit class RichUrlVal(val v : Val[Url]) extends AnyVal {
     def head = v.mapVar(_ => _.head)
     def headOption = v.mapVar(_ => _.headOption)
     def tail  = v.mapVar(_ => _.tail)
   }
+}
+
+trait Binding {
+   implicit private class OptionDelegate[A](val bindable : Val[Option[A]]) extends SyncVal[Iterable[A]] {
+    override def version(context : Context) = bindable.version(context)
+    def get(context : Context) = bindable.get(context)
+  }
+  def bind[A](bindable : Val[A])(f : Placeholder[A] => RenderNode) =
+    new BoundRenderNode(bindable, f)
+
+  def bindOption[A](bindable : Val[Option[A]])(f : Placeholder[A] => RenderNode) = 
+    new BoundAllRenderNode(bindable, f)
+  
+  def bindAll[A](bindable : Val[_ <: Iterable[A]])(f : Placeholder[A] => RenderNode) = 
+    new BoundAllRenderNode(bindable, f)
 }
   
 /**

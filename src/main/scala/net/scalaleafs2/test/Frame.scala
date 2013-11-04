@@ -10,27 +10,23 @@ class Frame(window: Window) extends Template {
 
   val url = window.url
 
+  val securityContext = SecurityContextVar
+  
   println("URL: " + url.head.get(null))
 
   def render =
-    "#main-menu" #> {
-      url.head.bind { head =>
+    "#main-menu" #> { 
+      bind(url.head) { head =>
         "li:not(.dropdown) a" #> linkHref &
-        Match(head) {
-          case "home" => "#main-menu > li.home" #> addClass("active")
-          case "showcase" => "#main-menu > li.showcase" #> addClass("active")
-            
-          case s => IdentRenderNode
-        }
+        "li.home" #> addClass("active").when(head == "home") &
+        "li.showcase" #> addClass("active").when(head == "showcase")
       }
     } & 
     "#page-container" #> 
-      url.head.bind { head =>
-        replaceContent {
+      bind(url.head) { head =>
           Match(head) {
             case "showcase" => new BootstrapShowcase
             case s => <h1>mkElem("div.ruud"){head.get}</h1>
           }
-        }
     }
 }

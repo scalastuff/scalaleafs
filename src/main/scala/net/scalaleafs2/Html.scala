@@ -55,10 +55,9 @@ trait Html {
 //    Xml.setAttr("onclick", context => context.callback(_ => Future.successful(context.addPostRequestJs(f))) & JsReturnFalse)
 //  }
 //  
-  def onclick(f : Context => JSCmd) : ElemModifier = {
-    Xml.setAttr("onclick", { context =>
-      import context.executionContext
-      context.callback(context => _ => context.addPostRequestJs(f(context))) & JsReturnFalse
+  def onclick(f : => JSCmd) : ElemModifier = {
+    Xml.setAttr("onclick", { context => 
+      context.callback(context => _ => context.addPostRequestJs(f)) & JsReturnFalse
       })
   }
   

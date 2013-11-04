@@ -31,7 +31,7 @@ libraryDependencies ++= Seq (
   //"io.spray" % "spray-client" % sprayVersion withSources(),
   //"io.spray" %%  "spray-json" % "1.2.5" withSources(),
  // "io.spray" % "spray-servlet" % sprayVersion withSources(),
-  "io.spray" % "spray-routing" % "1.2-RC1" withSources(),
+  "io.spray" % "spray-routing" % "1.2-RC2" withSources(),
   //"io.spray" % "spray-testkit" % sprayVersion % "test" withSources(),
   //"io.spray" % "spray-caching" % sprayVersion withSources(),
   "junit" % "junit" % "4.8" % "test")

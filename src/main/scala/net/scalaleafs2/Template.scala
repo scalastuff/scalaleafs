@@ -21,7 +21,7 @@ import scala.concurrent.Future
  * a bind hook to transform this input to some output.
  * Class-path resources are cached (when not in debug mode) in a JVM-global cache.
  */
-trait Template extends RenderNode with SingleChildRenderNode with Xml with Html {
+trait Template extends RenderNode with SingleChildRenderNode with Xml with Html with Binding {
   
   lazy val child : RenderNode = render
   private var _input : NodeSeq = null

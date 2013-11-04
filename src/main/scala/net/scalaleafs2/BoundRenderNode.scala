@@ -35,7 +35,7 @@ class BoundRenderNode[A](bindable : Val[A], f : Placeholder[A] => RenderNode) ex
 
   protected def renderValue(context : Context, elem : Elem, id : String)(value : A) : NodeSeq = {
     placeholder.value = value
-    child.render(context, elem)
+    postProcess(child.render(context, elem))
   }
   
   def renderChanges(context : Context) : JSCmd = {
@@ -86,13 +86,13 @@ class BoundAllRenderNode[A](bindable : Val[_ <: Iterable[A]], f : Placeholder[A]
       placeholders += placeholder
       children += child
     }
-    children.zip(values).zipWithIndex.flatMap {
+    postProcess(children.zip(values).zipWithIndex.flatMap {
       case ((child, value), index) =>
         placeholders(index).value = value
         child.render(context, 
           if (index == 0) elem 
           else XmlHelpers.setId(elem, id + "-" + index)) 
-    } 
+    })
   }
   
   def renderChanges(context : Context) : JSCmd = {

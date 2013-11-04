@@ -30,7 +30,7 @@ object TestNewStyle {
     val url = Var("")
     val render = ".hi"  #> mkElem("div")
     val render2 = ".hi"  #> mkElem("div") & 
-    "#hi" #> url.bind {url => ""} 
+    "#hi" #> bind(url) {url => ""} 
   }
   
   
@@ -40,7 +40,7 @@ object TestNewStyle {
     val render : RenderNode = {
       ".hi" #> <hi></hi> &
 //      ".hi" #> new BooksPage(items) &
-      ".selected" #> items.bind { (item : Placeholder[List[String]]) =>
+      ".selected" #> bind(items) { (item : Placeholder[List[String]]) =>
         "@href" #> item.toString 
 //        & 
 //        ".menu" #> new Menu(Var(item + ".")).bind

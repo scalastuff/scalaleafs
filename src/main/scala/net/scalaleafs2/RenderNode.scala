@@ -36,6 +36,9 @@ trait RenderNode {
    */
   def & (node : RenderNode) : RenderNode =
     new CompoundRenderNode(this :: node :: Nil)  
+  
+  def when(condition : => Boolean) = 
+    new RenderNodeDelegate(if (condition) this else Ident)
 }
 
 trait NoChildRenderNode {
@@ -73,7 +76,7 @@ final class CompoundRenderNode(val children: List[RenderNode]) extends RenderNod
     new CompoundRenderNode(children ++ List(node))
 }
 
-object IdentRenderNode extends ElemModifier with NoChildRenderNode {
+object Ident extends ElemModifier with NoChildRenderNode {
   def render(context : Context, elem : Elem) = elem
   def renderChanges(context: net.scalaleafs2.Context): net.scalaleafs2.JSCmd = Noop
   override def & (node : RenderNode) = node 
@@ -85,14 +88,15 @@ object IdentRenderNode extends ElemModifier with NoChildRenderNode {
  * Render node delegate. Useful for classes that express a render node
  * using CssTransformations, for example.
  */
-trait HasRenderNode extends RenderNode with SingleChildRenderNode {
-  def child : RenderNode
+class RenderNodeDelegate(delegate : => RenderNode) extends RenderNode with SingleChildRenderNode {
 
+  def child = delegate 
+  
   def render(context : Context, xml : NodeSeq) = 
-    child.render(context, xml)
+    delegate.render(context, xml)
 
   def renderChanges(context : Context) = 
-    child.renderChanges(context)
+    delegate.renderChanges(context)
 }
 
 /**
@@ -119,12 +123,31 @@ trait ExpectElemRenderNode extends RenderNode {
  * id, the output element will contain a generated UUID id. 
  * Implementations should override render(context, elem, id).
  */
-trait ExpectElemWithIdRenderNode extends ExpectElemRenderNode {
-  lazy val generatedId = UUID.randomUUID().toString()
-  def render(context : Context, elem : Elem) : NodeSeq = 
+trait ExpectElemWithIdRenderNode extends RenderNode {
+  private lazy val generatedId = UUID.randomUUID().toString()
+  private var id : String = null
+  def render(context : Context, xml : NodeSeq) : NodeSeq = xml match {
+    case elem : Elem => postProcess(render(context, elem))
+    case Seq(elem : Elem) => postProcess(render(context, elem))
+    case xml => postProcess(render(context, <dummy>{xml}</dummy>) match {
+      case elem : Elem if elem.label == "dummy" => elem.child
+      case xml => xml
+    })
+  }
+  private def render(context : Context, elem : Elem) : NodeSeq = {
     XmlHelpers.getId(elem).trim match {
-    case "" => render(context, XmlHelpers.setId(elem, generatedId), generatedId)
-    case id => render(context, elem, id)
+      case "" =>
+        id = generatedId
+        render(context, XmlHelpers.setId(elem, id), id)
+      case id =>
+        this.id = id
+        render(context, elem, id)
+    }
+  }
+  protected def postProcess(xml : NodeSeq) = xml match {
+    case elem : Elem => XmlHelpers.setId(elem, id)
+    case Seq(elem : Elem) => XmlHelpers.setId(elem, id)
+    case xml => <dummy id={id}>xml</dummy>
   }
   def render(context : Context, elem : Elem, id : String) : NodeSeq
 }
@@ -136,21 +159,15 @@ trait ExpectElemWithIdRenderNode extends ExpectElemRenderNode {
  * like adding a class attribute if some condition is met.
  */
 trait ElemModifier extends ExpectElemRenderNode {
-  val modify : (Context, Elem) => Elem
   def render(context : Context, elem : Elem) : Elem 
 }
 
 object ElemModifier {
-  def apply(modify : (Context, Elem) => Elem, condition : => Boolean = true) = 
-     new ConditionalElemModifier(modify, condition)
-}
-
-final class ConditionalElemModifier(val modify : (Context, Elem) => Elem, condition : => Boolean) extends ElemModifier with NoChildRenderNode {
-  
-  def render(context : Context, elem : Elem) : Elem = 
-    if (condition) modify(context, elem) 
-    else elem
-    
-  def renderChanges(context : Context) = Noop
+  def apply(modify : (Context, Elem) => Elem) = 
+     new ElemModifier with NoChildRenderNode {
+      def render(context : Context, elem : Elem) : Elem = 
+        modify(context, elem)
+      def renderChanges(context : Context) = Noop
+    }
 }
 
