@@ -1,4 +1,4 @@
-package net.scalaleafs2
+package net.scalaleafs
 
 import java.util.UUID
 
@@ -9,24 +9,24 @@ import scala.xml.NodeSeq
 /**
  * Encapsulates a browser window
  */
-class Window(site : Site, url : Url, rootTemplateInstantiator : RootTemplateInstantiator) {
+class Window(site : Site, initialUrl : Url, rootTemplateInstantiator : RootTemplateInstantiator) {
 
   import site.executionContext
   private val synchronizedFuture = new SynchronizedFuture
   private val rootTemplate = rootTemplateInstantiator(this)
   
-  private[scalaleafs2] val ajaxCallbacks = mutable.HashMap[String, AjaxCallback]()
-  private[scalaleafs2] var _headContributionKeys : Set[String] = Set.empty
-  private[scalaleafs2] var _currentUrl : Var[Url] = Var(url)
+  private[scalaleafs] val ajaxCallbacks = mutable.HashMap[String, AjaxCallback]()
+  private[scalaleafs] var _headContributionKeys : Set[String] = Set.empty
+  private[scalaleafs] var _currentUrl : Var[Url] = Var(initialUrl)
+  private[scalaleafs] val windowVars = mutable.Map[Any, Var[_]]()
   
-  def url : SyncVal[Url] = _currentUrl
   val id : String = "leafs-" + UUID.randomUUID.toString
   
-  def handleRequest[A](url : Url): Future[String] = {
+  def handleRequest[A](url : Url, requestVals : RequestVal.Assignment[_]*): Future[String] = {
     import site.executionContext
     synchronizedFuture {
-      val context = new Context(site, this)
-      val initialXml = rootTemplate().render(context, NodeSeq.Empty)
+      val context = new Context(site, this, requestVals:_*)
+      val initialXml = context.withContext(rootTemplate().render(context, NodeSeq.Empty))
       context.processAsyncRender(initialXml).map(xml => HeadContributions.render(context, xml)).map("<!DOCTYPE html>" + _).andThen {
         case _ => 
           _headContributionKeys ++= context._headContributionKeys
@@ -34,14 +34,14 @@ class Window(site : Site, url : Url, rootTemplateInstantiator : RootTemplateInst
     }
   }
 
-  def handleAjaxCallback(callbackId : String, parameters : Map[String, Seq[String]]) : Future[String] = 
+  def handleAjaxCallback(callbackId : String, parameters : Map[String, Seq[String]], requestVals : RequestVal.Assignment[_]*) : Future[String] = 
     processAjaxCallback(callbackId, parameters).map(jsCmd => site.mkPostRequestJsString(jsCmd.toSeq))
   
-  private def processAjaxCallback(callbackId : String, parameters : Map[String, Seq[String]]) : Future[JSCmd] = {
+  private def processAjaxCallback(callbackId : String, parameters : Map[String, Seq[String]], requestVals : RequestVal.Assignment[_]*) : Future[JSCmd] = {
     synchronizedFuture {
       ajaxCallbacks.get(callbackId) match {
         case Some(ajaxCallback) => 
-          val context = new Context(site, this)
+          val context = new Context(site, this, requestVals:_*)
           // Call the callback.
           ajaxCallback.f(context)(parameters).flatMap { _ =>
             // Then query the render tree for changes

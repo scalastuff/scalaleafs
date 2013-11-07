@@ -37,14 +37,30 @@ object JsConst {
 
 object JSCmd {
   def apply(cmd : String) = new JSRawCmd(cmd)
-  implicit def toNoop(unit : Unit) : JSCmd = Noop
+  implicit def toNoop(unit : Any) : JSCmd = Noop
   implicit def toText(cmd : JSCmd) = Text(cmd.toString)
+  implicit def toString(cmd : JSCmd) = cmd.toString
+  
 }
 
 trait JSCmd {
+  def & (cmd : Noop) : JSCmd = this
   def & (cmd : JSCmd) : JSCmd = new JSCmdSeq(toSeq ++ cmd.toSeq)
   def toSeq = Seq(this)
 }
+
+class JSCmdFun(f : Context => JSCmd) extends Function[Context, JSCmd] { outer =>
+  def apply(context : Context) = f(context)
+  def &(other : Noop) = this
+  def &(other : JSCmd) = new JSCmdFun(context => f(context) & other)
+  def &(other : Context => JSCmd) = new JSCmdFun(context => f(context) & other(context))
+}
+
+object JSCmdFun {
+  implicit def toString(f : JSCmdFun) : Context => String = context => f(context).toString
+  implicit def toJSCmdFun(cmd : JSCmd) : JSCmdFun = new JSCmdFun(_ => cmd)
+}
+
 
 protected class JSCmdSeq(seq : Seq[JSCmd]) extends JSCmd {
   override def toSeq = seq
@@ -63,10 +79,13 @@ case class JsReturn(value : JSExp) extends JSRawCmd("return " + value + ";")
 object JsReturnFalse extends JsReturn(JsConst(false))
 object JsReturnTrue extends JsReturn(JsConst(true))
 
-case object Noop extends JSRawCmd("") {
+
+class Noop extends JSRawCmd("") {
   override def & (cmd : JSCmd) : JSCmd = cmd
   override def toSeq = Seq.empty
 }
+
+case object Noop extends Noop
 
 case class ReplaceHtml(id : String, xml : NodeSeq) extends JSRawCmd("leafs.replaceHtml('" + id + "', \"" + XmlHelpers.escape(xml.toString) + "\");")
 case class RemoveNextSiblings(id : String, idBase : String) extends JSRawCmd("leafs.removeNextSiblings(\"" + id + "\", \"" + idBase + "\");")

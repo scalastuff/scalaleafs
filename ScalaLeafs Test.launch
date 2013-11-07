@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <launchConfiguration type="scala.application">
 <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
-<listEntry value="/scalaleafs/src/main/scala/net/scalaleafs2/test/Main.scala"/>
+<listEntry value="/scalaleafs/src/main/scala/net/scalaleafs/test/Main.scala"/>
 </listAttribute>
 <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
 <listEntry value="1"/>
@@ -10,7 +10,7 @@
 <listEntry value="org.eclipse.debug.ui.launchGroup.run"/>
 </listAttribute>
 <booleanAttribute key="org.eclipse.jdt.launching.ATTR_USE_START_ON_FIRST_THREAD" value="true"/>
-<stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="net.scalaleafs2.test.Main"/>
+<stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="net.scalaleafs.test.Main"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="scalaleafs"/>
-<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-DleafsDebugMode=true -server"/>
+<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-DleafsDebugMode=false -server"/>
 </launchConfiguration>

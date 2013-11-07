@@ -10,30 +10,36 @@
  */
 package net.scalaleafs
 
-class Configuration (assignments : ConfigVar.Assignment[_]*) {
+class Configuration (assignments : ConfigVal.Assignment[_]*) {
   
-  private val values : Map[ConfigVar[_], Any] = assignments.toMap
+  private[scalaleafs] val values : Map[ConfigVal[_], _] = assignments.toMap
   
-  // Get the configuration value for given configVar. 
-  def apply[A](configVar : ConfigVar[A]) = 
-    values.get(configVar).map(_.asInstanceOf[A]).getOrElse(configVar.defaultValue)
-    
-  def withDefaults(defaults : ConfigVar.Assignment[_]*) = {
+  def withDefaults(defaults : ConfigVal.Assignment[_]*) = {
     new Configuration(assignments ++ defaults.filterNot(a => values.contains(a._1)):_*)
   }
   
-  def &(assignments : ConfigVar.Assignment[_]*) = {
+  def &(assignments : ConfigVal.Assignment[_]*) = {
     new Configuration(this.assignments ++ assignments:_*)
   }
 }
 
-abstract class ConfigVar[A](val defaultValue : A) 
-
-object ConfigVar {
+abstract class ConfigVal[A](val defaultValue : A) {
   
-  // Type def to make sure each individual tuple has matching types for var and value.
-  type Assignment[A] = Tuple2[ConfigVar[A], A]
+  def apply(context : Context) : A =
+    apply(context.site.configuration)
+    
+  def apply(configuration : Configuration) : A = 
+    configuration.values.get(this).map(_.asInstanceOf[A]).getOrElse(defaultValue)
+    
+  def get(implicit configuration : Configuration) : A = 
+    configuration.values.get(this).map(_.asInstanceOf[A]).getOrElse(defaultValue)
+}
 
-  // Implicitly convert a configVar value to its value. 
-  implicit def toValue[A](configVar : ConfigVar[A]) = R.configuration(configVar) 
+object ConfigVal {
+  
+  // Type def to make sure each individual tuple has matching types for configVal and value.
+  type Assignment[A] = Tuple2[ConfigVal[A], A]
+  
+  // Implicitly convert a configVal value to its value. 
+  implicit def getfromContext[A](configVar : ConfigVal[A])(implicit context : Context) = configVar.apply (context)
 }

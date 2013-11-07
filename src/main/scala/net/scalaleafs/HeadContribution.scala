@@ -11,6 +11,7 @@
 package net.scalaleafs
 
 import scala.collection.mutable
+import scala.concurrent.Future
 import net.scalaleafs.implicits._
 import scala.xml.NodeSeq
 import scala.xml.Elem
@@ -23,15 +24,34 @@ import scala.xml.PCData
  * HeadContributions expects the whole page (HTML tag) as input.
  * Usually, an application's main frame class extends this trait.  
  */
-trait HeadContributions extends XmlTransformation {
-  abstract override def apply(xml : NodeSeq) : NodeSeq = {
-   HeadContributions.render(R, super.apply(xml)) 
+trait HeadContributions { this : Context =>
+  private[scalaleafs] var _headContributionKeys : Set[String] = Set.empty
+  private[scalaleafs] var _headContributions : Seq[HeadContribution] = Seq.empty
+  
+  def headContributions = 
+    _headContributions
+    
+  def addHeadContribution(contribution : HeadContribution) {
+    val key = contribution.key
+    if (!window._headContributionKeys.contains(key)) {
+      if (!_headContributionKeys.contains(key)) {
+        
+        // Add key first to prevent cyclic behavior.
+        _headContributionKeys += key
+        
+        // Add dependencies before actual contribution.
+        contribution.dependsOn.foreach(dep => addHeadContribution(dep))
+        
+        // Now add actual contribution.
+        _headContributions :+= contribution
+      }
+    }
   }
 }
 
 object HeadContributions {
   
-  def render(request : Request, xml : NodeSeq) : NodeSeq = {
+  def render(context : Context, xml : NodeSeq) : NodeSeq = {
 
     def processHead(html : Elem) : Elem = {
   
@@ -41,13 +61,13 @@ object HeadContributions {
             case "link" =>
               val href = XmlHelpers.attr(elem, "href")
               if (!href.startsWith("http:")) {
-                XmlHelpers.setAttr(elem, "href", request.resourceBase.resolve(request.server.resources.hashedResourcePathFor(href.stripPrefix("/"))).toLocalString)
+                XmlHelpers.setAttr(elem, "href", context.site.resourcePath.mkString("/", "/", "/" + context.site.resources.hashedResourcePathFor(href.stripPrefix("/"))))
               }
               else elem
             case "script" =>
               val src = XmlHelpers.attr(elem, "src")
               if (!src.startsWith("http:")) {
-                XmlHelpers.setAttr(elem, "src", request.resourceBase.resolve(request.server.resources.hashedResourcePathFor(src.stripPrefix("/"))).toLocalString)
+                XmlHelpers.setAttr(elem, "src", context.site.resourcePath.mkString("/", "/", "/" + context.site.resources.hashedResourcePathFor(src.stripPrefix("/"))))
               }
               else elem
             case _ => elem
@@ -56,7 +76,7 @@ object HeadContributions {
       }}
         
       def addHeadContributions(head : Elem) = 
-        head.copy(child = head.child.map(replaceResource) ++ request.headContributions.flatMap(_.render(request)))
+        head.copy(child = head.child.map(replaceResource) ++ context.headContributions.flatMap(_.render(context)))
   
       
 // TODO since it scans head now, process it even without head contributions...
@@ -68,15 +88,16 @@ object HeadContributions {
             case h : Elem if h eq head => addHeadContributions(head) 
             case h => h
           })
-        case None => 
+        case _ => 
           html.copy(child = addHeadContributions(<head/>) ++ html.child)
       }
     }
     
     def additionalBodyContent : NodeSeq = { 
-      val debugDiv = if (!request.debugMode) NodeSeq.Empty 
-      else <div style="position: absolute; right: 10px; bottom: 10px; border: 1px solid red; color: red; padding: 4px">DEBUG MODE</div>
-      request.session.mkPostRequestJsString(request.postRequestJs.toSeq) match {
+      val debugDiv = 
+        if (!context.debugMode) NodeSeq.Empty 
+        else <div style="position: absolute; right: 10px; bottom: 10px; border: 1px solid red; color: red; padding: 4px">DEBUG MODE</div>
+      context.site.mkPostRequestJsString(context._postRequestJs.toSeq) match {
         case "" => 
           debugDiv
         case cmd =>
@@ -117,27 +138,27 @@ object HeadContributions {
 
 abstract class HeadContribution(val key : String) {
   def dependsOn : List[HeadContribution] = Nil
-  def render(request : Request) : NodeSeq
-  def renderAdditional(request : Request) : JSCmd = Noop
+  def render(context : Context) : NodeSeq
+  def renderAdditional(context : Context) : JSCmd = Noop
 }
 
 class JavaScript(key : String, uri : String) extends HeadContribution(key) {
-  def render(request : Request) = {
+  def render(context : Context) = {
     <script type="text/javascript" src={uri} />
   }
-  override def renderAdditional(request : Request) = {
+  override def renderAdditional(context : Context) = {
     LoadJavaScript(uri)
   }
 }
 
 class JavaScriptResource(c : Class[_], resource : String) extends HeadContribution(c.getName + "/" + resource) {
-  def render(request : Request) = {
-    var name = request.server.resources.hashedResourcePathFor(c, resource)
-    <script type="text/javascript" src={request.resourceBase.resolve(name).toLocalString}></script>
+  def render(context : Context) : NodeSeq = {
+    var name = context.site.resources.hashedResourcePathFor(c, resource)
+    <script type="text/javascript" src={context.site.resourcePath.mkString("/", "/", "/" + name)}></script>
   }
-  override def renderAdditional(request : Request) = {
-    var name = request.server.resources.hashedResourcePathFor(c, resource)
-    LoadJavaScript(request.resourceBase.resolve(name).toLocalString)
+  override def renderAdditional(context : Context) = {
+    var name = context.site.resources.hashedResourcePathFor(c, resource)
+    LoadJavaScript(context.site.resourcePath.mkString("/", "/", "/" + name))
   }
 }
 
@@ -145,36 +166,45 @@ class JavaScriptResource(c : Class[_], resource : String) extends HeadContributi
  * Use JQuery as default JavaScript library.
  */
 
-object LeafsJavaScriptResource extends JavaScriptResource(classOf[JavaScript], "leafs.js")
+object LeafsJavaScriptResource extends JavaScriptResource(classOf[JavaScript], "leafs.js") {
+  override def render(context : Context) = {
+    super.render(context) ++ 
+    <script type="text/javascript">
+      window.id = '{context.window.id}'; 
+      leafs.onPageUnload('{context.callbackId(context => _ => println("DELETE WINDOW"))}');
+    </script>
+  }
+}
 
-object JQueryUrl extends ConfigVar[String]("http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js")
+object JQueryUrl extends ConfigVal[String]("http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js")
 
 object JQuery extends HeadContribution("JQuery") {
-  def render(request : Request) = {
-    <script type="text/javascript" src={request.configuration(JQueryUrl)}></script>
+  def render(context : Context) = {
+    <script type="text/javascript" src={JQueryUrl(context)}></script>
   }
 }
 
 object OnPopStateHeadContribution extends HeadContribution("OnPopState") {
   override def dependsOn = LeafsJavaScriptResource :: Nil
-  def render(request : Request) = {
+  def render(context : Context) = {
     <script type="text/javascript"> 
-      window.setLocationCallback = '{ R.callbackId { map => 
-        map.get("value").flatMap(_.headOption)  match {
-          case Some(url) =>
-            if (url.startsWith("pop:")) R.popUrl(url.substring(4))
-            else R.changeUrl(url)
-          case None =>
-        }       
+      window.setLocationCallback = '{ context.callbackId { context => map => 
+        Future.successful {
+          map.get("value").flatMap(_.headOption)  match {
+            case Some(url) =>
+              if (url.startsWith("pop:")) context.popUrl(url.substring(4))
+              else context.url = url
+            case None =>
+          }       
         }
-      }'
+      }}'
     </script>
   }  
 }
 
 //object OnPopState extends HeadContribution("onPopState") {
 //  override def dependsOn = LeafsJavaScriptResource :: Nil
-//  def render(request : Request) = {
+//  def render(context : Context) = {
 //    <script type="text/javascript">      
 //      function setUrl(url) {"{"} {
 //        R.callback(JSExp("url")) { url =>

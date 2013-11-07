@@ -1,66 +1,100 @@
 package net.scalaleafs
 
 import spray.routing.Route
+import spray.routing.Directive
+import spray.routing.Directive1
 import spray.routing.Directives
 import spray.routing.PathMatcher
+import spray.routing.PathMatcher1
+import spray.routing.PathMatchers
 import shapeless.HNil
 import scala.xml.NodeSeq
-
 import java.util.UUID
-
 import spray.http.HttpCookie
 import scala.collection.concurrent.TrieMap
 import grizzled.slf4j.Logging
 import spray.http.MediaTypes
 import spray.http.MediaType
 import spray.routing.RequestContext
+import scala.concurrent.Future
+import shapeless.::
 
-class AbstractSprayServer[R <: Template](root : Class[R], configuration : Configuration) 
-  extends Server(root, configuration) with Route with Directives with Logging {
+class SprayRoute(site : Site) extends Route with Directives with Logging {
   
-  private val nilMatcher : PathMatcher[HNil] = ""
-  private val contextMatcher  = matcherOf(contextPath)
-  private val callbackMatcher = matcherOf(ajaxCallbackPath)
-  private val formPostMatcher = matcherOf(ajaxFormPostPath)
-  private val resourceMatcher = matcherOf(resourcePath)
+  import site.configuration
+  
+  private val contextPrefix : Directive[HNil] = 
+    site.contextPath match {
+      case Nil => Directive.Empty
+      case list => pathPrefix(matcherOf(list))
+    }
+  
+  private val callbackPath : Directive[String :: String :: HNil] =
+    AjaxCallbackPath.get.split("/").toList match {
+      case Nil => path(Segment / Segment)
+      case list => path(list.map(PathMatcher(_)).reduce(_ / _) / Segment / Segment)
+    }
+
+  private val formPostPath : Directive1[String] =
+      AjaxFormPostPath.get.split("/").toList match {
+      case Nil => path(Rest)
+      case list => path(list.map(PathMatcher(_)).reduce(_ / _) / Rest)
+  }
+  
+  private val resourcePath : Directive1[String] =
+      ResourcePath.get.split("/").toList match {
+      case Nil => path(Rest)
+      case list => path(list.map(PathMatcher(_)).reduce(_ / _) / Rest)
+  }
+//    path((AjaxCallbackPath.split("/").map(PathMatcher(_)) Seq(Rest)).reduce(_ / _))
+    
+  private val formPostMatcher = matcherOf(site.ajaxFormPostPath)
+  private val resourceMatcher = matcherOf(site.resourcePath)
   private val sessions = TrieMap[String, Session]()  
   private val session: Session = null  
 
   private val cookieName = "scalaleafs"
     
-  def matcherOf(path : Seq[String]) = path.foldLeft(nilMatcher)((x, y) => x / y)
-  def matcherOf(path : String) : PathMatcher[HNil] = matcherOf(path.split("/").toSeq)
+    
+  def matchersOf(path : String) = path.split("/").map(PathMatcher(_))
+  def matcherOf(path : Seq[String]) : PathMatcher[HNil] = path.map(PathMatcher(_)).reduce(_ / _)
+//  def matcherOf(path : String) : PathMatcher[HNil] = matcherOf(path.split("/").toSeq)
   
   def apply(v1: spray.routing.RequestContext): Unit = 
     route(v1)
     
-  val route = 
+  val route0 = 
     pathPrefix("ui") {
-      route2
+      route
     }
 
-  def route2 = {
+  import site.executionContext
+  
+  def route = contextPrefix {
     get {
-      println("GET")
-      path("kk"/callbackMatcher / Rest) { callbackId =>
+      callbackPath { (callbackId, windowId) =>
         cookie(cookieName) { cookie =>
-          complete {
-            session.handleAjaxCallback(callbackId, Map.empty)
+          respondWithMediaType(MediaTypes.`application/json`) {
+            complete {
+              site.handleAjaxCallback(windowId, callbackId, Map.empty)
+            }
           }
         }
       } ~
-      path("qqleafs" / Rest) { resource =>
-      println("RES")
-        handleResource(resource) match {
+      resourcePath { resource =>
+        println("Handling resource: " + resource)
+        site.handleResource(resource) match {
           case Some((bytes, resourceType)) =>
             respondWithMediaType(MediaType.custom(resourceType.contentType)) {
               complete {
                 bytes
               }
             }
+          case None => reject
         }
       } ~
       path(Rest) { path =>
+        println("REST: " + path)
          val (ext, isResource) = extension(path) match {
           case "" => ("", false)
           case "html" => ("html", false)
@@ -71,12 +105,12 @@ class AbstractSprayServer[R <: Template](root : Class[R], configuration : Config
           val cookie = someCookie.getOrElse(HttpCookie(cookieName, UUID.randomUUID.toString))
           val session = sessions.getOrElseUpdate(cookie.value, {
             debug(s"Created session: ${cookie.value}")
-            new Session(this, configuration)
+            new Session//(this, configuration)
           })
           setCookie(cookie) {
             if (isResource) {
               val resource = if (path.startsWith("leafs/")) path.substring(6) else path
-              handleResource(resource) match {
+              site.handleResource(resource) match {
                 case Some((bytes, resourceType)) =>
                   respondWithMediaType(MediaType.custom(resourceType.contentType)) {
                     complete {
@@ -91,13 +125,14 @@ class AbstractSprayServer[R <: Template](root : Class[R], configuration : Config
             }
             else {
               extract(_.request.uri) { uri =>
-                val url = new Url(UrlContext(uri.scheme, uri.authority.host.address, uri.authority.port.toString, contextPath), Url.parsePath(path), Map.empty)
+                val url = new Url(UrlContext(uri.scheme, uri.authority.host.address, uri.authority.port.toString, site.contextPath), Url.parsePath(path), Map.empty)
                 println("url:" + url)
-                respondWithMediaType(MediaTypes.`text/html`) {
+                respondWithMediaType(MediaTypes.`application/xhtml+xml`) {
                   complete {
-                    session.handleRequest(url) { 
-                      request: Request =>
-                        val xml = processRoot(request)
+                    import site.executionContext
+                    site.handleRequest(url).map { 
+                      xml =>
+//                        val xml = processRoot(request)
                         println("Processed: " + path + " (" + (System.currentTimeMillis - start) + " ms)")
                         xml
                     } 
@@ -111,7 +146,8 @@ class AbstractSprayServer[R <: Template](root : Class[R], configuration : Config
     } ~
     post {
       complete {
-        session.handleAjaxFormPost(Map.empty)
+//        site.handleAjaxFormPost(Map.empty)
+        ""
       }
     }
   }
@@ -126,3 +162,51 @@ class AbstractSprayServer[R <: Template](root : Class[R], configuration : Config
     }
 }
 
+import akka.actor.ActorSystem
+import akka.actor.Props
+import akka.event.Logging.DebugLevel
+import akka.io.IO
+import spray.can.Http
+import spray.http.HttpRequest
+import spray.routing.Directive.pimpApply
+import spray.routing.HttpService.pimpRouteWithConcatenation
+import spray.routing.HttpServiceActor
+import spray.routing.Route
+import spray.routing.RoutingSettings
+import spray.routing.directives.LogEntry
+import spray.routing.ExceptionHandler
+import spray.routing.HttpService
+import spray.routing.RejectionHandler
+
+object SprayServerPort extends ConfigVal[Int](8080)
+object SprayServerInterface extends ConfigVal[String]("0.0.0.0")
+object SprayServerContextPath extends ConfigVal[List[String]](Nil)
+
+class SprayServer(val site : Site, val configuration : Configuration, val actorSystem : ActorSystem) extends HttpService with Logging {
+
+  def this(rootTemplateClass : Class[_ <: Template], configuration : Configuration, actorSystem : ActorSystem) = 
+    this(new Site(rootTemplateClass, SprayServerContextPath(configuration), configuration)(actorSystem.dispatcher), configuration, actorSystem)
+  
+  implicit def actorSys = actorSystem 
+  implicit def config = configuration 
+  val exceptionHandler : ExceptionHandler = ExceptionHandler.default
+  def rejectionHandler : RejectionHandler = RejectionHandler.Default
+  val routingSettings = RoutingSettings(actorSystem)
+
+  private implicit def eh = exceptionHandler
+  private implicit val rh = rejectionHandler 
+  private implicit def rs = routingSettings
+
+  val route = new SprayRoute(site)
+  val actorRefFactory = actorSystem
+
+  class Actor extends HttpServiceActor {
+    val theRoute = route
+    def receive = runRoute(logRequest(showRequest _) { theRoute })
+    def showRequest(request: HttpRequest) = LogEntry("URL: " + request.uri + "\n CONTENT: " + request.entity, DebugLevel)
+
+  }
+
+  def start =
+    IO(Http) ! Http.Bind(actorSystem.actorOf(Props(new Actor), "http-server"), interface = SprayServerInterface.get, port = SprayServerPort.get)
+}

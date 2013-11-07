@@ -1,11 +1,11 @@
-package net.scalaleafs2.test
+package net.scalaleafs.test
 
-import net.scalaleafs2.Template
-import net.scalaleafs2.Ident
-import net.scalaleafs2.Var
-import net.scalaleafs2.implicits._
-import net.scalaleafs2.Context
-import net.scalaleafs2.Noop
+import net.scalaleafs.Template
+import net.scalaleafs.Ident
+import net.scalaleafs.Var
+import net.scalaleafs.implicits._
+import net.scalaleafs.Context
+import net.scalaleafs.Noop
 
 class BootstrapShowcase extends Template {
 

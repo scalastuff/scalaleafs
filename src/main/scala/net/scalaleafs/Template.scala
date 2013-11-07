@@ -11,32 +11,58 @@
 package net.scalaleafs
 
 import java.util.concurrent.ConcurrentHashMap
-
 import scala.xml.NodeSeq.seqToNodeSeq
 import scala.xml.{XML, NodeSeq, Elem}
-
 import org.xml.sax.SAXParseException
-
-trait Renderable {
-  def render : NodeSeq
-}
+import scala.concurrent.Future
+import scala.concurrent.ExecutionContext
 
 /**
  * A template is an XmlTransformation that reads its input, by default, from a class-path resource, and provides
  * a bind hook to transform this input to some output.
  * Class-path resources are cached (when not in debug mode) in a JVM-global cache.
  */
-trait Template extends XmlTransformation with Renderable {
-  def bind : NodeSeq => NodeSeq
-  def readInput : NodeSeq = Template.template(getClass)
-  val input = readInput
-  def render : NodeSeq = apply(input)
-  abstract override def apply(xml : NodeSeq) = bind(super.apply(input))
+trait Template extends RenderNode with SingleChildRenderNode with Xml with Html with Binding {
+  
+  implicit def context : Context = Context.get
+  
+  lazy val child : RenderNode = render
+  private var _input : NodeSeq = null
+  private def input(context : Context) : NodeSeq = {
+    if (_input == null) {
+      _input = input
+      if (_input == NodeSeq.Empty)
+        _input = readInput(context)
+    }
+    _input
+  }
+
+  /**
+   * Override to define the render tree.
+   */
+  def render : RenderNode
+  
+  /**
+   * Initial input value. 
+   * Override this value to prevent reading of input.
+   */  
+  val input : NodeSeq = NodeSeq.Empty
+
+  /**
+   * Reads input of this template.
+   * Default implementation reads a template resource from the classpath
+   * with the same name as the class of this template.
+   */
+  def readInput(context : Context) : NodeSeq = 
+    Template.template(context, getClass) 
+    
+  def render(context : Context, xml : NodeSeq) = child.render(context, input(context))
 }
 
 object Template {
+
   val templateCache = new ConcurrentHashMap[Class[_], NodeSeq]
-  def template(c : Class[_]) : NodeSeq = {
+  def template(context : Context, c : Class[_]) : NodeSeq = {
     var xml = templateCache.get(c)
     if (xml == null) {
       val resourceName = c.getName().replace('.', '/') + ".html";
@@ -58,7 +84,7 @@ object Template {
         case t : SAXParseException if t.getLineNumber >= 0 => throw new Exception("Error in template " + resourceName + " (line " + t.getLineNumber + "): " + t.getLocalizedMessage, t)
         case t : Throwable => throw new Exception("Error in template " + resourceName + ": " + t, t)
       }
-      if (!R.debugMode) {
+      if (!context.debugMode) {
         templateCache.put(c, xml)
       }
     }

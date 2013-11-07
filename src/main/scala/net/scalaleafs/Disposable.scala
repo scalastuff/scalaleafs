@@ -1,13 +1,13 @@
-package net.scalaleafs2
+package net.scalaleafs
 
 import scala.collection.generic.GenericTraversableTemplate
 import scala.collection.generic.TraversableFactory
 import scala.collection.TraversableLike
 
 trait Disposable {
-  private[scalaleafs2] var next : Option[Disposable] = None
-  private[scalaleafs2] var prev : Option[Disposable] = None
-  protected[scalaleafs2] def disposeFromList = {
+  private[scalaleafs] var next : Option[Disposable] = None
+  private[scalaleafs] var prev : Option[Disposable] = None
+  protected[scalaleafs] def disposeFromList = {
     if (next.isDefined)
       next.get.prev = prev
     if (prev.isDefined)

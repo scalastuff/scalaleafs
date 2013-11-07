@@ -21,19 +21,19 @@ import scala.xml.TopScope
 /**
  * A css transformation is a transformation based on a css selector. An instance is typically obtained
  * through the #> operator, e.g. <pre>"#mydiv" #> SetClass("selected")</pre> 
- */
-class CssTransformation[A <: NodeSeq => NodeSeq](val selector : CssSelector, val transformation : NodeSeq => NodeSeq) extends XmlTransformation {
+class CssTransformation[A <: (Context, NodeSeq) => NodeSeq](val selector : CssSelector, val transformation : (Context, NodeSeq) => NodeSeq) extends RenderNode {
 
-  override def apply(xml : NodeSeq) : NodeSeq = 
-    XmlTransformation.transform(xml, selector, transformation)
+  override def apply(context : Context, xml : NodeSeq) : NodeSeq = 
+    Transformation.transform(context, xml, selector, transformation)
 }
 
 class TextCssTransformation(selector : CssSelector, val text : String) 
-	extends CssTransformation(selector, _ => Text(text))
+	extends CssTransformation(selector, (_, _) => Text(text))
 
 class XmlCssTransformation(selector : CssSelector, val xml : NodeSeq) 
-	extends CssTransformation[NodeSeq => NodeSeq](selector, _ => xml)
+	extends CssTransformation[(Context, NodeSeq) => NodeSeq](selector, (_, _) => xml)
 
+ */
 
 object CssSelector {
   private val cssSelCache = new ConcurrentHashMap[String, CssSelector]
@@ -54,28 +54,20 @@ object CssSelector {
   }
 }
 
-class UnparsedCssSelector(s : String) {
-  def #> (text : String) = new TextCssTransformation(CssSelector.getOrParse(s), text) 
-  def #> (xml : NodeSeq) = new XmlCssTransformation(CssSelector.getOrParse(s), xml) 
-  def #>[A <: NodeSeq => NodeSeq] (f : A) = new CssTransformation[A](CssSelector.getOrParse(s), f) 
-//  def #> (f : NodeSeq => NodeSeq) = new BoundCssSelector[NodeSeq => NodeSeq](CssSelector.getOrParse(s), f) 
-//  def #> (f : CssTransformation) = new CssTransformation(CssSelector.getOrParse(s), f)
-  
-  /**
-   * Needed, since implicits like Implicits.toSeq can't transform to [A <: NodeSeq => NodeSeq]. 
-   */
-  def #> (f : XmlTransformation) = new CssTransformation[XmlTransformation](CssSelector.getOrParse(s), f) 
+class UnparsedCssSelector(val s : String) extends AnyVal {
+  def #> (node : RenderNode) = new SelectorRenderNode(CssSelector.getOrParse(s), node) 
 }
 
 /**
  * A selector that uses a css syntax. 
  */
-class CssSelector(matches : Elem => Boolean, nested : Option[CssSelector] = None) extends XmlSelector(matches, true, nested)
+class CssSelector(matches : Elem => Boolean, recursive : Boolean = true, nested : Option[CssSelector] = None) extends Selector(matches, recursive, nested)
 case class TypeSelector(prefix : Option[String], label : String) extends CssSelector(elem => Option(elem.prefix) == prefix && elem.label == label)
 case class IdSelector(id : String) extends CssSelector(elem => XmlHelpers.attr(elem, "id") == id)
 case class ClassSelector(cl : String) extends CssSelector(elem => XmlHelpers.hasClass(elem, cl))
 case class PseudoSelector(id : String) extends CssSelector(_ => false)
 case class CompoundSelector(sel : List[CssSelector]) extends CssSelector(elem => (true /: sel)(_ && _.matches(elem)))
+case class NotSelector(sel : CssSelector) extends CssSelector(elem => !sel.matches(elem))
 case class AttrExists(name : String) extends CssSelector(elem => XmlHelpers.attrExists(elem, name))
 case class AttrEq(name : String, value : String) extends CssSelector(elem => XmlHelpers.attr(elem, name) == value)
 case class AttrIn(name : String, value : String) extends CssSelector(elem => XmlHelpers.hasAttrValue(elem, name, value))
@@ -86,7 +78,7 @@ case class AttrSubstring(name : String, substring : String) extends CssSelector(
 
 trait AbstractCssParser extends RegexParsers {
   override def skipWhitespace = false
-  val ID = """[a-zA-Z](-|[a-zA-Z0-9]|_[a-zA-Z0-9])*""".r
+  val ID = """[a-zA-Z](-|[a-zA-Z0-9]|[a-zA-Z0-9])*""".r
   def value = quoted | dquoted | plain
   def plain = """([a-zA-Z0-9]|-|_[a-zA-Z0-9])*""".r
   def quoted = "'" ~> """(\"|-|[a-zA-Z0-9]|_[a-zA-Z0-9])*""".r <~ "'"
@@ -94,10 +86,13 @@ trait AbstractCssParser extends RegexParsers {
 }
 
 object CssSelectorParser extends AbstractCssParser {
-  def selectors = repsep(compoundSelector, " ") ^^ (nested(_))
+  def selectors : Parser[CssSelector] = descendantSelectors
+  def descendantSelectors = repsep(childSelectors, " +".r) ^^ (descendant)
+  def childSelectors = repsep(compoundSelector, " *> *".r ) ^^ (s => child(s, true))
   def compoundSelector = rep(selector) ^^ (s => if (s.size == 1) s(0) else CompoundSelector(s)) 
-  def selector = typeSelector | idSelector | classSelector | pseudoSelector | attrSelector 
-  def typeSelector = opt(ID <~ ":") ~ ID ^^ (id => TypeSelector(id._1, id._2))
+  def selector = notSelector | typeSelector | idSelector | classSelector | pseudoSelector | attrSelector  
+  def notSelector = ":not(" ~> classSelector <~ ")" ^^ (s => NotSelector(s))
+  def typeSelector = opt(ID <~ "|") ~ ID ^^ (id => TypeSelector(id._1, id._2))
   def idSelector = "#" ~> ID ^^ (id => IdSelector(id))
   def classSelector = "." ~> ID ^^ (id => ClassSelector(id))
   def pseudoSelector = ":" ~> ID ^^ ((id : String) => PseudoSelector(id))
@@ -110,10 +105,15 @@ object CssSelectorParser extends AbstractCssParser {
   def attrEndsWith = (ID <~ "$=") ~ value ^^ (s => AttrEndsWith(s._1, s._2))
   def attrSubstring = (ID <~ "*=") ~ value ^^ (s => AttrSubstring(s._1, s._2))
   def attrExists = ID ^^ (s => AttrExists(s))
-  def nested(s : List[CssSelector]) : CssSelector = s match {
+  def descendant(s : List[CssSelector]) : CssSelector = s match {
     case Nil => throw new Exception("cannot happen")
     case s :: Nil => s
-    case s :: rest => new CssSelector(s.matches, Some(nested(rest)))
+    case s :: rest => new CssSelector(s.matches, nested = Some(descendant(rest)))
+  }
+  def child(s : List[CssSelector], recursive : Boolean) : CssSelector = s match {
+    case Nil => new CssSelector(_ => false)
+    case s :: Nil => new CssSelector(s.matches, recursive)
+    case s :: rest => new CssSelector(s.matches, recursive, nested = Some(child(rest, false)))
   }
 }
 
@@ -123,11 +123,11 @@ object CssSelectorParser extends AbstractCssParser {
  * which in turn is wrapped in a div element that has the 'wrapper' class.
  * <pre>CssConstructor("div.wrapper input[name='descr']")</pre>
  */
-trait CssConstructor extends Function1[NodeSeq, Elem]
+trait CssConstructor extends Function[NodeSeq, Elem]
 
 object CssConstructor {
   private val constructorCache = new ConcurrentHashMap[String, CssConstructor]
-  def apply(s : String) : CssConstructor = {
+  implicit def apply(s : String) : CssConstructor = {
     var constructor = constructorCache.get(s)
     if (constructor == null) {
       CssConstructorParser.parseAll(CssConstructorParser.constructors, s) match {
@@ -144,28 +144,25 @@ object CssConstructor {
   }
 }
 
-class ElemConstructor(prefix : Option[String], label : String, modifier : ElemModifier) extends CssConstructor {
-  override def apply(xml : NodeSeq) : Elem = {
-    modifier(Elem(prefix getOrElse null, label, scala.xml.Null, TopScope, xml:_*))
-  }
-}
-
 object CssConstructorParser extends AbstractCssParser {
   def constructors = rep1sep(constructor, " ") ^^ (nested(_))
-  def constructor = opt(ID <~ ":") ~ ID ~ modifiers ^^ (id => new ElemConstructor(id._1._1, id._1._2, id._2)) 
-  def modifiers = rep(modifier) ^^ (_.foldLeft(Ident.asInstanceOf[ElemModifier])(_ & _))
+  def constructor = opt(ID <~ ":") ~ ID ~ modifiers ^^ (id => new CssConstructor {
+    def apply(xml : NodeSeq) = 
+      id._2(Elem(id._1._1 getOrElse null, id._1._2, scala.xml.Null, TopScope, xml:_*))
+  }) 
+  def modifiers = rep(modifier) ^^ (_.foldLeft((elem : scala.xml.Elem) => elem)((m1, m2) => (elem : scala.xml.Elem) => m2(m1(elem))))
   def modifier = idModifier | classModifier | attrModifier 
-  def idModifier = "#" ~> ID ^^ (id => Xml.setAttr("id", id))
-  def classModifier = "." ~> ID ^^ (id => Xml.setClass(id))
+  def idModifier = "#" ~> ID ^^ (id => (elem : scala.xml.Elem) => XmlHelpers.setAttr(elem, "id", id))
+  def classModifier = "." ~> ID ^^ (id => (elem : scala.xml.Elem) => XmlHelpers.setClass(elem, id))
   def attrModifier = "[" ~> attrAssignment <~ "]" 
-  def attrAssignment = (ID <~ "=") ~ value ^^ (s => Xml.setAttr(s._1, s._2))
+  def attrAssignment = (ID <~ "=") ~ value ^^ (s => (elem : scala.xml.Elem) => XmlHelpers.setAttr(elem, s._1, s._2))
   def nested(s : List[CssConstructor]) : CssConstructor = s match {
     case Nil => throw new Exception("cannot happen")
-    case s :: Nil => s
-    case s :: rest => new CssConstructor {
-      override def apply(xml : NodeSeq) : scala.xml.Elem = {
-        s(rest.foldRight(xml)((a, b) => a(b)))
+    case ctor :: Nil => ctor
+    case ctor :: rest => new CssConstructor {
+      def apply(xml : NodeSeq) = {
+        ctor(rest.foldRight(xml)((ctor, xml) => ctor(xml)))
       }
     }
-  }  
+  }
 }

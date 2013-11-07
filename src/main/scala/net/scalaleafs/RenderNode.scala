@@ -1,4 +1,4 @@
-package net.scalaleafs2
+package net.scalaleafs
 
 import scala.xml.Elem
 import scala.xml.NodeSeq
@@ -42,13 +42,15 @@ trait RenderNode {
 }
 
 trait NoChildRenderNode {
-  def dispose(context : Context) : Unit = Unit
+  def renderChanges(context : Context) : JSCmd = Noop
   def show(context : Context) : Unit = Unit
   def hide(context : Context) : Unit = Unit
+  def dispose(context : Context) : Unit = Unit
 }
 
 trait SingleChildRenderNode {
   def child : RenderNode
+  def renderChanges(context : Context) : JSCmd = child.renderChanges(context)
   def dispose(context : Context) = child.dispose(context)
   def show(context : Context) = child.show(context)
   def hide(context : Context) = child.hide(context)
@@ -56,19 +58,16 @@ trait SingleChildRenderNode {
 
 trait MultiChildrenRenderNode {
   def children : Iterable[_ <: RenderNode]
+  def renderChanges(context : Context) : JSCmd = children.foldLeft[JSCmd](Noop)((cmd, node) => cmd & node.renderChanges(context))
   def dispose(context : Context) = children.foreach(_.dispose(context))
   def show(context : Context) = children.foreach(_.show(context))
   def hide(context : Context) = children.foreach(_.hide(context))
 }
 
-
 final class CompoundRenderNode(val children: List[RenderNode]) extends RenderNode with MultiChildrenRenderNode {
   def render(context : Context, xml : NodeSeq) =
     children.foldLeft(xml)((xml, node) => node.render(context, xml))
 
-  def renderChanges(context : Context) =
-    children.foldLeft[JSCmd](Noop)((cmd, node) => cmd & node.renderChanges(context))
-    
   override def apply(node : RenderNode) : RenderNode = 
     new CompoundRenderNode(node :: children)
 
@@ -78,7 +77,6 @@ final class CompoundRenderNode(val children: List[RenderNode]) extends RenderNod
 
 object Ident extends ElemModifier with NoChildRenderNode {
   def render(context : Context, elem : Elem) = elem
-  def renderChanges(context: net.scalaleafs2.Context): net.scalaleafs2.JSCmd = Noop
   override def & (node : RenderNode) = node 
   override def apply (node : RenderNode) = node
   val modify = (context : Context, elem : Elem) => elem  
@@ -94,9 +92,6 @@ class RenderNodeDelegate(delegate : => RenderNode) extends RenderNode with Singl
   
   def render(context : Context, xml : NodeSeq) = 
     delegate.render(context, xml)
-
-  def renderChanges(context : Context) = 
-    delegate.renderChanges(context)
 }
 
 /**
@@ -167,7 +162,6 @@ object ElemModifier {
      new ElemModifier with NoChildRenderNode {
       def render(context : Context, elem : Elem) : Elem = 
         modify(context, elem)
-      def renderChanges(context : Context) = Noop
     }
 }
 

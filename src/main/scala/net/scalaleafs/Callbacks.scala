@@ -1,4 +1,4 @@
-package net.scalaleafs2
+package net.scalaleafs
 
 import scala.concurrent.Future
 
@@ -25,10 +25,10 @@ trait Callbacks { this : Context =>
     else 
       JSCmd("leafs.callback('" + callbackIdAsync(f) + "?" + parameters.map(x => x._1.toString + "=' + encodeURIComponent(" + x._2.toString + ")").mkString(" + '&") + ");")
 
-  private[scalaleafs2] def callbackId(f : Context => Map[String, Seq[String]] => Unit) : String = 
+  private[scalaleafs] def callbackId(f : Context => Map[String, Seq[String]] => Unit) : String = 
     callbackIdAsync(p => c => Future.successful(f(p)(c)))
     
-  private[scalaleafs2] def callbackIdAsync(f : Context => Map[String, Seq[String]] => Future[Unit]) : String = {
+  private[scalaleafs] def callbackIdAsync(f : Context => Map[String, Seq[String]] => Future[Unit]) : String = {
     val uid = site.generateCallbackID
     window.ajaxCallbacks.put(uid, AjaxCallback(f))
     addHeadContribution(JQuery)

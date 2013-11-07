@@ -1,18 +1,20 @@
-package net.scalaleafs2.test
+package net.scalaleafs.test
 
-import net.scalaleafs2._
+import net.scalaleafs._
 
 object MainMenu extends Enumeration {
   val home = Value("home")
 }
 
+object CurrentSecurityContext extends RequestVar[Option[SecurityContext]](None)
+
 class Frame(window: Window) extends Template {
 
-  val url = window.url
+  val url = CurrentUrl
 
-  val securityContext = SecurityContextVar
-  
-  println("URL: " + url.head.get(null))
+  val securityContext = CurrentSecurityContext
+
+  println("URL: " + url.head)
 
   def render =
     "#main-menu" #> { 

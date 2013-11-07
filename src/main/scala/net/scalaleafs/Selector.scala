@@ -1,4 +1,4 @@
-package net.scalaleafs2
+package net.scalaleafs
 
 import scala.xml.NodeSeq
 import scala.xml.Elem

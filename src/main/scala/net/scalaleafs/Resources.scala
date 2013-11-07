@@ -49,7 +49,7 @@ trait ResourceFactory {
   def getResource(name : String) : Option[InputStream]
 }
 
-object ResourceFactory extends ConfigVar[ResourceFactory](NullResourceFactory)
+object ResourceFactory extends ConfigVal[ResourceFactory](NullResourceFactory)
 
 object NullResourceFactory extends ResourceFactory {
   def getResource(name : String) : Option[InputStream] = None
@@ -139,10 +139,10 @@ class Resources(factory : ResourceFactory, substitutions : Map[String, String], 
             substitutions.foldLeft(line)((line, subst) => line.replace("$$" + subst._1, subst._2))
           } map { line =>
             if (line.endsWith(debugPostfix1)) 
-              if (!R.debugMode) Seq[String]()
+              if (!debugMode) Seq[String]()
               else Seq(line.dropRight(debugPostfix1.length()))
             else if (line.endsWith(debugPostfix2)) 
-              if (!R.debugMode) Seq[String]()
+              if (!debugMode) Seq[String]()
               else Seq(line.dropRight(debugPostfix2.length()))
             else Seq(line.mkString)
           } 
@@ -150,11 +150,11 @@ class Resources(factory : ResourceFactory, substitutions : Map[String, String], 
           lines.getBytes("UTF-8");
         case None =>
           val bis = new BufferedInputStream(is)
-          Stream.continually(bis.read).takeWhile(-1 !=).map(_.toByte).toArray
+          Stream.continually(bis.read).takeWhile(-1 != _).map(_.toByte).toArray
       }
       (hashedName(name, bytes), resourceType, bytes)
     } catch {
-      case e => throw new Exception("Resource could not be read: " + name, e)
+      case e : Throwable => throw new Exception("Resource could not be read: " + name, e)
     } finally {
       is.close()
     }

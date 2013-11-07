@@ -1,4 +1,4 @@
-package net.scalaleafs2
+package net.scalaleafs
 
 import scala.concurrent.Future
 import scala.xml.NodeSeq
@@ -51,11 +51,13 @@ trait RenderAsync { this : Context =>
    * New async renderings might be added in the process. 
    * The process will continue until async renderings is empty.
    */ 
-  private[scalaleafs2] def processAsyncRender(xml : NodeSeq) : Future[NodeSeq] = {
-    if (asyncRenderQueue.nonEmpty) 
-      asyncRenderQueue.dequeue()().flatMap {
-        case (selection, replacement) =>
-          processAsyncRender(replace(xml, selection, replacement))
+  private[scalaleafs] def processAsyncRender(xml : NodeSeq) : Future[NodeSeq] = {
+    if (asyncRenderQueue.nonEmpty)
+      withContext {
+        asyncRenderQueue.dequeue()().flatMap {
+          case (selection, replacement) =>
+            processAsyncRender(replace(xml, selection, replacement))
+        }
       }
     else Future.successful(xml)
   }
@@ -65,11 +67,13 @@ trait RenderAsync { this : Context =>
    * Async renderings might be added in the process. 
    * The process will continue until async change-renderings and renderings is empty.
    */ 
-  private[scalaleafs2] def processAsyncRenderChanges(jsCmd : JSCmd) : Future[JSCmd] = {
+  private[scalaleafs] def processAsyncRenderChanges(jsCmd : JSCmd) : Future[JSCmd] = {
     if (asyncRenderChangesQueue.nonEmpty) 
-      asyncRenderChangesQueue.dequeue()().flatMap {
-        case (xml, mkJSCmd) =>
-          processAsyncRender(xml).map(xml => jsCmd & mkJSCmd(xml)).flatMap(processAsyncRenderChanges)
+      withContext {
+        asyncRenderChangesQueue.dequeue()().flatMap {
+          case (xml, mkJSCmd) =>
+            processAsyncRender(xml).map(xml => jsCmd & mkJSCmd(xml)).flatMap(processAsyncRenderChanges)
+        }
       }
     else Future.successful(jsCmd)
   }

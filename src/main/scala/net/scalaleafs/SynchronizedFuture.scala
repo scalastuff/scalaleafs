@@ -1,4 +1,4 @@
-package net.scalaleafs2
+package net.scalaleafs
 
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext

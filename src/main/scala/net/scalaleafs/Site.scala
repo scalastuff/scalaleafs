@@ -8,7 +8,7 @@
  * 
  * http://www.apache.org/licenses/LICENSE-2.0
  */
-package net.scalaleafs2
+package net.scalaleafs
 
 import java.util.concurrent.ConcurrentHashMap
 import java.util.UUID
@@ -24,26 +24,26 @@ import scala.concurrent.ExecutionContext
 
 case class AjaxCallback(f : Context => Map[String, Seq[String]] => Future[Unit])
 
-object DebugMode extends ConfigVar[Boolean](false)
+object DebugMode extends ConfigVal[Boolean](false)
 
-object AjaxCallbackPath extends ConfigVar[String]("leafs/ajaxCallback")
-object AjaxFormPostPath extends ConfigVar[String]("leafs/ajaxFormPost")
-object ResourcePath extends ConfigVar[String]("leafs/")
-object CallbackIDGenerator extends ConfigVar[Function0[String]](() => "cb" + UUID.randomUUID)
+object AjaxCallbackPath extends ConfigVal[String]("leafs/ajaxCallback")
+object AjaxFormPostPath extends ConfigVal[String]("leafs/ajaxFormPost")
+object ResourcePath extends ConfigVal[String]("leafs/")
+object CallbackIDGenerator extends ConfigVal[Function0[String]](() => "cb" + UUID.randomUUID)
 
 class Site(rootTemplateClass : Class[_ <: Template], val contextPath : List[String], _configuration : Configuration)(implicit val executionContext : ExecutionContext) extends Logging {
 
   implicit def configuration = _configuration
-  private[scalaleafs2] val windows = TrieMap[String, Window]()
+  private[scalaleafs] val windows = TrieMap[String, Window]()
 
-  val debugMode = DebugMode || System.getProperty("leafsDebugMode") != "false"
+  val debugMode = DebugMode.get || System.getProperty("leafsDebugMode") != "false"
 
   private val callbackIdGenerator : () => String = CallbackIDGenerator(configuration)
   private val rootTemplateInstantiator = new RootTemplateInstantiator(rootTemplateClass, rootTemplateClass.getPackage.getName, debugMode)
   
-  val ajaxCallbackPath = contextPath ++ Url.parsePath(AjaxCallbackPath)
-  val ajaxFormPostPath = contextPath ++ Url.parsePath(AjaxFormPostPath)
-  val resourcePath = contextPath ++ Url.parsePath(ResourcePath)
+  val ajaxCallbackPath = contextPath ++ Url.parsePath(AjaxCallbackPath.get)
+  val ajaxFormPostPath = contextPath ++ Url.parsePath(AjaxFormPostPath.get)
+  val resourcePath = contextPath ++ Url.parsePath(ResourcePath.get)
 
   val substitutions = Map[String, String] (
     "CONTEXT_PATH" -> contextPath.mkString("/"),
@@ -51,21 +51,21 @@ class Site(rootTemplateClass : Class[_ <: Template], val contextPath : List[Stri
     "AJAX_FORMPOST_PATH" -> ajaxFormPostPath.mkString("/"),
     "RESOURCE_PATH" -> resourcePath.mkString("/"))
 
-  val resources = new Resources(ResourceFactory, substitutions, debugMode)
+  val resources = new Resources(ResourceFactory.get, substitutions, debugMode)
 
-  def handleRequest[A](url : Url): Future[String] = {
+  def handleRequest[A](url : Url, requestVals : RequestVal.Assignment[_]*): Future[String] = {
     val window = new Window(this, url, rootTemplateInstantiator)
     windows += window.id -> window
     val start = System.currentTimeMillis()
-    window.handleRequest(url).andThen {
+    window.handleRequest(url, requestVals:_*).andThen {
       case _ => println("request: " + url.path + " (" + (System.currentTimeMillis - start) + " ms)")
     }
   }
   
-  def handleAjaxCallback(windowId : String, callbackId : String, parameters : Map[String, Seq[String]]) : Future[String] = {
+  def handleAjaxCallback(windowId : String, callbackId : String, parameters : Map[String, Seq[String]], requestVals : RequestVal.Assignment[_]*) : Future[String] = {
     val start = System.currentTimeMillis()
     windows.get(windowId) match {
-      case Some(window) => window.handleAjaxCallback(callbackId, parameters).andThen {
+      case Some(window) => window.handleAjaxCallback(callbackId, parameters, requestVals:_*).andThen {
         case _ => println("callback: " + callbackId+  " (" + (System.currentTimeMillis - start) + " ms)")
     }
       case None => throw new ExpiredException("Window expired: " + windowId)
@@ -78,24 +78,7 @@ class Site(rootTemplateClass : Class[_ <: Template], val contextPath : List[Stri
   def generateCallbackID : String = 
     callbackIdGenerator()
   
-//  private lazy val rootTemplateInstantiator = {
-//    val packageName = rootTemplateClass.getPackage.getName
-//    debug("Enabled dynamic classloading for package " + packageName)
-//    new DebugClassLoaderInstantiator(packageName)
-//  }
-//  
-//  private[scalaleafs2] def rootTemplate = { window : Window =>
-//    var instance : Template = null
-//    () => {
-//      if (debugMode && (instance == null || rootTemplateInstantiator.isOutdated))
-//        instance = rootTemplateInstantiator.instantiate(rootTemplateClass)
-//      else if (instance == null) 
-//        instance = rootTemplateClass.newInstance
-//      instance
-//    }
-//  }
-  
-  private[scalaleafs2] def mkPostRequestJsString(JSCmds : Seq[JSCmd]) = 
+  private[scalaleafs] def mkPostRequestJsString(JSCmds : Seq[JSCmd]) = 
     JSCmds match {
       case Seq() => ""
       case cmds => cmds.map { cmd => 
@@ -104,4 +87,3 @@ class Site(rootTemplateClass : Class[_ <: Template], val contextPath : List[Stri
       }.mkString
     }
 }
-

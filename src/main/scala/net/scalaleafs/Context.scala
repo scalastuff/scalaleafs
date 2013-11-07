@@ -1,14 +1,16 @@
-package net.scalaleafs2
+package net.scalaleafs
 
+import scala.collection.mutable
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import scala.xml.Elem
 import scala.xml.NodeSeq
 
-class Context(val site : Site, val window : Window)(implicit val executionContext : ExecutionContext) 
+class Context(val site : Site, val window : Window, requestVals : RequestVal.Assignment[_]*)(implicit val executionContext : ExecutionContext) 
     extends RenderAsync with Callbacks with HeadContributions {
 
-  private[scalaleafs2] var _postRequestJs : JSCmd = Noop
+  private[scalaleafs] var _postRequestJs : JSCmd = Noop
+  private[scalaleafs] val requestVars = mutable.Map[Any, Var[_]](requestVals.map(t => t._1 -> Var[Any](t._2)):_*)
 
   def debugMode = site.debugMode
   
@@ -42,12 +44,18 @@ class Context(val site : Site, val window : Window)(implicit val executionContex
     }
   }
 
-  private[scalaleafs2] def popUrl(uri : String) = {
+  private[scalaleafs] def popUrl(uri : String) = {
     val url = window._currentUrl.get.resolve(uri)
     if (window._currentUrl.get != url) {
       window._currentUrl.set(url)
     }
   }
+  private[scalaleafs] def withContext[A](f : => A) : A = {
+    val previous = Context.get
+    Context.set(this)
+    try f
+    finally Context.set(previous)
+  }
 }
 
-trait ContextAnnotationFactory extends Function[Context, Any]
+object Context extends ThreadLocal[Context] 

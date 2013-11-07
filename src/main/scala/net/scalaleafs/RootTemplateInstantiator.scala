@@ -1,4 +1,4 @@
-package net.scalaleafs2
+package net.scalaleafs
 
 import scala.io.Source
 import java.util.concurrent.ConcurrentHashMap
