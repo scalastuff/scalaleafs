@@ -148,7 +148,7 @@ object CssConstructorParser extends AbstractCssParser {
   def constructors = rep1sep(constructor, " ") ^^ (nested(_))
   def constructor = opt(ID <~ ":") ~ ID ~ modifiers ^^ (id => new CssConstructor {
     def apply(xml : NodeSeq) = 
-      id._2(Elem(id._1._1 getOrElse null, id._1._2, scala.xml.Null, TopScope, xml:_*))
+      id._2(Elem(id._1._1 getOrElse null, id._1._2, scala.xml.Null, TopScope, true, xml:_*))
   }) 
   def modifiers = rep(modifier) ^^ (_.foldLeft((elem : scala.xml.Elem) => elem)((m1, m2) => (elem : scala.xml.Elem) => m2(m1(elem))))
   def modifier = idModifier | classModifier | attrModifier 

@@ -14,8 +14,6 @@ class Frame(window: Window) extends Template {
 
   val securityContext = CurrentSecurityContext
 
-  println("URL: " + url.head)
-
   def render =
     "#main-menu" #> { 
       bind(url.head) { head =>

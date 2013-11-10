@@ -84,7 +84,6 @@ class SprayRoute(site : Site) extends Route with Directives with Logging {
         }
       } ~
       resourcePath { resource =>
-        println("Handling resource: " + resource)
         site.handleResource(resource) match {
           case Some((bytes, resourceType)) =>
             respondWithMediaType(MediaType.custom(resourceType.contentType)) {
@@ -96,7 +95,6 @@ class SprayRoute(site : Site) extends Route with Directives with Logging {
         }
       } ~
       path(Rest) { path =>
-        println("REST: " + path)
          val (ext, isResource) = extension(path) match {
           case "" => ("", false)
           case "html" => ("html", false)

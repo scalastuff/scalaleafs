@@ -6,8 +6,6 @@ class Frame extends Template {
   
   val url = CurrentUrl
 
-  println("Unitial url: " + url.get)
-  
   def render =
     "#main-menu" #> {
       "li:not(.dropdown) a" #> linkHref &

@@ -43,8 +43,16 @@ object SampleBuild extends Build {
       </developers>) 
 
     
-  val scalaleafs = Project(id = "scalaleafs", base = file("."), settings = defaultSettings ++ publishSettings)
+  val scalaleafs = Project(id = "scalaleafs", base = file("."), settings = defaultSettings ++ publishSettings ++ Seq(
+    libraryDependencies +=  "org.clapper" %% "grizzled-slf4j" % "1.0.1" withSources(),
+    libraryDependencies +=  "nu.validator.htmlparser" % "htmlparser" % "1.2.1",
+    libraryDependencies += "com.typesafe.akka" %% "akka-actor" % "2.2.3" withSources(),
+    libraryDependencies += "io.spray" % "spray-can" % "1.2-RC2" withSources(),
+    libraryDependencies += "io.spray" % "spray-routing" % "1.2-RC2" withSources(),
+    libraryDependencies += "org.scalatest" %% "scalatest" % "2.0" % "test" withSources(),
+    resolvers += "spray repo" at "http://repo.spray.io"))
 
   val sample = Project(id = "scalaleafs-sample", base = file("sample"), settings = defaultSettings ++ Seq(
+    libraryDependencies +=  "ch.qos.logback" % "logback-classic" % "1.0.13" withSources(),
     mainClass in (Compile, run) := Some("net.scalaleafs.sample.Main"))).dependsOn(scalaleafs)
 }

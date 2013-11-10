@@ -36,7 +36,7 @@ class Site(rootTemplateClass : Class[_ <: Template], val contextPath : List[Stri
   implicit def configuration = _configuration
   private[scalaleafs] val windows = TrieMap[String, Window]()
 
-  val debugMode = DebugMode.get || System.getProperty("leafsDebugMode") != "false"
+  val debugMode = DebugMode.get || System.getProperty("leafsDebugMode") == "true"
 
   private val callbackIdGenerator : () => String = CallbackIDGenerator(configuration)
   private val rootTemplateInstantiator = new RootTemplateInstantiator(rootTemplateClass, rootTemplateClass.getPackage.getName, debugMode)
@@ -58,7 +58,7 @@ class Site(rootTemplateClass : Class[_ <: Template], val contextPath : List[Stri
     windows += window.id -> window
     val start = System.currentTimeMillis()
     window.handleRequest(url, requestVals:_*).andThen {
-      case _ => println("request: " + url.path + " (" + (System.currentTimeMillis - start) + " ms)")
+      case _ => debug("request: " + url.path + " (" + (System.currentTimeMillis - start) + " ms)")
     }
   }
   
@@ -66,9 +66,11 @@ class Site(rootTemplateClass : Class[_ <: Template], val contextPath : List[Stri
     val start = System.currentTimeMillis()
     windows.get(windowId) match {
       case Some(window) => window.handleAjaxCallback(callbackId, parameters, requestVals:_*).andThen {
-        case _ => println("callback: " + callbackId+  " (" + (System.currentTimeMillis - start) + " ms)")
+        case _ => debug("callback: " + callbackId+  " (" + (System.currentTimeMillis - start) + " ms)")
     }
-      case None => throw new ExpiredException("Window expired: " + windowId)
+      case None => 
+        debug("Window expired: " + windowId)
+        Future.successful(Noop)
     }
   }
 

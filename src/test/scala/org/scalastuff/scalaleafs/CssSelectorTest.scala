@@ -1,11 +1,10 @@
 package net.scalaleafs
-import org.junit.Test
 
 import net.scalaleafs.implicits._
+import org.scalatest.FlatSpec
 
-class CssSelectorTest {
+class CssSelectorTest extends FlatSpec {
 
-  @Test
   def test() {
     val input = <div><div id="parent"><div class="red"><h1>Title</h1></div></div></div>
     val selector = "#parent .red h1" #> <h2>Smaller title</h2> &
@@ -14,7 +13,6 @@ class CssSelectorTest {
     println(output)
   }
 
-  @Test
   def parserTest() {
     println(CssSelectorParser.parseAll(CssSelectorParser.selectors, "parent.div#id:dfk"))
     val result = CssSelectorParser.parseAll(CssSelectorParser.selectors, "#parent div.red h1")
