@@ -22,7 +22,7 @@ var leafs = new function() {
     var setLocationCallback = window.setLocationCallback;
     if (setLocationCallback != null) {
       console.log('Set url invoked: /$$AJAX_CALLBACK_PATH/' + setLocationCallback + "?value=" + url); // DEBUG MODE
-      $.getScript('/$$AJAX_CALLBACK_PATH/' + setLocationCallback + "?value=" + url);    
+      $.getScript('/$$AJAX_CALLBACK_PATH/' + window.id + '/' + setLocationCallback + "?value=" + url);    
     } else {
       if (url.substring(0, 4) == "pop:") {
         url = url.substring(4);
@@ -32,8 +32,8 @@ var leafs = new function() {
   } 
   
   this.callback = function(callbackId) {
-    console.log('Callback invoked: /$$AJAX_CALLBACK_PATH/' + callbackId + '/' + window.id); // DEBUG MODE
-    $.getScript('/$$AJAX_CALLBACK_PATH/' + callbackId + '/' + window.id);
+    console.log('Callback invoked: /$$AJAX_CALLBACK_PATH/' + window.id + '/' + callbackId); // DEBUG MODE
+    $.getScript('/$$AJAX_CALLBACK_PATH/' + window.id + '/' + callbackId);
   };
   
   this.postCallback = function(callbackId, data) {
@@ -65,7 +65,7 @@ var leafs = new function() {
     console.log("UNLOAD:" + window.onunload);
     window.onunload = function() {
         $.ajax({
-      url: '/$$AJAX_CALLBACK_PATH/' + callbackId + '/' + window.id,
+      url: '/$$AJAX_CALLBACK_PATH/' + window.id + '/' + callbackId,
       dataType: 'script',
       async: false
       });

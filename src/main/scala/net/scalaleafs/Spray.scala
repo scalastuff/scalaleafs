@@ -72,11 +72,13 @@ class SprayRoute(site : Site) extends Route with Directives with Logging {
   
   def route = contextPrefix {
     get {
-      callbackPath { (callbackId, windowId) =>
-        cookie(cookieName) { cookie =>
-          respondWithMediaType(MediaTypes.`application/json`) {
-            complete {
-              site.handleAjaxCallback(windowId, callbackId, Map.empty)
+      callbackPath { (windowId, callbackId) =>
+        extract(_.request.uri.query) { query =>
+          cookie(cookieName) { cookie =>
+            respondWithMediaType(MediaTypes.`application/json`) {
+              complete {
+                site.handleAjaxCallback(windowId, callbackId, query)
+              }
             }
           }
         }

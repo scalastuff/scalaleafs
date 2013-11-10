@@ -2,6 +2,3 @@
 /.cache
 /.scala_dependencies
 /bin
-.settings
-.classpath
-.project

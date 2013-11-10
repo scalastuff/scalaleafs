@@ -19,10 +19,19 @@ object Html extends Html
 
 trait Html {
  
-  def onclick(f : => JSCmd) : ElemModifier = {
+  def onclick(f : => JSCmd) : ElemModifier = 
     Xml.setAttr("onclick", { context => 
       context.callback(context => _ => context.addPostRequestJs(f)) & JsReturnFalse
       })
+  
+  def onchange(f : String => JSCmd) : ElemModifier = 
+    Xml.setAttr("onchange", { context => 
+      context.callback(JSExp("this.value"))(context => s => context.addPostRequestJs(f(s))) & JsReturnFalse
+    })
+  
+  def select[A](values : Seq[A])(f : A => JSCmd) = {
+    Xml.setAttr("onchange", _.callback(JSExp("this.selectedIndex"))(context => s => context.addPostRequestJs(f(values(Integer.parseInt(s)))))) & 
+    Xml.setContent(content_ => values.map(v => <option>{v}</option>))
   }
   
   def linkHref = ElemModifier { 

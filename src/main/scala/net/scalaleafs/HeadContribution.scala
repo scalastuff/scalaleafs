@@ -190,7 +190,7 @@ object OnPopStateHeadContribution extends HeadContribution("OnPopState") {
     <script type="text/javascript"> 
       window.setLocationCallback = '{ context.callbackId { context => map => 
         Future.successful {
-          map.get("value").flatMap(_.headOption)  match {
+          map.find(_._1 == "value").map(_._2)  match {
             case Some(url) =>
               if (url.startsWith("pop:")) context.popUrl(url.substring(4))
               else context.url = url

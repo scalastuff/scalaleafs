@@ -142,7 +142,10 @@ trait ExpectElemWithIdRenderNode extends RenderNode {
   protected def postProcess(xml : NodeSeq) = xml match {
     case elem : Elem => XmlHelpers.setId(elem, id)
     case Seq(elem : Elem) => XmlHelpers.setId(elem, id)
-    case xml => <dummy id={id}>xml</dummy>
+    case xml => xml.headOption match {
+      case Some(elem : Elem) if XmlHelpers.getId(elem) == id => xml
+      case _ => <dummy id={id}>{xml}</dummy>
+    }
   }
   def render(context : Context, elem : Elem, id : String) : NodeSeq
 }

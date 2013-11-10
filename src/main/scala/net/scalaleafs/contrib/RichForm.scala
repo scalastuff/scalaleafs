@@ -76,7 +76,7 @@ object RichForm {
   def textbox(text : String, validator : Validator = NilValidator)(setter : String => Unit) = new RichFormElement {
     def render(context : Context, elem : Elem) : Elem = {
       context.addHeadContribution(RichFormHeadContribution)
-      val callbackId = context.callbackId(_ => map => setter(map.get("").getOrElse(Nil).headOption.getOrElse("")))
+      val callbackId = context.callbackId(_ => map => setter(map.find(_._1 == "").map(_._2).getOrElse("")))
       val id = XmlHelpers.getIdOrElse(elem, callbackId)
       elem.label match {
         case "input" => 

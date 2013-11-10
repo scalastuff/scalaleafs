@@ -110,8 +110,8 @@ trait Val[A] extends Bindable[A] { origin =>
 
   def mapVar[B](f : A => B) = 
     new MappedVersioned(origin) with Var[B] {
-      protected var _value : B = null.asInstanceOf[B] 
-      override def get : B = {if (_value == null) set(f(origin.get)); _value}
+      protected var _value : B = f(origin.get) 
+      override def get : B = _value
       override def validateChange = set(f(origin.get))
     }
 }

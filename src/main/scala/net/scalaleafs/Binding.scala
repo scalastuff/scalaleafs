@@ -27,7 +27,7 @@ trait Binding {
       }, f)
     }
   
-  def bindAll[A, B <: Iterable[A]](bindable : Bindable[B])(f : Placeholder[A] => RenderNode) = 
+  def bindAll[A, B <: Iterable[A]](bindable : Bindable[_ <: Iterable[A]])(f : Placeholder[A] => RenderNode) = 
     bindable match {
       case v : Val[B] => new BoundAllRenderNode(v, f)
       case v : AsyncVal[B] => new AsyncBoundAllRenderNode(v, f)
@@ -108,8 +108,10 @@ abstract class AbstractBoundAllRenderNode[A](bindable : Bindable[_], f : Placeho
 
   protected def renderValues(context : Context, elem : Elem, id : String)(values : Iterable[A]) : NodeSeq = {
     for (i <- values.size.until(children.size)) children(i).dispose(context)
-    placeholders.remove(placeholders.size, placeholders.size - values.size)
-    children.remove(children.size, children.size - values.size)
+    if (placeholders.size > values.size)
+      placeholders.remove(values.size, placeholders.size - values.size)
+    if (children.size > values.size)
+      children.remove(values.size, children.size - values.size)
     while (children.size < values.size)  {
       val placeholder = new Placeholder[A]  
       val child = f(placeholder)
@@ -129,9 +131,7 @@ abstract class AbstractBoundAllRenderNode[A](bindable : Bindable[_], f : Placeho
       if (version != bindable.version) {
         version = bindable.version
         renderChanges0(context, lastElem, lastId, { xml =>
-          if (version != bindable.version) 
-            RemoveNextSiblings(lastId, lastId) & ReplaceHtml(lastId, xml)
-          else Noop
+          RemoveNextSiblings(lastId, lastId) & ReplaceHtml(lastId, xml)
         })
       } else
         children.foldLeft(Noop.asInstanceOf[JSCmd])(_ & _.renderChanges(context))

@@ -22,7 +22,7 @@ import scala.collection.concurrent.TrieMap
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext
 
-case class AjaxCallback(f : Context => Map[String, Seq[String]] => Future[Unit])
+case class AjaxCallback(f : Context => Seq[(String, String)] => Future[Unit])
 
 object DebugMode extends ConfigVal[Boolean](false)
 
@@ -62,7 +62,7 @@ class Site(rootTemplateClass : Class[_ <: Template], val contextPath : List[Stri
     }
   }
   
-  def handleAjaxCallback(windowId : String, callbackId : String, parameters : Map[String, Seq[String]], requestVals : RequestVal.Assignment[_]*) : Future[String] = {
+  def handleAjaxCallback(windowId : String, callbackId : String, parameters : Seq[(String, String)], requestVals : RequestVal.Assignment[_]*) : Future[String] = {
     val start = System.currentTimeMillis()
     windows.get(windowId) match {
       case Some(window) => window.handleAjaxCallback(callbackId, parameters, requestVals:_*).andThen {

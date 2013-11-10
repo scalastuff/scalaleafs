@@ -34,10 +34,10 @@ class Window(site : Site, initialUrl : Url, rootTemplateInstantiator : RootTempl
     }
   }
 
-  def handleAjaxCallback(callbackId : String, parameters : Map[String, Seq[String]], requestVals : RequestVal.Assignment[_]*) : Future[String] = 
+  def handleAjaxCallback(callbackId : String, parameters : Seq[(String, String)], requestVals : RequestVal.Assignment[_]*) : Future[String] = 
     processAjaxCallback(callbackId, parameters).map(jsCmd => site.mkPostRequestJsString(jsCmd.toSeq))
   
-  private def processAjaxCallback(callbackId : String, parameters : Map[String, Seq[String]], requestVals : RequestVal.Assignment[_]*) : Future[JSCmd] = {
+  private def processAjaxCallback(callbackId : String, parameters : Seq[(String, String)], requestVals : RequestVal.Assignment[_]*) : Future[JSCmd] = {
     synchronizedFuture {
       ajaxCallbacks.get(callbackId) match {
         case Some(ajaxCallback) => 
