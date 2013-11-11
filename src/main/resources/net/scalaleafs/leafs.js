@@ -62,7 +62,6 @@ var leafs = new function() {
   };
   
   this.onPageUnload = function(callbackId) {
-    console.log("UNLOAD:" + window.onunload);
     window.onunload = function() {
         $.ajax({
       url: '/$$AJAX_CALLBACK_PATH/' + window.id + '/' + callbackId,
@@ -71,7 +70,6 @@ var leafs = new function() {
       });
     window.onunload = function() {};
     }; 
-    console.log("UNLOAD:" + window.onunload);
   };
   
   this.addClass = function(elt, cls) {

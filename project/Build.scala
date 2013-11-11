@@ -4,14 +4,14 @@ import Keys._
 import com.typesafe.sbteclipse.plugin.EclipsePlugin.EclipseKeys
 import com.typesafe.sbteclipse.plugin.EclipsePlugin.EclipseCreateSrc
 
-object SampleBuild extends Build {
+object ScalaLeafsBuild extends Build {
 
   def defaultSettings =
     Project.defaultSettings ++
       Seq(
         sbtPlugin := false, 
         organization := "com.kentivo",
-        version := "1.0.0-SNAPSHOT",
+        version := "1.1.0-SNAPSHOT",
         scalaVersion := "2.10.3",
         scalacOptions += "-deprecation",
         scalacOptions += "-unchecked",
