@@ -19,6 +19,13 @@ object Html extends Html
 
 trait Html {
  
+  def js(jsCmd : JSCmd) = new RenderNode with NoChildRenderNode {
+    def render(context : Context, xml : NodeSeq) = {
+      context.addPostRequestJs(jsCmd)
+      xml
+    } 
+  }
+  
   def onclick(f : => JSCmd) : ElemModifier = 
     Xml.setAttr("onclick", { context => 
       context.callback(context => _ => context.addPostRequestJs(f)) & JsReturnFalse
