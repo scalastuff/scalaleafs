@@ -10,7 +10,7 @@ import scala.xml.Elem
 
 object CalendarJavascriptResource extends HeadContribution("Calendar") {
   def render(context : Context) = {
-    <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/fullcalendar/1.6.4/fullcalendar.min.js"></script>
+    <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/fullcalendar/1.6.4/fullcalendar.js"></script>
   }
 }
 

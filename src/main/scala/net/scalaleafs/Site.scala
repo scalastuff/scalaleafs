@@ -86,6 +86,7 @@ class Site(rootTemplateClass : Class[_ <: Template], val contextPath : List[Stri
       case cmds => cmds.map { cmd => 
         val logCmd = if (debugMode) "console.log(\"Callback result command: " + cmd.toString.replace("\"", "'") + "\");\n" else ""
         logCmd + " try { " + cmd + "} catch (e) { console.log(e); };\n"
+        logCmd + " " + cmd + ";\n"
       }.mkString
     }
 }

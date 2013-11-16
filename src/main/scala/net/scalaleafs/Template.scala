@@ -11,11 +11,13 @@
 package net.scalaleafs
 
 import java.util.concurrent.ConcurrentHashMap
+
+import scala.xml.Elem
+import scala.xml.NodeSeq
 import scala.xml.NodeSeq.seqToNodeSeq
-import scala.xml.{XML, NodeSeq, Elem}
+import scala.xml.XML
+
 import org.xml.sax.SAXParseException
-import scala.concurrent.Future
-import scala.concurrent.ExecutionContext
 
 /**
  * A template is an XmlTransformation that reads its input, by default, from a class-path resource, and provides
@@ -23,6 +25,9 @@ import scala.concurrent.ExecutionContext
  * Class-path resources are cached (when not in debug mode) in a JVM-global cache.
  */
 trait Template extends RenderNode with SingleChildRenderNode with Xml with Html with Binding {
+  
+  private val READ_INPUT = <h1>Read Input</h1>
+  private val READ_JS = "READ_JS"
   
   implicit def context : Context = Context.get
   
@@ -37,6 +42,14 @@ trait Template extends RenderNode with SingleChildRenderNode with Xml with Html 
     _input
   }
 
+  private var _js : Option[HeadContribution] = null
+  private def js(context : Context) : Option[HeadContribution] = {
+    if (_js == null) {
+      _js = Template.js(context, getClass)
+    }
+    _js
+  }
+  
   /**
    * Override to define the render tree.
    */
@@ -46,17 +59,20 @@ trait Template extends RenderNode with SingleChildRenderNode with Xml with Html 
    * Initial input value. 
    * Override this value to prevent reading of input.
    */  
-  val input : NodeSeq = NodeSeq.Empty
+  protected val input : NodeSeq = NodeSeq.Empty
 
   /**
    * Reads input of this template.
    * Default implementation reads a template resource from the classpath
    * with the same name as the class of this template.
    */
-  def readInput(context : Context) : NodeSeq = 
+  protected def readInput(context : Context) : NodeSeq = 
     Template.template(context, getClass) 
     
-  def render(context : Context, xml : NodeSeq) = child.render(context, input(context))
+  def render(context : Context, xml : NodeSeq) = {
+    js(context).foreach(context.addHeadContribution(_))
+    child.render(context, input(context))
+  }
 }
 
 object Template {
@@ -90,6 +106,23 @@ object Template {
     }
     xml
   }
-}
+  
+  val jsCache = new ConcurrentHashMap[Class[_], Option[HeadContribution]]
+  def js(context : Context, c : Class[_]) : Option[HeadContribution] = {
+    var s = jsCache.get(c)
+    if (s == null) {
+      s = try {
+        val resourceName = c.getSimpleName + ".js"
+        Some(new JavaScript(resourceName, context.site.resources.hashedResourcePathFor(c, resourceName)))
+      } catch {
+        case t : Throwable => 
+          None
+      }
+      if (!context.debugMode) {
+        jsCache.put(c, s)
+      }
+    }
+    s
+  }}
 
 
