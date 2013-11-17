@@ -1,12 +1,11 @@
-function initCal() {
+	function initCal() {
     
     var date = new Date();
     var d = date.getDate();
     var m = date.getMonth();
     var y = date.getFullYear();
     
-    var calendar = $('#calendar').fullCalendar();
-    var calendar = $('#calendar2').fullCalendar({
+    var calendar = $('#calendar').fullCalendar({
         header: {
             left: 'prev,next today',
             center: 'title',
