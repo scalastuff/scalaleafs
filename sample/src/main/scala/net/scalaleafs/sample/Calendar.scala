@@ -9,6 +9,6 @@ import net.scalaleafs.CompoundHeadContribution
 import net.scalaleafs.JavaScriptLibrary
 
 
-class Schedule extends Template {
+class Calendar extends Template {
   def render = exec(JSCmd("initCal()"))
 }
