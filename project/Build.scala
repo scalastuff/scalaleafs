@@ -45,7 +45,7 @@ object ScalaLeafsBuild extends Build {
     
   val scalaleafs = Project(id = "scalaleafs", base = file("."), settings = defaultSettings ++ publishSettings ++ Seq(
     libraryDependencies +=  "org.clapper" %% "grizzled-slf4j" % "1.0.1" withSources(),
-    libraryDependencies +=  "nu.validator.htmlparser" % "htmlparser" % "1.2.1",
+    libraryDependencies +=  "nu.validator.htmlparser" % "htmlparser" % "1.4",
     libraryDependencies += "com.typesafe.akka" %% "akka-actor" % "2.2.3" withSources(),
     libraryDependencies += "io.spray" % "spray-can" % "1.2-RC2" withSources(),
     libraryDependencies += "io.spray" % "spray-routing" % "1.2-RC2" withSources(),

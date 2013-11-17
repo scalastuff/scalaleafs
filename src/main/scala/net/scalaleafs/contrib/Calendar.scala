@@ -8,7 +8,8 @@ import net.scalaleafs.HeadContribution
 import net.scalaleafs.ExpectElemWithIdRenderNode
 import scala.xml.Elem
 
-object CalendarJavascriptResource extends HeadContribution("Calendar") {
+object CalendarJavascriptResource extends HeadContribution() {
+  def key = "FullCalendar"
   def render(context : Context) = {
     <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/fullcalendar/1.6.4/fullcalendar.js"></script>
   }

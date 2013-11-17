@@ -212,21 +212,41 @@ class RichElem(elem : Elem) {
   def removeClass(value : String) = XmlHelpers.removeClass(elem, value)
 }
 
-class HTML5Parser extends NoBindingFactoryAdapter {
+object XHTML5Parser extends NoBindingFactoryAdapter {
+  import java.io.InputStream
+  import scala.xml._
 
-  override def loadXML(source : InputSource, _p: SAXParser) = {
-    loadXML(source)
+  val voidElements = Set("area", "base", "br", "col", "command", "embed", "hr", "img", "input", "keygen", "link", "meta", "param", "source", "track", "wbr")
+  
+  override def adapter = this
+  override def createNode(pre: String, label: String, attrs: MetaData, scope: NamespaceBinding, children: List[Node]): Elem =
+    Elem(pre, label, attrs, scope, voidElements.contains(label), children: _*)
+}
+
+object HTML5Parser  {
+  import java.io.InputStream
+  import scala.xml._
+  import nu.validator.htmlparser.sax.HtmlParser
+  import nu.validator.htmlparser.common.XmlViolationPolicy
+
+  val voidElements = Set("area", "base", "br", "col", "command", "embed", "hr", "img", "input", "keygen", "link", "meta", "param", "source", "track", "wbr")
+  
+  val contentHandler = new NoBindingFactoryAdapter {
+    override def createNode(pre: String, label: String, attrs: MetaData, scope: NamespaceBinding, children: List[Node]): Elem =
+      Elem(pre, label, attrs, scope, voidElements.contains(label), children: _*)
   }
-
-  def loadXML(source : InputSource) = {
-    import nu.validator.htmlparser.{sax,common}
-    import sax.HtmlParser
-import common.XmlViolationPolicy
-
+  
+  def parse(is : InputStream) = {
     val reader = new HtmlParser
     reader.setXmlPolicy(XmlViolationPolicy.ALLOW)
-    reader.setContentHandler(this)
-    reader.parse(source)
-    rootElem
+    reader.setContentHandler(contentHandler)
+    reader.parse(new InputSource(is))
+    
+    val result = contentHandler.rootElem.child.find(_.label == "body") match {
+      case None => NodeSeq.Empty
+      case Some(child) => child.child
+    }
+    println(result)
+    result
   }
 }

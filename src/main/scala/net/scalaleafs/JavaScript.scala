@@ -37,7 +37,6 @@ object JsConst {
 
 object JSCmd {
   def apply(cmd : String) = new JSRawCmd(cmd)
-  implicit def toNoop(unit : Any) : JSCmd = Noop
   implicit def toText(cmd : JSCmd) = Text(cmd.toString)
   implicit def toString(cmd : JSCmd) = cmd.toString
   

@@ -17,6 +17,7 @@ import scala.xml.NodeSeq
 import scala.xml.Elem
 import scala.xml.Node
 import scala.xml.PCData
+import java.util.UUID
 
 /**
  * Transformation that processes the <head> section of an HTML page. Resource links are resolved, contributions needed by the 
@@ -136,22 +137,50 @@ object HeadContributions {
   }
 }
 
-abstract class HeadContribution(val key : String) {
+abstract class HeadContribution {
+  def key : String
   def dependsOn : List[HeadContribution] = Nil
   def render(context : Context) : NodeSeq
   def renderAdditional(context : Context) : JSCmd = Noop
+  def & (contrib : HeadContribution) = new CompoundHeadContribution(this :: contrib :: Nil)
 }
 
-class JavaScript(key : String, uri : String) extends HeadContribution(key) {
+class CompoundHeadContribution(children: List[HeadContribution]) extends HeadContribution {
+  lazy val key = UUID.randomUUID.toString
+  def this(children : HeadContribution*) = this(children.toList)
+  override def dependsOn = children
+  def render(context : Context) = NodeSeq.Empty
+  override def & (contrib : HeadContribution) = new CompoundHeadContribution(children ++ List(contrib))
+}
+
+class StylesheetRef(val key : String, uri : String, media : String = "") extends HeadContribution {
   def render(context : Context) = {
-    <script type="text/javascript" src={uri} />
+    if (media.isEmpty()) <link rel="stylesheet" href={uri} />
+    else <link rel="stylesheet" href={uri} media={media} />
+  }
+}
+
+class StylesheetResource(c : Class[_], resource : String, media : String = "") extends HeadContribution {
+  val key = c.getName + "/" + resource
+  def render(context : Context) : NodeSeq = {
+    var name = context.site.resources.hashedResourcePathFor(c, resource)
+    val path = context.site.resourcePath.mkString("/", "/", "/" + name)
+    if (media.isEmpty()) <link rel="stylesheet" href={path} />
+    else <link rel="stylesheet" href={path} media={media} />
+  }
+}
+
+class JavaScriptLibrary(val key : String, uri : String) extends HeadContribution {
+  def render(context : Context) = {
+    <script type="text/javascript" src={uri} ></script>
   }
   override def renderAdditional(context : Context) = {
     LoadJavaScript(uri)
   }
 }
 
-class JavaScriptResource(c : Class[_], resource : String) extends HeadContribution(c.getName + "/" + resource) {
+class JavaScriptResource(c : Class[_], resource : String) extends HeadContribution {
+  val key = c.getName + "/" + resource
   def render(context : Context) : NodeSeq = {
     var name = context.site.resources.hashedResourcePathFor(c, resource)
     <script type="text/javascript" src={context.site.resourcePath.mkString("/", "/", "/" + name)}></script>
@@ -166,7 +195,7 @@ class JavaScriptResource(c : Class[_], resource : String) extends HeadContributi
  * Use JQuery as default JavaScript library.
  */
 
-object LeafsJavaScriptResource extends JavaScriptResource(classOf[JavaScript], "leafs.js") {
+object LeafsJavaScriptResource extends JavaScriptResource(classOf[JavaScriptLibrary], "leafs.js") {
   override def render(context : Context) = {
     super.render(context) ++ 
     <script type="text/javascript">
@@ -176,15 +205,17 @@ object LeafsJavaScriptResource extends JavaScriptResource(classOf[JavaScript], "
   }
 }
 
-object JQueryUrl extends ConfigVal[String]("http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js")
+object JQueryUrl extends ConfigVal[String]("http://code.jquery.com/jquery-1.10.2.min.js")
 
-object JQuery extends HeadContribution("JQuery") {
+object JQuery extends HeadContribution {
+  def key = "JQuery"
   def render(context : Context) = {
     <script type="text/javascript" src={JQueryUrl(context)}></script>
   }
 }
 
-object OnPopStateHeadContribution extends HeadContribution("OnPopState") {
+object OnPopStateHeadContribution extends HeadContribution {
+  def key = "OnPopState"
   override def dependsOn = LeafsJavaScriptResource :: Nil
   def render(context : Context) = {
     <script type="text/javascript"> 
@@ -200,43 +231,4 @@ object OnPopStateHeadContribution extends HeadContribution("OnPopState") {
       }}'
     </script>
   }  
-}
-
-//object OnPopState extends HeadContribution("onPopState") {
-//  override def dependsOn = LeafsJavaScriptResource :: Nil
-//  def render(context : Context) = {
-//    <script type="text/javascript">      
-//      function setUrl(url) {"{"} {
-//        R.callback(JSExp("url")) { url =>
-//          if (url.startsWith("pop:")) R.popUrl(url.substring(4))
-//          else R.changeUrl(url)
-//        }
-//      }
-//      {"}"};
-//    </script>
-//  }  
-//}
-//
-//object Callback extends HeadContribution("callback") {
-//  override def dependsOn = JQuery :: LeafsJavaScriptResource :: Nil
-//  def render(request : TransientRequest) = NodeSeq.Empty
-//}
-//
-//object OnPopState extends HeadContribution("onPopState") {
-//  override def dependsOn = Callback :: LeafsJavaScriptResource :: Nil
-//  def render(request : TransientRequest) = {
-//    val callbackId = R.callback( _.get("url") match {
-//      case Some(location :: Nil) => 
-//        if (location.startsWith("pop:")) R.popUrl(location.substring(4))
-//        else R.url = location
-//      case _ => 
-//    }, "url" -> JsExp("url"))
-//    <script type="text/javascript">      
-//      function setUrl(url) {"{"}
-        //callback('cb37463?url=' + url);
-//        {callbackId}
-//      {"}"};
-//    </script>
-//  }
-//}
-
+} 

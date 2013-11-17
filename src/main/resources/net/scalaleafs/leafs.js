@@ -50,11 +50,12 @@ var leafs = new function() {
   
   this.loadJavascript = function(name) {
 	  console.log('Loading script: ' + name); // DEBUG MODE
-	  $.ajax({
-	    url: name,
-	    dataType: 'script',
-	    async: false
-	    });
+	  $.ajax({url:name, dataType: "script", async:false, success: function (data, textStatus, jqxhr) {
+	    console.log( data ); // Data returned
+      console.log( textStatus ); // Success
+      console.log( jqxhr.status ); // 200
+      console.log( "Load was performed." );
+	    }});
   };
   
   this.onPageLoad = function(f) {

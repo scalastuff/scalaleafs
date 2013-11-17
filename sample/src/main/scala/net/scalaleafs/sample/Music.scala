@@ -20,12 +20,12 @@ class Music extends Template {
   def render = 
     ".search-box" #> bind(search) { s =>
       setAttr("value", s) &
-      onchange(search.set)
+      onchange(search.set(_) & Noop)
     } &
-    ".clear" #> onclick(search.set("")) &
+    ".clear" #> onclick(search.set("") & Noop) &
     "#album-table tbody tr" #> bindAll(albums) { album =>
       ".image" #> setAttr("src", album.image) &
-      ".title" #> album.title &
+      ".title" #> (album.title + "!") &
       ".artist" #> album.artist 
     }
 }

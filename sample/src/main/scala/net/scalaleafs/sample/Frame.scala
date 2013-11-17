@@ -20,7 +20,7 @@ class Frame extends Template {
       bind(url.headOption) { head =>
           Match(head) {
             case None => new Home
-            case Some("schedule") => new Schedule
+            case Some("schedule") => new Schedule 
             case Some("music") => new Music
             case Some("books") => new Books
             case Some(other) => <h1>No page here: {other}</h1>

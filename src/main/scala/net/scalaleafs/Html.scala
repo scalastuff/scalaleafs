@@ -19,9 +19,16 @@ object Html extends Html
 
 trait Html {
  
-  def js(jsCmd : JSCmd) = new RenderNode with NoChildRenderNode {
+  def exec(jsCmd : JSCmd) = new RenderNode with NoChildRenderNode {
     def render(context : Context, xml : NodeSeq) = {
       context.addPostRequestJs(jsCmd)
+      xml
+    } 
+  }
+  
+  def contrib(contrib : HeadContribution*) = new RenderNode with NoChildRenderNode {
+    def render(context : Context, xml : NodeSeq) = {
+      contrib.foreach(context.addHeadContribution(_))
       xml
     } 
   }
@@ -30,7 +37,7 @@ trait Html {
     Xml.setAttr("onclick", { context => 
       context.callback(context => _ => context.addPostRequestJs(f)) & JsReturnFalse
       })
-  
+      
   def onchange(f : String => JSCmd) : ElemModifier = 
     Xml.setAttr("onchange", { context => 
       context.callback(JSExp("this.value"))(context => s => context.addPostRequestJs(f(s))) & JsReturnFalse

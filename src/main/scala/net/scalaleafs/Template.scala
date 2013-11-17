@@ -11,13 +11,12 @@
 package net.scalaleafs
 
 import java.util.concurrent.ConcurrentHashMap
-
 import scala.xml.Elem
 import scala.xml.NodeSeq
 import scala.xml.NodeSeq.seqToNodeSeq
 import scala.xml.XML
-
 import org.xml.sax.SAXParseException
+import org.xml.sax.InputSource
 
 /**
  * A template is an XmlTransformation that reads its input, by default, from a class-path resource, and provides
@@ -27,7 +26,6 @@ import org.xml.sax.SAXParseException
 trait Template extends RenderNode with SingleChildRenderNode with Xml with Html with Binding {
   
   private val READ_INPUT = <h1>Read Input</h1>
-  private val READ_JS = "READ_JS"
   
   implicit def context : Context = Context.get
   
@@ -36,7 +34,7 @@ trait Template extends RenderNode with SingleChildRenderNode with Xml with Html 
   private def input(context : Context) : NodeSeq = {
     if (_input == null) {
       _input = input
-      if (_input == NodeSeq.Empty)
+      if (_input eq READ_INPUT)
         _input = readInput(context)
     }
     _input
@@ -59,7 +57,7 @@ trait Template extends RenderNode with SingleChildRenderNode with Xml with Html 
    * Initial input value. 
    * Override this value to prevent reading of input.
    */  
-  protected val input : NodeSeq = NodeSeq.Empty
+  protected val input : NodeSeq = READ_INPUT
 
   /**
    * Reads input of this template.
@@ -88,7 +86,7 @@ object Template {
           throw new Exception("Template not found on classpath: " + resourceName)
         val is = resource.openStream
         try {
-          xml = XML.load(is) match {
+          xml = XHTML5Parser.load(is) match {
             case elem : Elem if elem.label == "dummy" => elem.child
             case xml => xml
           }
@@ -113,7 +111,7 @@ object Template {
     if (s == null) {
       s = try {
         val resourceName = c.getSimpleName + ".js"
-        Some(new JavaScript(resourceName, context.site.resources.hashedResourcePathFor(c, resourceName)))
+        Some(new JavaScriptLibrary(resourceName, context.site.resources.hashedResourcePathFor(c, resourceName)))
       } catch {
         case t : Throwable => 
           None

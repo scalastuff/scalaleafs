@@ -16,7 +16,7 @@ class BootstrapShowcase extends Template {
      bind(isActive) { isActive =>
        "button" #> {
          addClass("active").when(isActive) &
-         onclick(this.isActive.set(!isActive)) 
+         onclick(this.isActive.set(!isActive) & Noop) 
        }
      }
    }
