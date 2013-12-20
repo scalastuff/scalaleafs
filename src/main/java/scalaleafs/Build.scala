@@ -1,5 +1,0 @@
-package scalaleafs
-
-class Build {
-
-}

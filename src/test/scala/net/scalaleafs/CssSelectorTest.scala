@@ -1,7 +1,6 @@
 package net.scalaleafs
 
 import net.scalaleafs.implicits._
-import org.scalatest.FlatSpec
 
 class CssSelectorTest extends FlatSpec {
 

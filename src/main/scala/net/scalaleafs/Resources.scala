@@ -31,12 +31,12 @@ object ResourceType {
   def get(extention : String) = map.get(extention)
   def of(resourceName : String) : ResourceType = {
     val index = resourceName.lastIndexOf('.');
-    if (index <= 0) ResourceType("", "binary", None)
+    if (index <= 0) ResourceType("", "application/octet-stream", None)
     else {
       val extention = resourceName.substring(index + 1)
       get(extention) match {
         case Some(resourceType) => resourceType
-        case None => ResourceType(extention, "binary", None)
+        case None => ResourceType(extention, "application/octet-stream", None)
       }
     }
   }

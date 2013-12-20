@@ -19,7 +19,27 @@ import spray.routing.RequestContext
 import scala.concurrent.Future
 import shapeless.::
 
+import akka.actor.ActorSystem
+import akka.actor.Props
+import akka.event.Logging.DebugLevel
+import akka.io.IO
+import spray.can.Http
+import spray.http.HttpRequest
+import spray.routing.Directive.pimpApply
+import spray.routing.HttpService.pimpRouteWithConcatenation
+import spray.routing.HttpServiceActor
+import spray.routing.Route
+import spray.routing.RoutingSettings
+import spray.routing.directives.LogEntry
+import spray.routing.ExceptionHandler
+import spray.routing.HttpService
+import spray.routing.RejectionHandler
+import scala.concurrent.ExecutionContext
+
 class SprayRoute(site : Site) extends Route with Directives with Logging {
+  
+  def this(rootTemplateClass : Class[_ <: Template], contextPath : List[String], configuration : Configuration)(implicit executionContext : ExecutionContext) = 
+    this(new Site(rootTemplateClass, contextPath, configuration))
   
   import site.configuration
   
@@ -160,22 +180,6 @@ class SprayRoute(site : Site) extends Route with Directives with Logging {
       }
     }
 }
-
-import akka.actor.ActorSystem
-import akka.actor.Props
-import akka.event.Logging.DebugLevel
-import akka.io.IO
-import spray.can.Http
-import spray.http.HttpRequest
-import spray.routing.Directive.pimpApply
-import spray.routing.HttpService.pimpRouteWithConcatenation
-import spray.routing.HttpServiceActor
-import spray.routing.Route
-import spray.routing.RoutingSettings
-import spray.routing.directives.LogEntry
-import spray.routing.ExceptionHandler
-import spray.routing.HttpService
-import spray.routing.RejectionHandler
 
 object SprayServerPort extends ConfigVal[Int](8080)
 object SprayServerInterface extends ConfigVal[String]("0.0.0.0")

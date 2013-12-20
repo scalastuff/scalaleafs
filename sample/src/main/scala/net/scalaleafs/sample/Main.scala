@@ -7,7 +7,7 @@ object Main extends App {
 
   val actorSystem = ActorSystem("ScalaLeafsSample")
   val config = new Configuration(
-      ResourceFactory -> new ClasspathResourceFactory(classOf[Frame].getClassLoader, "public"))
+      ResourceFactory -> new ClasspathResourceFactory(classOf[Frame].getClassLoader, "net/scalaleafs/sample/public"))
   val server = new SprayServer(classOf[Frame], config, actorSystem)
   server.start
 }

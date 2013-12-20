@@ -1,4 +1,5 @@
 package net.scalaleafs
+
 import java.util.concurrent.ConcurrentHashMap
 import scala.util.Random
 
