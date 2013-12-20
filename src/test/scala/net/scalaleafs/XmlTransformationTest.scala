@@ -2,6 +2,7 @@ package net.scalaleafs
 
 import net.scalaleafs.Xml._
 import net.scalaleafs.implicits._
+import org.scalatest.FlatSpec
 
 class XmlTransformationTest extends FlatSpec {
 
