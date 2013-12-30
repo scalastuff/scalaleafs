@@ -30,7 +30,9 @@ class Placeholder[A] {
   }
   override def toString = 
     if (value != null) value.toString else "(undefined)"
-      
+
+  override def hashCode = value.hashCode
+
   override def equals(other : Any) = value == other
 }
 
@@ -45,7 +47,7 @@ trait Versioned {
   /**
    * Triggers this value. All listeners will be triggered as well.
    */
-  def trigger : Unit = 
+  def trigger() : Unit =
     _version += 1
   
    /**
@@ -64,7 +66,7 @@ class MappedVersioned(origin : Versioned) extends Versioned {
     val originVersion = origin.version
     if (_originVersion != originVersion) {
       if (validateChange)
-        trigger
+        trigger()
       _originVersion = originVersion
     }
     super.version
@@ -83,7 +85,7 @@ object Trigger {
 
 sealed trait Bindable[A] extends Versioned {
   protected[scalaleafs] def version : Int 
-  def trigger : Unit
+  def trigger() : Unit
   def map[B](f : A => B) : Bindable[B]
   def mapAsync[B](f : A => Future[B])(implicit _ec : ExecutionContext) : AsyncVal[B]
   def mapVar[B](f : A => B) : Bindable[B]
@@ -99,7 +101,7 @@ trait Val[A] extends Bindable[A] { origin =>
 
   def map[B](f : A => B) = 
     new MappedVersioned(origin) with Val[B] {
-      def get : B = f(origin.get)  
+      def get : B = f(origin.get)
     }
 
   def mapAsync[B](f : A => Future[B])(implicit _ec : ExecutionContext) = 
@@ -110,7 +112,7 @@ trait Val[A] extends Bindable[A] { origin =>
 
   def mapVar[B](f : A => B) = 
     new MappedVersioned(origin) with Var[B] {
-      protected var _value : B = f(origin.get) 
+      protected var _value : B = f(origin.get)
       override def get : B = _value
       override def validateChange = set(f(origin.get))
     }
@@ -154,12 +156,12 @@ trait AsyncVal[A] extends Bindable[A] { origin =>
 }
 
 trait Var[A] extends Val[A] {
-  protected var _value : A 
+  protected var _value : A
   def get : A = _value
   def set(value : A) : Boolean = {
     if (_value != value) {
       _value = value
-      trigger
+      trigger()
       true
     }
     else false

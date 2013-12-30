@@ -1,6 +1,7 @@
 package net.scalaleafs.test
 
 import net.scalaleafs._
+import scala.xml.NodeSeq
 
 object MainMenu extends Enumeration {
   val home = Value("home")
@@ -15,18 +16,20 @@ class Frame(window: Window) extends Template {
   val securityContext = CurrentSecurityContext
 
   def render =
-    "#main-menu" #> { 
+    "#main-menu" #> {
       bind(url.head) { head =>
         "li:not(.dropdown) a" #> linkHref &
-        "li.home" #> addClass("active").when(head == "home") &
-        "li.showcase" #> addClass("active").when(head == "showcase")
+          "li.home" #> addClass("active").when(head == "home") &
+          "li.showcase" #> addClass("active").when(head == "showcase")
       }
-    } & 
-    "#page-container" #> 
-      bind(url.head) { head =>
+    } &
+      "#page-container" #>
+        bind(url.head) { head =>
           Match(head) {
             case "showcase" => new BootstrapShowcase
-            case s => <h1>mkElem("div.ruud"){head.get}</h1>
+            case s => <h1>mkElem("div.ruud")
+              {head.get}
+            </h1>
           }
-    }
+        }
 }

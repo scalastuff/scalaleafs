@@ -10,7 +10,7 @@ object ScalaLeafsBuild extends Build {
     Project.defaultSettings ++
       Seq(
         sbtPlugin := false, 
-        organization := "com.kentivo",
+        organization := "net.scalaleafs",
         version := "1.1.0-SNAPSHOT",
         scalaVersion := "2.10.3",
         scalacOptions ++= Seq("-deprecation", "-unchecked", "-encoding", "utf8", "-feature"),

@@ -45,7 +45,7 @@ class Window(site : Site, initialUrl : Url, rootTemplateInstantiator : RootTempl
           // Call the callback.
           ajaxCallback.f(context)(parameters).flatMap { _ =>
             // Then query the render tree for changes
-            val initialChangesJSCmd = rootTemplate().renderChanges(context)
+            val initialChangesJSCmd = rootTemplate().child.renderChanges(context)
             // Process all asynchronous render changes
             context.processAsyncRenderChanges(initialChangesJSCmd).map { changesJSCmd =>
               // Store all current head contributions in the initial request. 

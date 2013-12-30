@@ -42,7 +42,7 @@ trait Xml {
       if (condition) modifier.render(context, cssConstructor(xml))
       else xml
   }
-  
+
   /**
    * Transformation that replaces the input xml with some static text.
    */

@@ -30,7 +30,7 @@ object ResourceType {
   )
   def get(extention : String) = map.get(extention)
   def of(resourceName : String) : ResourceType = {
-    val index = resourceName.lastIndexOf('.');
+    val index = resourceName.lastIndexOf('.')
     if (index <= 0) ResourceType("", "application/octet-stream", None)
     else {
       val extention = resourceName.substring(index + 1)
@@ -57,7 +57,7 @@ object NullResourceFactory extends ResourceFactory {
 
 object ClasspathResourceFactory {
   def apply(cls : Class[_], path : String) : ClasspathResourceFactory =
-    new ClasspathResourceFactory(cls.getClassLoader, cls.getPackage.getName().replace('.', '/') + '/' + path)
+    new ClasspathResourceFactory(cls.getClassLoader, cls.getPackage.getName.replace('.', '/') + '/' + path)
 }
 
 class ClasspathResourceFactory(loader : ClassLoader, path : String) extends ResourceFactory {
@@ -70,11 +70,11 @@ class ClasspathResourceFactory(loader : ClassLoader, path : String) extends Reso
  * There is typically one instance per server.
  */
 class Resources(factory : ResourceFactory, substitutions : Map[String, String], debugMode : Boolean = false) {
-  private val debugPostfix1 = "// DEBUG MODE";
-  private val debugPostfix2 = "/* DEBUG MODE */";
+  private val debugPostfix1 = "// DEBUG MODE"
+  private val debugPostfix2 = "/* DEBUG MODE */"
   private val resourcePaths = new ConcurrentHashMap[(Class[_], String), String]
   private val resourceData = new ConcurrentHashMap[String, (Array[Byte], ResourceType)]
-  private val resourceFactoryClass = classOf[ResourceFactory]
+  private val resourceFactoryClass = factory.getClass
 
   def resourceContent(resourcePath : String) : Option[(Array[Byte], ResourceType)] = {
     assert (!resourcePath.startsWith("/"))
@@ -99,10 +99,10 @@ class Resources(factory : ResourceFactory, substitutions : Map[String, String], 
     assert (!name.startsWith("/"))
     resourcePaths.get((c, name)) match {
       case null =>
-        val fullName = "/" + c.getPackage().getName().replace('.', '/') + "/" + name
+        val fullName = "/" + c.getPackage.getName.replace('.', '/') + "/" + name
         val (resourcePath, resourceType, bytes) = readHashedResource(name, c.getResourceAsStream(fullName), substitutions)
         assert (!resourcePath.startsWith("/"))
-        resourceData.put(resourcePath, (bytes, resourceType));
+        resourceData.put(resourcePath, (bytes, resourceType))
         if (!debugMode) {
           resourcePaths.put((c, name), resourcePath)
         }
@@ -116,7 +116,7 @@ class Resources(factory : ResourceFactory, substitutions : Map[String, String], 
     resourcePaths.get((resourceFactoryClass, name)) match {
       case null =>
         val (resourcePath, resourceType, bytes) = readHashedResource(name, factory.getResource(name).getOrElse(null), substitutions)
-        resourceData.put(resourcePath, (bytes, resourceType));
+        resourceData.put(resourcePath, (bytes, resourceType))
         if (!debugMode) {
           resourcePaths.put((resourceFactoryClass, name), resourcePath)
         }
@@ -147,7 +147,7 @@ class Resources(factory : ResourceFactory, substitutions : Map[String, String], 
             else Seq(line.mkString)
           } 
           val lines = linesSeq.toSeq.flatten.mkString("\n")
-          lines.getBytes("UTF-8");
+          lines.getBytes("UTF-8")
         case None =>
           val bis = new BufferedInputStream(is)
           Stream.continually(bis.read).takeWhile(-1 != _).map(_.toByte).toArray

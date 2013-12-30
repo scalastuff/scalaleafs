@@ -24,11 +24,13 @@ import scala.xml.MetaData
 import scala.annotation.tailrec
 import scala.io.Source
 import scala.xml.Text
+import scala.xml.Source._
+import scala.Some
 
 /**
  * Generic XML utilities.
  */
-object XmlHelpers {
+object  XmlHelpers {
 
   def attr(elem : Elem, key : String) : String = {
     elem.attributes.get(key) match {
@@ -212,41 +214,56 @@ class RichElem(elem : Elem) {
   def removeClass(value : String) = XmlHelpers.removeClass(elem, value)
 }
 
-object XHTML5Parser extends NoBindingFactoryAdapter {
+object XHTML5Parserold {
+
   import java.io.InputStream
   import scala.xml._
 
   val voidElements = Set("area", "base", "br", "col", "command", "embed", "hr", "img", "input", "keygen", "link", "meta", "param", "source", "track", "wbr")
-  
+
+  def load(is: InputStream): Node = {
+    adapter.loadXML(fromInputStream(is), adapter.parser)
+  }
+
+  val adapter = new NoBindingFactoryAdapter {
   override def adapter = this
   override def createNode(pre: String, label: String, attrs: MetaData, scope: NamespaceBinding, children: List[Node]): Elem =
     Elem(pre, label, attrs, scope, voidElements.contains(label), children: _*)
-}
-
-object HTML5Parser  {
-  import java.io.InputStream
-  import scala.xml._
-  import nu.validator.htmlparser.sax.HtmlParser
-  import nu.validator.htmlparser.common.XmlViolationPolicy
-
-  val voidElements = Set("area", "base", "br", "col", "command", "embed", "hr", "img", "input", "keygen", "link", "meta", "param", "source", "track", "wbr")
-  
-  val contentHandler = new NoBindingFactoryAdapter {
-    override def createNode(pre: String, label: String, attrs: MetaData, scope: NamespaceBinding, children: List[Node]): Elem =
-      Elem(pre, label, attrs, scope, voidElements.contains(label), children: _*)
-  }
-  
-  def parse(is : InputStream) = {
-    val reader = new HtmlParser
-    reader.setXmlPolicy(XmlViolationPolicy.ALLOW)
-    reader.setContentHandler(contentHandler)
-    reader.parse(new InputSource(is))
-    
-    val result = contentHandler.rootElem.child.find(_.label == "body") match {
-      case None => NodeSeq.Empty
-      case Some(child) => child.child
+    override def createText(text: String): Text = {
+      super.createText(text.replaceAll("&raquo;", ">>"))
     }
-    println(result)
-    result
+
+    override def resolveEntity(publicId: String, systemId: String) = {
+      println("Entity: " + publicId + ", " + systemId)
+      null
+    }
   }
 }
+
+//object HTML5Parser  {
+//  import java.io.InputStream
+//  import scala.xml._
+//  import nu.validator.htmlparser.sax.HtmlParser
+//  import nu.validator.htmlparser.common.XmlViolationPolicy
+//
+//  val voidElements = Set("area", "base", "br", "col", "command", "embed", "hr", "img", "input", "keygen", "link", "meta", "param", "source", "track", "wbr")
+//
+//  val contentHandler = new NoBindingFactoryAdapter {
+//    override def createNode(pre: String, label: String, attrs: MetaData, scope: NamespaceBinding, children: List[Node]): Elem =
+//      Elem(pre, label, attrs, scope, voidElements.contains(label), children: _*)
+//  }
+//
+//  def parse(is : InputStream) = {
+//    val reader = new HtmlParser
+//    reader.setXmlPolicy(XmlViolationPolicy.ALLOW)
+//    reader.setContentHandler(contentHandler)
+//    reader.parse(new InputSource(is))
+//
+//    val result = contentHandler.rootElem.child.find(_.label == "body") match {
+//      case None => NodeSeq.Empty
+//      case Some(child) => child.child
+//    }
+//    println(result)
+//    result
+//  }
+//}

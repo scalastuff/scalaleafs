@@ -28,8 +28,9 @@ trait Template extends RenderNode with SingleChildRenderNode with Xml with Html 
   private val READ_INPUT = <h1>Read Input</h1>
   
   implicit def context : Context = Context.get
-  
-  lazy val child : RenderNode = render
+
+  lazy val child = render
+
   private var _input : NodeSeq = null
   private def input(context : Context) : NodeSeq = {
     if (_input == null) {
@@ -65,8 +66,8 @@ trait Template extends RenderNode with SingleChildRenderNode with Xml with Html 
    * with the same name as the class of this template.
    */
   protected def readInput(context : Context) : NodeSeq = 
-    Template.template(context, getClass) 
-    
+    Template.template(context, getClass)
+
   def render(context : Context, xml : NodeSeq) = {
     js(context).foreach(context.addHeadContribution(_))
     child.render(context, input(context))
@@ -82,11 +83,11 @@ object Template {
       val resourceName = c.getName().replace('.', '/') + ".html";
       try {
         val resource = c.getClassLoader.getResource(resourceName)
-        if (resource == null) 
+        if (resource == null)
           throw new Exception("Template not found on classpath: " + resourceName)
         val is = resource.openStream
         try {
-          xml = XHTML5Parser.load(is) match {
+          xml = XHTML5Parser.parse(is) match {
             case elem : Elem if elem.label == "dummy" => elem.child
             case xml => xml
           }
@@ -104,7 +105,7 @@ object Template {
     }
     xml
   }
-  
+
   val jsCache = new ConcurrentHashMap[Class[_], Option[HeadContribution]]
   def js(context : Context, c : Class[_]) : Option[HeadContribution] = {
     var s = jsCache.get(c)

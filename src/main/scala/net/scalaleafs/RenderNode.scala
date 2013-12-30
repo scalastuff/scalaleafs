@@ -82,10 +82,6 @@ object Ident extends ElemModifier with NoChildRenderNode {
   val modify = (context : Context, elem : Elem) => elem  
 }
 
-/**
- * Render node delegate. Useful for classes that express a render node
- * using CssTransformations, for example.
- */
 class RenderNodeDelegate(delegate : => RenderNode) extends RenderNode with SingleChildRenderNode {
 
   def child = delegate 
