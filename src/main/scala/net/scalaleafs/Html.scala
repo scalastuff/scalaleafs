@@ -19,7 +19,7 @@ object Html extends Html
 
 trait Html {
  
-  def exec(jsCmd : JSCmd) = new RenderNode with NoChildRenderNode {
+  def exec(jsCmd : => JSCmd) = new RenderNode with NoChildRenderNode {
     def render(context : Context, xml : NodeSeq) = {
       context.addPostRequestJs(jsCmd)
       xml
@@ -28,7 +28,7 @@ trait Html {
   
   def contrib(contrib : HeadContribution*) = new RenderNode with NoChildRenderNode {
     def render(context : Context, xml : NodeSeq) = {
-      contrib.foreach(context.addHeadContribution(_))
+      contrib.foreach(context.addHeadContribution)
       xml
     } 
   }

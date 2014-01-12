@@ -1,4 +1,4 @@
-/target
-/.cache
+target
+.cache
 /.scala_dependencies
 /bin

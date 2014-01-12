@@ -1,13 +1,24 @@
-function initCal() {
+<!DOCTYPE HTML>
+<html>
+<head>
+<title>Calendar - Test</title>
 
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+
+<script type="text/javascript" src="http://code.jquery.com/jquery.min.js"></script>
+<script type="text/javascript" src="../jquery.calendar.js"></script>
+<link rel="stylesheet" media="screen" href="../jquery.calendar.css"/>
+
+<script type="text/javascript">
+$(function(){
 	
-	$('#calendar2').cal({
+	$('#calendar').cal({
 		
 		resources : {
-			'15' : 'Aziza',
-			'16' : 'Heath',
-			'17' : 'Karen',
-			'90' : 'Michelle'
+			'15' : 'Studio 1',
+			'16' : 'Studio 2',
+			'17' : 'Studio 3',
+			'90' : 'Ground Floor'
 		},
 		
 		allowresize		: true,
@@ -15,8 +26,6 @@ function initCal() {
 		allowselect		: true,
 		allowremove		: true,
 		allownotesedit	: true,
-		daytimestart:	'06:00:00',
-		daytimeend: 	'22:00:00',
 		
 		eventselect : function( uid ){
 			console.log( 'Selected event: '+uid );
@@ -30,20 +39,7 @@ function initCal() {
 		eventnotesedit : function( uid ){
 			console.log( 'Edited Notes for event: '+uid );
 		},
-
-        eventresize : function (uid, data, events) {
-            console.log('Resize: ' + uid + 'data: ' + data + 'events: ' + events);
-
-            $('#calendar2').cal('add',{
-                uid		: 10,
-                begins	: $.cal.date().addDays(3).format('Y-m-d')+' 10:10:00',
-                ends	: $.cal.date().addDays(3).format('Y-m-d')+' 12:00:00',
-                color	: '#dddddd',
-                resource: '90',
-                title	: 'Added'
-            });
-        },
-
+		
 		// Load events as .ics
 		events : //'http://staff.digitalfusion.co.nz.local/time/calendar/leave/'
 		
@@ -92,17 +88,32 @@ function initCal() {
 				resource: '17',
 				notes	: 'Good-O'
 			}
-		],
-		masktimelabel: {
-	        '00' : 'G:i'
-	    }
+		]
 		
 	});
+	
+});
+</script>
 
-    $('#calendar2').on('click','.ui-cal-time',function(e){
-        console.log( 'Time: ', $(this).attr('time') );
-        console.log( 'Date: ', $(this).closest('.ui-cal-resource').attr('date') );
-        console.log( 'Resource: ', $(this).closest('.ui-cal-resource').attr('resource') );
-    });
+<style type="text/css">
+html,body{
+font-family: sans-serif;
+font-size: 10px;
 }
+#calendar{
+position: absolute;
+top: 50px;
+left: 50px;
+right: 50px;
+bottom: 50px;
+border: 1px solid #bbb;
+}
+</style>
 
+</head>
+
+<body>
+<div id="calendar"></div>
+</body>
+
+</html>

@@ -1,0 +1,69 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<title>Calendar - iCalendar Feed</title>
+
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+
+<script type="text/javascript" src="http://code.jquery.com/jquery.min.js"></script>
+<script type="text/javascript" src="../jquery.calendar.js"></script>
+<link rel="stylesheet" media="screen" href="../jquery.calendar.css"/>
+
+<script type="text/javascript">
+$(function(){
+	
+	$('#calendar').cal({
+		
+		startdate		: ':2012-07-27',
+		
+		allowresize		: true,
+		allowmove		: true,
+		allowselect		: true,
+		allowremove		: true,
+		allownotesedit	: true,
+		
+		maskdatelabel	: 'D',
+		
+		eventselect : function( uid ){
+			console.log( 'Selected event: '+uid );
+		},
+		
+		eventremove : function( uid ){
+			console.log( 'Removed event: '+uid );
+		},
+		
+		
+		eventnotesedit : function( uid ){
+			console.log( 'Edited Notes for event: '+uid );
+		},
+		
+		// Load events as .ics
+		events : 'http://www.google.com/calendar/ical/07vbcrbs61h2v1kuf7m4su6c48%40group.calendar.google.com/public/basic.ics'
+
+	});
+	
+});
+</script>
+
+<style type="text/css">
+html,body{
+font-family: sans-serif;
+font-size: 10px;
+}
+#calendar{
+position: absolute;
+top: 50px;
+left: 50px;
+right: 50px;
+bottom: 50px;
+border: 1px solid #bbb;
+}
+</style>
+
+</head>
+
+<body>
+<div id="calendar"></div>
+</body>
+
+</html>

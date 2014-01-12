@@ -54,5 +54,8 @@ object ScalaLeafsBuild extends Build {
 
   val sample = Project(id = "scalaleafs-sample", base = file("sample"), settings = defaultSettings ++ Seq(
     libraryDependencies +=  "ch.qos.logback" % "logback-classic" % "1.0.13" withSources(),
+    libraryDependencies += "io.spray" %%  "spray-json" % "1.2.5" withSources(),
+    libraryDependencies +=  "joda-time" % "joda-time" % "2.3" withSources(),
+    libraryDependencies +=  "org.joda" % "joda-convert" % "1.5" withSources(),
     mainClass in (Compile, run) := Some("net.scalaleafs.sample.Main"))).dependsOn(scalaleafs)
 }
