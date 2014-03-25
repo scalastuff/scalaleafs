@@ -2,6 +2,7 @@ package net.scalaleafs.sample
 
 import akka.actor.ActorSystem
 import net.scalaleafs._
+import com.sun.prism.ResourceFactory
 
 object Main extends App {
 
