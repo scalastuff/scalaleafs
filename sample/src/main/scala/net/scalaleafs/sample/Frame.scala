@@ -18,15 +18,13 @@ class Frame extends Template {
       }
     } & 
     "#page-container" #> 
-      bind(url.headOption) { head =>
-          Match(head) {
-            case None => new Home
-            case Some("calendar") => new Calendar 
-            case Some("calendar2") => new Calendar2 
-            case Some("music") => new Music
-            case Some("books") => new Books
-            case Some(other) => <h1>No page here: {other}</h1>
-          }
+      Match(url.headOption) { 
+        case None => new Home
+        case Some("calendar") => new Calendar 
+        case Some("calendar2") => new Calendar2 
+        case Some("music") => new Music
+        case Some("books") => new Books
+        case Some(other) => <h1>No page here: {other}</h1>
     }
 
 }

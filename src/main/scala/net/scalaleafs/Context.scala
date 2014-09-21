@@ -13,10 +13,7 @@ class Context(val site : Site, val window : Window, requestVals : RequestVal.Ass
   private[scalaleafs] val requestVars = mutable.Map[Any, Var[_]](requestVals.map(t => t._1 -> Var[Any](t._2)):_*)
 
   def debugMode = site.debugMode
-  
-  def annotation : Any = null
-  
-  
+
   /**
    * Sends the javascript command to the browser upon completion of the current request
    */
@@ -51,11 +48,10 @@ class Context(val site : Site, val window : Window, requestVals : RequestVal.Ass
     }
   }
   private[scalaleafs] def withContext[A](f : => A) : A = {
-    val previous = Context.get
-    Context.set(this)
-    try f
-    finally Context.set(previous)
+//    val previous = Context.get
+//    Context.set(this)
+//    try f
+//    finally Context.set(previous)
+    f
   }
 }
-
-object Context extends ThreadLocal[Context] 

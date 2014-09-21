@@ -62,6 +62,7 @@ abstract class AbstractBoundRenderNode[A](bindable: Bindable[_], f: Placeholder[
   protected def renderValue(context: Context, elem: Elem, id: String)(value: A): NodeSeq = {
     placeholder.value = value
     postProcess(child.render(context, elem))
+    //finally placeholder.value = null.asInstanceOf[A]
   }
 
   override def renderChanges(context: Context): JSCmd = {
@@ -131,6 +132,7 @@ abstract class AbstractBoundAllRenderNode[A](bindable: Bindable[_], f: Placehold
         child.render(context,
           if (index == 0) elem
           else XmlHelpers.setId(elem, id + "-" + index))
+//        finally placeholders(index).value = null.asInstanceOf[A]
     })
   }
 

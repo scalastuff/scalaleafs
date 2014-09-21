@@ -15,7 +15,7 @@ import scala.collection.mutable.Queue
  * the rendering of the subtree that depends on the asynchronous result. This process
  * is repeated until all asynchronous operations have been resolved. 
  * <br/>
- * This method of asynchronous processing is much cheaper than the alternative: making the 
+ * This method of asynchronous processing is more efficient than the alternative: making the
  * entire rendering process asynchronous by default. 
  * There would many composed futures compared to the number of actual asynchronous operations.
  * Especially in the case the library is used only using synchronous processing: there will
@@ -70,22 +70,29 @@ trait RenderAsync { this : Context =>
   private[scalaleafs] def processAsyncRenderChanges(jsCmd : JSCmd) : Future[JSCmd] = {
     if (asyncRenderChangesQueue.nonEmpty) 
       withContext {
-        asyncRenderChangesQueue.dequeue()().flatMap {
-          case (xml, mkJSCmd) =>
-            processAsyncRender(xml).map(xml => jsCmd & mkJSCmd(xml)).flatMap(processAsyncRenderChanges)
-        }
+        for {
+          (xml, mkJSCmd) <- asyncRenderChangesQueue.dequeue()()
+          output <- processAsyncRender(xml)
+          cmd = jsCmd & mkJSCmd(output)
+          result <- processAsyncRenderChanges(cmd)
+        } yield result
       }
     else Future.successful(jsCmd)
   }
-  
-  private def replace(xml : NodeSeq, selection : Elem, replacement : NodeSeq) : NodeSeq = 
-    xml match {
+
+  private def replace(xml : NodeSeq, selection : Elem, replacement : NodeSeq) : NodeSeq =
+  xml match {
       case elem : Elem if elem eq selection => replacement
       case node : Node => node
       case children =>
-        if (children.exists(child => child != replace(child, selection, replacement))) 
-          children.flatMap(replace(_, selection, replacement))
-        else
-          children
+        var changed = false
+        val result = for {
+          child <- children
+          nodes = replace(child, selection, replacement)
+          _ = changed = changed || child != nodes
+          node <- nodes
+        } yield node
+        if (changed) result
+        else children
     }
 }

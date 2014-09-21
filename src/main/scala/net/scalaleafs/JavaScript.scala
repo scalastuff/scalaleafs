@@ -39,6 +39,7 @@ object JSCmd {
   def apply(cmd : String) = new JSRawCmd(cmd)
   implicit def toText(cmd : JSCmd) = Text(cmd.toString)
   implicit def toString(cmd : JSCmd) = cmd.toString
+  implicit def fromBoolean(b: Boolean): JSCmd = if (b) JsConst(true) else JsConst(false)
   
 }
 

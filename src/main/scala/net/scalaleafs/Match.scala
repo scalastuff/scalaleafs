@@ -3,10 +3,10 @@ package net.scalaleafs
 import scala.collection.mutable
 import scala.xml.NodeSeq
 
-object Match extends Binding {
+object Match {
   def apply[A](bindable : Val[A])(f : A => RenderNode) = {
     var cache = mutable.HashMap[A, RenderNode]()
-    bind(bindable) { placeholder =>
+    Binding.bind(bindable) { placeholder =>
       new RenderNodeDelegate(cache.getOrElseUpdate(placeholder.get, f(placeholder.get)))
     }
   }

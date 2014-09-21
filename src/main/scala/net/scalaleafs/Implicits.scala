@@ -11,8 +11,7 @@ package scalaleafs {
     implicit def stringToRenderNode(s : => String) = Xml.replaceWithString(s)
     implicit def xmlToRenderNode(xml : => NodeSeq) = Xml.replaceWith(xml)
     implicit def toJSCmdFun(f : Context => JSCmd) : JSCmdFun = new JSCmdFun(f)
-    implicit def toExecutionContext(implicit context : Context) = context.executionContext
-    implicit def toConfiguration(site : Site) = site.configuration
+//    implicit def toExecutionContext(implicit context : Context) = context.executionContext
 //    implicit def toConfiguration(site : Site) = site.configuration
     implicit class RichAny(a : Any) {
       def & (jsCmd : JSCmd) = jsCmd

@@ -135,7 +135,7 @@ trait Xml {
   /**
    * Transformation that adds a class to some input element.
    */
-  def addClass(className : String) = 
+  def addClass(className : => String) = 
     ElemModifier((context, elem) => XmlHelpers.addClass(elem, className)) 
   
   /**

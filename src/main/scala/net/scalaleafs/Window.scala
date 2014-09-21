@@ -14,7 +14,7 @@ class Window(site : Site, initialUrl : Url, rootTemplateInstantiator : RootTempl
   import site.executionContext
   private val synchronizedFuture = new SynchronizedFuture
   private val rootTemplate = rootTemplateInstantiator(this)
-  
+
   private[scalaleafs] val ajaxCallbacks = mutable.HashMap[String, AjaxCallback]()
   private[scalaleafs] var _headContributionKeys : Set[String] = Set.empty
   private[scalaleafs] var _currentUrl : Var[Url] = Var(initialUrl)

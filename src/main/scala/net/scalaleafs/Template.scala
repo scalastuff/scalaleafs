@@ -14,9 +14,7 @@ import java.util.concurrent.ConcurrentHashMap
 import scala.xml.Elem
 import scala.xml.NodeSeq
 import scala.xml.NodeSeq.seqToNodeSeq
-import scala.xml.XML
 import org.xml.sax.SAXParseException
-import org.xml.sax.InputSource
 
 /**
  * A template is an XmlTransformation that reads its input, by default, from a class-path resource, and provides
@@ -26,8 +24,10 @@ import org.xml.sax.InputSource
 trait Template extends RenderNode with SingleChildRenderNode with Xml with Html with Binding {
   
   private val READ_INPUT = <h1>Read Input</h1>
-  
-  implicit def context : Context = Context.get
+
+  private var _context: Context = null
+  implicit def context = _context
+  implicit def exectutionContext = context.executionContext
 
   lazy val child = render
 
@@ -68,8 +68,14 @@ trait Template extends RenderNode with SingleChildRenderNode with Xml with Html 
   protected def readInput(context : Context) : NodeSeq = 
     Template.template(context, getClass)
 
+  override def renderChanges(context : Context) : JSCmd = {
+    _context = context
+    super.renderChanges(context)
+  }
+
   def render(context : Context, xml : NodeSeq) = {
-    js(context).foreach(context.addHeadContribution(_))
+    _context = context
+    js(context).foreach(context.addHeadContribution)
     child.render(context, input(context))
   }
 }
@@ -80,7 +86,7 @@ object Template {
   def template(context : Context, c : Class[_]) : NodeSeq = {
     var xml = templateCache.get(c)
     if (xml == null) {
-      val resourceName = c.getName().replace('.', '/') + ".html";
+      val resourceName = c.getName.replace('.', '/') + ".html"
       try {
         val resource = c.getClassLoader.getResource(resourceName)
         if (resource == null)
@@ -93,7 +99,7 @@ object Template {
           }
         }
         finally {
-          is.close
+          is.close()
         }
       } catch {
         case t : SAXParseException if t.getLineNumber >= 0 => throw new Exception("Error in template " + resourceName + " (line " + t.getLineNumber + "): " + t.getLocalizedMessage, t)

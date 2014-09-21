@@ -12,9 +12,9 @@ object ScalaLeafsBuild extends Build {
         sbtPlugin := false, 
         organization := "net.scalaleafs",
         version := "1.1.0-SNAPSHOT",
-        scalaVersion := "2.10.3",
+        scalaVersion := "2.11.2",
         scalacOptions ++= Seq("-deprecation", "-unchecked", "-encoding", "utf8", "-feature"),
-        scalacOptions ++= Seq("-language:implicitConversions", "-language:postfixOps", "-language:reflectiveCall", "-language:higherKinds", "-language:existentials", "-language:reflectiveCalls"),
+        //scalacOptions ++= Seq("-language:implicitConversions", "-language:postfixOps", "-language:higherKinds", "-language:existentials"),
         EclipseKeys.createSrc := EclipseCreateSrc.Default + EclipseCreateSrc.Resource,
         EclipseKeys.withSource := true)
           
@@ -44,12 +44,33 @@ object ScalaLeafsBuild extends Build {
 
     
   val scalaleafs = Project(id = "scalaleafs", base = file("."), settings = defaultSettings ++ publishSettings ++ Seq(
-    libraryDependencies +=  "org.clapper" %% "grizzled-slf4j" % "1.0.1" withSources(),
+    libraryDependencies += "org.scala-lang.modules" %% "scala-xml" % "1.0.2" withSources(),
+    libraryDependencies += "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.2" withSources(),
+    libraryDependencies +=  "org.clapper" %% "grizzled-slf4j" % "1.0.2" withSources(),
     libraryDependencies +=  "nu.validator.htmlparser" % "htmlparser" % "1.4",
-    libraryDependencies += "com.typesafe.akka" %% "akka-actor" % "2.2.3" withSources(),
-    libraryDependencies += "io.spray" % "spray-can" % "1.2.0" withSources(),
-    libraryDependencies += "io.spray" % "spray-routing" % "1.2.0" withSources(),
-    libraryDependencies += "org.scalatest" %% "scalatest" % "2.0" % "test" withSources(),
+    libraryDependencies += "com.typesafe.akka" %% "akka-actor" % "2.3.6" withSources(),
+    libraryDependencies += "org.scalatest" %% "scalatest" % "2.2.1" % "test" withSources(),
+    libraryDependencies <++= scalaBinaryVersion {
+      case "2.11" => Seq(
+        "io.spray" %% "spray-json" % "1.2.6" withSources(),
+        "io.spray" %% "spray-can" % "1.3.1" withSources(),
+        "io.spray" %% "spray-http" % "1.3.1" withSources(),
+        "io.spray" %% "spray-client" % "1.3.1" withSources(),
+        "io.spray" %% "spray-servlet" % "1.3.1" withSources(),
+        "io.spray" %% "spray-routing" % "1.3.1" withSources(),
+        "io.spray" %% "spray-caching" % "1.3.1" withSources(),
+        "io.spray" %% "spray-testkit" % "1.3.1" % "test" withSources())
+      case _ => Seq(
+        "io.spray" %% "spray-json" % "1.2.6" withSources(),
+        "io.spray" % "spray-can" % "1.3.1" withSources(),
+        "io.spray" % "spray-http" % "1.3.1" withSources(),
+        "io.spray" % "spray-client" % "1.3.1" withSources(),
+        "io.spray" % "spray-servlet" % "1.3.1" withSources(),
+        "io.spray" % "spray-routing" % "1.3.1" withSources(),
+        "io.spray" % "spray-caching" % "1.3.1" withSources(),
+        "io.spray" % "spray-testkit" % "1.3.1" % "test" withSources())
+    },
+
     resolvers += "spray repo" at "http://repo.spray.io"))
 
   val sample = Project(id = "scalaleafs-sample", base = file("sample"), settings = defaultSettings ++ Seq(
